@@ -21,6 +21,12 @@ app.post('/api/generate', async (req, res) => {
             return res.status(400).json({ error: "No text provided." });
         }
 
+        if (!GEMINI_API_KEY || GEMINI_API_KEY === 'undefined') {
+            return res.status(500).json({ 
+                error: "API Key missing! You need to add VITE_GEMINI_API_KEY to your Vercel Environment Variables."
+            });
+        }
+
         const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
 
         const prompt = `You are an elite educational data formatter for a presentation generator. Parse the raw text into a valid JSON array of question objects.
