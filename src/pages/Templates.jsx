@@ -5,13 +5,17 @@ import { useStore } from '../store/useStore';
 import { THEMES } from '../utils/pptxEngine';
 import LiveSlidePreview from '../components/Generator/LiveSlidePreview';
 
+const LAYOUT_IDS = ['modern-sidebar', 'classic-header', 'split-focus'];
+
 export default function Templates() {
     const savedThemes = useStore(state => state.savedThemes);
     const setThemeId = useStore(state => state.setThemeId);
+    const setLayoutId = useStore(state => state.setLayoutId);
     const navigate = useNavigate();
 
-    const handleSelectTheme = (themeId) => {
+    const handleSelectTemplate = (themeId, layoutId) => {
         setThemeId(themeId);
+        setLayoutId(layoutId);
         navigate('/generator');
     };
 
@@ -22,6 +26,15 @@ export default function Templates() {
         pill2: '2026 EDITION',
         footer: 'BEAUTIFUL PRESENTATIONS',
     };
+
+    // Build a card for each theme × layout combination to showcase structural diversity
+    const templateCards = [];
+    Object.entries(THEMES).forEach(([themeId, theme]) => {
+        // Assign each theme a "default" showcase layout in a round-robin to keep the gallery diverse
+        const idx = templateCards.length % LAYOUT_IDS.length;
+        const layoutId = LAYOUT_IDS[idx];
+        templateCards.push({ themeId, theme, layoutId });
+    });
 
     return (
         <main className="flex-1 max-w-container-max mx-auto w-full px-margin-mobile md:px-margin-desktop pt-24 pb-12">
@@ -46,15 +59,17 @@ export default function Templates() {
                     System Templates
                 </h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {Object.entries(THEMES).map(([id, theme]) => (
-                        <div key={id} onClick={() => handleSelectTheme(id)} className="group flex flex-col bg-surface border border-outline-variant rounded-xl overflow-hidden hover:border-primary transition-all hover:shadow-md cursor-pointer">
+                    {templateCards.map(({ themeId, theme, layoutId }) => (
+                        <div key={`${themeId}-${layoutId}`} onClick={() => handleSelectTemplate(themeId, layoutId)} className="group flex flex-col bg-surface border border-outline-variant rounded-xl overflow-hidden hover:border-primary transition-all hover:shadow-md cursor-pointer">
                             <div className="relative bg-surface-container-low pointer-events-none w-full">
-                                <LiveSlidePreview theme={theme} type="title" config={mockConfig} />
+                                <LiveSlidePreview theme={theme} type="title" config={mockConfig} layoutId={layoutId} />
                             </div>
                             <div className="p-4 border-t border-outline-variant flex justify-between items-center">
                                 <div>
                                     <h3 className="font-label-lg font-semibold text-on-surface group-hover:text-primary transition-colors">{theme.name}</h3>
-                                    <span className="font-label-sm text-xs text-on-surface-variant uppercase tracking-wider">SlideGen Pro</span>
+                                    <span className="font-label-sm text-xs text-on-surface-variant uppercase tracking-wider">
+                                        {layoutId === 'modern-sidebar' ? 'Sidebar' : layoutId === 'classic-header' ? 'Header' : 'Split'} Layout
+                                    </span>
                                 </div>
                             </div>
                         </div>
@@ -71,8 +86,8 @@ export default function Templates() {
                     </Link>
                     
                     {savedThemes.map((theme, i) => (
-                        <div key={i} onClick={() => handleSelectTheme(theme.id)} className="group relative aspect-[16/9] rounded-xl overflow-hidden border border-outline-variant transition-all hover:shadow-md cursor-pointer pointer-events-none">
-                            <LiveSlidePreview theme={theme} type="title" config={mockConfig} />
+                        <div key={i} onClick={() => handleSelectTemplate(theme.id, 'modern-sidebar')} className="group relative aspect-[16/9] rounded-xl overflow-hidden border border-outline-variant transition-all hover:shadow-md cursor-pointer">
+                            <LiveSlidePreview theme={theme} type="title" config={mockConfig} layoutId="modern-sidebar" />
                             <div className="absolute bottom-0 w-full p-3 bg-surface border-t border-outline-variant transform translate-y-full group-hover:translate-y-0 transition-transform duration-200 ease-out z-10 pointer-events-auto">
                                 <span className="font-label-md text-sm font-semibold text-on-surface block truncate">{theme.name}</span>
                             </div>

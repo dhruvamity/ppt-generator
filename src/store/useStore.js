@@ -118,7 +118,10 @@ export const useStore = create(
             setRawText: (text) => set({ rawText: text, aiQuestions: null }),
             
             aiQuestions: null,
-            setAiQuestions: (questions) => set({ aiQuestions: questions }),
+            setAiQuestions: (questions) => set({ 
+                aiQuestions: questions, 
+                ...(questions ? { activeSlides: questions } : {})
+            }),
 
             isParsing: false,
             setIsParsing: (parsing) => set({ isParsing: parsing }),
@@ -128,22 +131,20 @@ export const useStore = create(
             removeSlide: (index) => set((state) => ({ 
                 activeSlides: state.activeSlides.filter((_, i) => i !== index) 
             })),
-            moveSlideUp: (index) => set((state) => {
-                if (index === 0) return state;
-                const newSlides = [...state.activeSlides];
-                [newSlides[index - 1], newSlides[index]] = [newSlides[index], newSlides[index - 1]];
-                return { activeSlides: newSlides };
-            }),
-            moveSlideDown: (index) => set((state) => {
-                if (index === state.activeSlides.length - 1) return state;
-                const newSlides = [...state.activeSlides];
-                [newSlides[index + 1], newSlides[index]] = [newSlides[index], newSlides[index + 1]];
-                return { activeSlides: newSlides };
+            reorderSlides: (startIndex, endIndex) => set((state) => {
+                const result = Array.from(state.activeSlides);
+                const [removed] = result.splice(startIndex, 1);
+                result.splice(endIndex, 0, removed);
+                return { activeSlides: result };
             }),
 
             // Themes
             themeId: 'dark-neon',
             setThemeId: (id) => set({ themeId: id }),
+
+            // Layout (independent from theme colors)
+            layoutId: 'modern-sidebar',
+            setLayoutId: (id) => set({ layoutId: id }),
 
             // Dashboard Persistence (Decks, Themes & Folders)
             recentDecks: [],
@@ -166,6 +167,7 @@ export const useStore = create(
                 config: deck.config,
                 rawText: deck.rawText,
                 themeId: deck.themeId,
+                layoutId: deck.layoutId || 'modern-sidebar',
                 aiQuestions: deck.aiQuestions || null
             }),
 
@@ -173,6 +175,7 @@ export const useStore = create(
                 config: initialConfig,
                 rawText: defaultRawText,
                 themeId: 'dark-neon',
+                layoutId: 'modern-sidebar',
                 aiQuestions: null
             })
         }),

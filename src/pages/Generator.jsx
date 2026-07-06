@@ -11,30 +11,36 @@ import toast from 'react-hot-toast';
 export default function Generator() {
     const config = useStore(state => state.config);
     const themeId = useStore(state => state.themeId);
+    const layoutId = useStore(state => state.layoutId);
     const rawText = useStore(state => state.rawText);
     const activeSlides = useStore(state => state.activeSlides);
     const aiQuestions = useStore(state => state.aiQuestions);
     const addRecentDeck = useStore(state => state.addRecentDeck);
 
     const handleExport = async () => {
-        if (!activeSlides || activeSlides.length === 0) return;
+        // Read directly from store at call-time for guaranteed freshness
+        const state = useStore.getState();
+        const { config: currentConfig, activeSlides: currentSlides, themeId: currentTheme, layoutId: currentLayout, rawText: currentRawText, aiQuestions: currentAiQuestions } = state;
+        
+        if (!currentSlides || currentSlides.length === 0) return;
         
         try {
             const loadingToast = toast.loading('Generating PPTX File...');
-            await generatePPTX(config, activeSlides, themeId);
+            await generatePPTX(currentConfig, currentSlides, currentTheme, currentLayout);
             
             // Save to recent decks
             const newDeck = {
                 id: Date.now().toString(),
-                title: `${config.mainTitle1} ${config.mainTitle2}`,
+                title: `${currentConfig.mainTitle1} ${currentConfig.mainTitle2}`,
                 date: new Date().toISOString(),
-                slidesCount: activeSlides.length,
-                themeId: themeId,
-                config,
-                rawText,
-                aiQuestions
+                slidesCount: currentSlides.length,
+                themeId: currentTheme,
+                layoutId: currentLayout,
+                config: currentConfig,
+                rawText: currentRawText,
+                aiQuestions: currentAiQuestions
             };
-            addRecentDeck(newDeck);
+            state.addRecentDeck(newDeck);
             
             toast.success('PPTX Downloaded successfully!', { id: loadingToast });
         } catch (error) {

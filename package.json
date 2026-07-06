@@ -12,6 +12,7 @@
   "dependencies": {
     "@google/genai": "^2.10.0",
     "@google/generative-ai": "^0.24.1",
+    "@hello-pangea/dnd": "^18.0.1",
     "autoprefixer": "^10.5.2",
     "concurrently": "^10.0.3",
     "cors": "^2.8.6",
