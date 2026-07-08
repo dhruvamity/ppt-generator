@@ -20,3 +20,8 @@
         transform: translateY(0);
     }
 }
+
+/* Override KaTeX Native MathML fonts to match PowerPoint OMML exactly */
+math, mrow, mi, mn, mo, ms {
+    font-family: "Cambria Math", "Segoe UI Math", "Asana Math", "Latin Modern Math", serif !important;
+}
