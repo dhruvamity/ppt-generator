@@ -65,7 +65,7 @@ export default function LiveSlidePreview({ theme, type = 'title', config, questi
         }
 
         const totalChars = options.reduce((sum, opt) => sum + (opt.text ? opt.text.length : 0), 0);
-        const cols = totalChars < 50 ? 4 : 2;
+        const cols = totalChars < 60 && options.length === 4 ? 4 : 2;
 
         return (
             <div style={{ 

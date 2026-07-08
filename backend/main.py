@@ -278,22 +278,20 @@ def render_options_grid(slide, q: SlideData, options_color: str, q_end_y: float,
     
     total_chars = sum(len(opt.text) for opt in q.options)
     
-    if total_chars < 60 and len(q.options) == 4:
-        # 4 columns grid format to take exactly 100% width
-        cols = 4
-        col_width = content_width / cols
-        for i, opt in enumerate(q.options):
-            opt_x = start_x + (i % cols) * col_width
-            opt_y = options_y
-            add_mixed_content(slide, f"({opt.label}) {opt.text}", opt_x, opt_y, col_width - 0.1, options_color, 14)
-    else:
-        # 2 columns grid format
-        cols = 2
-        col_width = content_width / cols
-        for i, opt in enumerate(q.options):
-            opt_x = start_x + (i % cols) * col_width
-            opt_y = options_y + (i // cols) * 0.6
-            add_mixed_content(slide, f"({opt.label}) {opt.text}", opt_x, opt_y, col_width - 0.2, options_color, 14)
+    # Decide if 4 columns (1 row) or 2 columns (2 rows)
+    cols = 4 if (total_chars < 60 and len(q.options) == 4) else 2
+    
+    # Divide the total available width equally among columns
+    col_width = content_width / cols
+    
+    for i, opt in enumerate(q.options):
+        # Calculate exact X coordinate for this column
+        opt_x = start_x + (i % cols) * col_width
+        # Calculate exact Y coordinate for this row
+        opt_y = options_y + (i // cols) * 0.6
+        
+        # Place it with a slightly reduced width (col_width - 0.2) to prevent text overlap
+        add_mixed_content(slide, f"({opt.label}) {opt.text}", opt_x, opt_y, col_width - 0.2, options_color, 14)
 
 def build_modern_sidebar_question(slide, q: SlideData, theme):
     render_global_decorations(slide, theme)
