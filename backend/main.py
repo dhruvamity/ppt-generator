@@ -121,6 +121,25 @@ def inject_omml_math(paragraph, latex_str: str):
         run = paragraph.add_run()
         run.text = latex_str
 
+def populate_paragraph_with_mixed_content(p, text: str, color: str, font_size: int = 14):
+    theme_color = hex_to_rgb(color)
+    p.line_spacing = 1.5
+    parts = re.split(r'(\$\$[\s\S]*?\$\$|\$[\s\S]*?\$)', text)
+    
+    for part in parts:
+        if not part:
+            continue
+        if part.startswith('$$') and part.endswith('$$'):
+            inject_omml_math(p, part[2:-2])
+        elif part.startswith('$') and part.endswith('$'):
+            inject_omml_math(p, part[1:-1])
+        else:
+            run = p.add_run()
+            run.text = part
+            run.font.name = 'Arial'
+            run.font.size = Pt(font_size)
+            run.font.color.rgb = theme_color
+
 def add_mixed_content(slide, text: str, start_x: float, start_y: float, width: float, color: str, font_size: int = 14) -> float:
     """Adds a text box, parsing out $...$ or $$...$$ as native OMML math."""
     if not text:
@@ -145,26 +164,7 @@ def add_mixed_content(slide, text: str, start_x: float, start_y: float, width: f
     tf.margin_right = 0
     tf.word_wrap = True
     
-    p = tf.paragraphs[0]
-    p.line_spacing = 1.5
-    
-    # Split text by $...$ or $$...$$
-    # This regex captures both inline and block math and keeps the delimiters
-    parts = re.split(r'(\$\$[\s\S]*?\$\$|\$[\s\S]*?\$)', text)
-    
-    for part in parts:
-        if not part:
-            continue
-        if part.startswith('$$') and part.endswith('$$'):
-            inject_omml_math(p, part[2:-2])
-        elif part.startswith('$') and part.endswith('$'):
-            inject_omml_math(p, part[1:-1])
-        else:
-            run = p.add_run()
-            run.text = part
-            run.font.name = 'Arial'
-            run.font.size = Pt(font_size)
-            run.font.color.rgb = theme_color
+    populate_paragraph_with_mixed_content(tf.paragraphs[0], text, color, font_size)
 
     return start_y + text_height + 0.05
 
@@ -277,21 +277,31 @@ def render_options_grid(slide, q: SlideData, options_color: str, q_end_y: float,
     options_y = q_end_y + 0.3
     
     total_chars = sum(len(opt.text) for opt in q.options)
-    
-    # Decide if 4 columns (1 row) or 2 columns (2 rows)
     cols = 4 if (total_chars < 60 and len(q.options) == 4) else 2
+    rows = 1 if cols == 4 else ((len(q.options) + 1) // 2)
     
-    # Divide the total available width equally among columns
-    col_width = content_width / cols
+    # Use a table to perfectly distribute options across the width
+    table_shape = slide.shapes.add_table(rows, cols, Inches(start_x), Inches(options_y), Inches(content_width), Inches(0.5))
+    table = table_shape.table
     
+    # Attempt to remove visible borders by clearing fills (if supported by theme)
+    for r in range(rows):
+        for c in range(cols):
+            cell = table.cell(r, c)
+            cell.fill.background()
+            # Remove padding
+            cell.margin_left = 0
+            cell.margin_right = 0
+            cell.margin_top = Inches(0.05)
+            cell.margin_bottom = Inches(0.05)
+            
     for i, opt in enumerate(q.options):
-        # Calculate exact X coordinate for this column
-        opt_x = start_x + (i % cols) * col_width
-        # Calculate exact Y coordinate for this row
-        opt_y = options_y + (i // cols) * 0.6
+        row_idx = i // cols
+        col_idx = i % cols
+        cell = table.cell(row_idx, col_idx)
         
-        # Place it with a slightly reduced width (col_width - 0.2) to prevent text overlap
-        add_mixed_content(slide, f"({opt.label}) {opt.text}", opt_x, opt_y, col_width - 0.2, options_color, 14)
+        p = cell.text_frame.paragraphs[0]
+        populate_paragraph_with_mixed_content(p, f"({opt.label}) {opt.text}", options_color, 14)
 
 def build_modern_sidebar_question(slide, q: SlideData, theme):
     render_global_decorations(slide, theme)
@@ -431,6 +441,7 @@ RULE 5 — ASSERTION (A) & REASON (R):
 
 RULE 6 — CLEAN QUESTION TEXT:
 - Do NOT include the original question number or label (like "Exp. 13:", "Case 1:", "Q.1") inside `qText`. Strip it completely. The `qText` should start directly with the actual question content.
+- IGNORE the original question numbers in the source text. Assign the 'badge' sequentially starting from Q.1, Q.2, Q.3 based on their order in the text.
 
 RULE 7 — JSON SAFETY:
 - Escape all newlines as \\n in JSON string values.

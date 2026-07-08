@@ -22,7 +22,9 @@ const convertFractions = (text) => {
 export const parseLocalText = (rawText) => {
     if (!rawText || !rawText.trim()) return [];
 
-    const lines = rawText.split('\n');
+    // Strip markdown formatting (bold/italics)
+    let cleanText = rawText.replace(/(\*\*|\*|__|_)/g, '');
+    const lines = cleanText.split('\n');
     let questions = [];
     let currentQ = null;
     let currentCategory = "Practice Question";
@@ -38,7 +40,7 @@ export const parseLocalText = (rawText) => {
         }
         
         // Question start
-        const qMatch = line.match(/^(Case\s*\d+|Exp\.\s*\d+|Question\s*\d*|Q\d+)[:.-]\s*(.*)/i);
+        const qMatch = line.match(/^\s*(Case\s*\d+|Exp\.\s*\d+|Question\s*\d*|Q\d+)[:.-]?\s*(.*)/i);
         if (qMatch) {
             if (currentQ) {
                 questions.push(currentQ);

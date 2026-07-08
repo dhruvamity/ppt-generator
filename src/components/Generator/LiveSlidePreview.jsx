@@ -70,17 +70,20 @@ export default function LiveSlidePreview({ theme, type = 'title', config, questi
         return (
             <div style={{ 
                 marginTop: '2em', 
-                width: '100%', 
-                color: `#${color}`, 
-                fontSize: fs(14), 
-                display: 'grid',
-                gridTemplateColumns: `repeat(${cols}, 1fr)`,
-                alignItems: 'start',
-                lineHeight: 1.5,
-                gap: '2em'
+                display: 'flex',
+                flexWrap: 'wrap',
+                width: '100%',
+                justifyContent: 'space-between',
+                gap: '1rem'
             }}>
                 {options.map((opt, i) => (
-                    <div key={i} style={{ boxSizing: 'border-box', whiteSpace: 'pre-wrap', marginBottom: '0.6em' }}>
+                    <div key={i} style={{ 
+                        width: cols === 4 ? '23%' : '48%',
+                        marginBottom: '0.25rem',
+                        color: `#${color}`, 
+                        fontSize: fs(14),
+                        lineHeight: 1.5
+                    }}>
                         <strong>({opt.label})</strong> {renderTextWithMath(opt.text)}
                     </div>
                 ))}
