@@ -79,6 +79,10 @@ export const parseLocalText = (rawText) => {
                 let match = optStr.match(/^(\([a-dA-D]\)|[a-dA-D]\)|[a-dA-D]\.|\(\d+\))\s*(.*)/);
                 if (match) {
                     let label = match[1].replace(/[\(\)\.]/g, '').toLowerCase();
+                    if (!isNaN(label)) {
+                        const numMap = { '1': 'a', '2': 'b', '3': 'c', '4': 'd', '5': 'e' };
+                        label = numMap[label] || label;
+                    }
                     return { label: label, text: convertFractions(match[2].trim()) };
                 }
                 return { label: '', text: convertFractions(optStr.trim()) };

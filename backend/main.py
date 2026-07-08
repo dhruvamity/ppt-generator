@@ -102,19 +102,23 @@ def hex_to_rgb(hex_str: str) -> RGBColor:
     return RGBColor(int(hex_str[0:2], 16), int(hex_str[2:4], 16), int(hex_str[4:6], 16))
 
 def inject_omml_math(paragraph, latex_str: str):
-    """Converts latex_str to OMML and appends it to the python-pptx paragraph."""
     if not xslt_transformer:
         run = paragraph.add_run()
         run.text = latex_str
         return
         
     try:
+        latex_str = latex_str.replace('\\\\', '\\')
         mathml = latex2mathml.converter.convert(latex_str)
+        
+        # CRITICAL FIX: Inject the required MathML namespace
+        if 'xmlns=' not in mathml:
+            mathml = mathml.replace('<math>', '<math xmlns="http://www.w3.org/1998/Math/MathML">')
+            
         mathml_doc = etree.fromstring(mathml.encode('utf-8'))
         omml_doc = xslt_transformer(mathml_doc)
         omml_root = omml_doc.getroot()
         
-        # Inject the transformed OMML directly into the paragraph's underlying XML
         paragraph._p.append(omml_root)
     except Exception as e:
         print(f"OMML Injection failed for '{latex_str}': {e}")
@@ -429,7 +433,7 @@ If a question has "Part 1" and "Part 2" (or I/II, or Statement I/II), it is ONE 
 
 RULE 3 — COMPACT OPTIONS (GRID LAYOUT):
 - Always extract options into the "options" array.
-- E.g., if text has (A) 12 (B) 14, options should be [{{"label": "A", "text": "12"}}, {{"label": "B", "text": "14"}}]
+- ALL options MUST be labeled with lowercase letters: "a", "b", "c", "d". DO NOT use "1", "2", "3", "4" or uppercase letters. Map them if necessary.
 - ONLY use this array structure. Do NOT return a string for options.
 
 RULE 4 — MATHEMATICAL NOTATION:
@@ -440,6 +444,7 @@ RULE 5 — ASSERTION (A) & REASON (R):
 - Separate the Assertion text and Reason text with a single \\n in qText.
 
 RULE 6 — CLEAN QUESTION TEXT:
+- STRIP out all metadata, filenames, page numbers, or useless headers (e.g., '3. Questions from "35 QA Geometry-3 Q.pdf"'). If it's not a question, option, or valid context, remove it entirely.
 - Do NOT include the original question number or label (like "Exp. 13:", "Case 1:", "Q.1") inside `qText`. Strip it completely. The `qText` should start directly with the actual question content.
 - IGNORE the original question numbers in the source text. Assign the 'badge' sequentially starting from Q.1, Q.2, Q.3 based on their order in the text.
 

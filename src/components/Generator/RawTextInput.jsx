@@ -1,10 +1,23 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useStore, parseLocalText } from '../../store/useStore';
-import { Sparkles, Loader2, FileText, CheckCircle, RefreshCw } from 'lucide-react';
+import { Sparkles, Loader2, FileText, CheckCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function RawTextInput() {
     const { rawText, setRawText, isParsing, setIsParsing, setAiQuestions, setActiveSlides, aiQuestions } = useStore();
+
+    // Auto-sync text changes to preview
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            if (!rawText.trim()) {
+                setActiveSlides([]);
+                return;
+            }
+            const parsed = parseLocalText(rawText);
+            setActiveSlides(parsed);
+        }, 500);
+        return () => clearTimeout(timer);
+    }, [rawText, setActiveSlides]);
 
     const handleAutoFormat = async () => {
         if (!rawText.trim()) return;
@@ -25,26 +38,26 @@ export default function RawTextInput() {
             }
 
             const data = await response.json();
+            
+            // Reconstruct a clean text string from the AI's structured JSON
+            // Options are placed on separate lines so parseLocalText identifies them easily
+            const cleanText = data.map((q, i) => {
+                let str = `Q.${i + 1}: ${q.qText}`;
+                if (q.options && q.options.length > 0) {
+                    str += '\n' + q.options.map(o => `(${o.label}) ${o.text}`).join('\n');
+                }
+                return str;
+            }).join('\n\n');
+            
+            setRawText(cleanText);
             setAiQuestions(data);
-            toast.success('Successfully parsed content with AI!', { id: loadingToast });
+            toast.success('Successfully formatted and synced!', { id: loadingToast });
         } catch (err) {
             console.error("AI Formatting Error:", err);
             toast.error(err.message, { id: loadingToast });
         } finally {
             setIsParsing(false);
         }
-    };
-
-    const handleSyncToPreview = () => {
-        if (!rawText.trim()) return;
-        const parsed = parseLocalText(rawText);
-        if (parsed.length === 0) {
-            toast.error('No questions found. Check your text format.');
-            return;
-        }
-        setAiQuestions(null);       // Clear AI mode — back to manual
-        setActiveSlides(parsed);    // Overwrite preview with fresh local parse
-        toast.success(`Synced ${parsed.length} slides to preview.`);
     };
 
     return (
@@ -56,14 +69,6 @@ export default function RawTextInput() {
                 </h2>
                 
                 <div className="flex items-center gap-2">
-                    <button
-                        onClick={handleSyncToPreview}
-                        disabled={isParsing || !rawText.trim()}
-                        className="flex items-center gap-2 bg-surface-container-high text-on-surface hover:bg-secondary-container hover:text-on-secondary-container border border-outline-variant px-4 py-2 rounded-lg font-label-md text-sm transition-all disabled:opacity-50"
-                    >
-                        <RefreshCw size={16} />
-                        Sync to Preview
-                    </button>
                     <button
                         onClick={handleAutoFormat}
                         disabled={isParsing || !rawText.trim()}
