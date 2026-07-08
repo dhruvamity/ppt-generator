@@ -402,18 +402,21 @@ def generate_pptx(req: GenerateRequest):
         headers={"Content-Disposition": f"attachment; filename={filename}"}
     )
 
+import traceback
+
 @app.post("/api/generate")
 def generate_ai(req: AIParsingRequest):
-    if not req.rawText or not req.rawText.strip():
-        raise HTTPException(status_code=400, detail="No text provided.")
+    try:
+        if not req.rawText or not req.rawText.strip():
+            raise HTTPException(status_code=400, detail="No text provided.")
+            
+        api_key = os.getenv("VITE_GEMINI_API_KEY") or os.getenv("GEMINI_API_KEY")
+        if not api_key:
+            raise HTTPException(status_code=500, detail="API Key missing! Please add VITE_GEMINI_API_KEY to your Render environment variables.")
+            
+        client = genai.Client(api_key=api_key)
         
-    api_key = os.getenv("VITE_GEMINI_API_KEY")
-    if not api_key:
-        raise HTTPException(status_code=500, detail="API Key missing! You need to add VITE_GEMINI_API_KEY to your Environment Variables.")
-        
-    client = genai.Client(api_key=api_key)
-    
-    prompt = f"""You are an elite educational data formatter for a presentation generator. Parse the raw text into a valid JSON array of question objects.
+        prompt = f"""You are an elite educational data formatter for a presentation generator. Parse the raw text into a valid JSON array of question objects.
 Each object must have exactly these keys: "badge", "tag", "qText", "options".
 
 - "badge": A short capitalized label (e.g. "Q.1", "EXP.13", "CS.1").
@@ -441,11 +444,11 @@ RULE 3 — COMPACT OPTIONS (GRID LAYOUT):
 RULE 4 — MATHEMATICAL NOTATION (CRITICAL):
 - Wrap ALL math expressions in single dollar signs: $...$
 - Use standard LaTeX commands with SINGLE backslashes inside the dollar signs.
-- Fractions: $\\frac{a}{b}$. Exponents: $x^{2}$. Subscripts: $x_{1}$. Roots: $\\sqrt{x}$.
+- Fractions: $\\frac{{a}}{{b}}$. Exponents: $x^{{2}}$. Subscripts: $x_{{1}}$. Roots: $\\sqrt{{x}}$.
 - Geometry: $\\triangle ABC$, $\\angle BOC = 130^\\circ$
-- Example: "The area is $\\frac{625}{36}$ $cm^{2}$" NOT "The area is 625/36 cm^2"
+- Example: "The area is $\\frac{{625}}{{36}}$ $cm^{{2}}$" NOT "The area is 625/36 cm^2"
 - NEVER output bare caret (^), slash fractions (a/b), or Unicode sub/superscripts as plain text.
-- In the JSON string, backslashes must be escaped as \\\\. So $\\frac{1}{2}$ in JSON becomes "$\\frac{1}{2}$".
+- In the JSON string, backslashes must be escaped as \\\\. So $\\frac{{1}}{{2}}$ in JSON becomes "$\\\\frac{{1}}{{2}}$".
 
 RULE 5 — ASSERTION (A) & REASON (R):
 - Separate the Assertion text and Reason text with a single \\n in qText.
@@ -465,7 +468,6 @@ Raw text to format:
 
 Respond ONLY with the JSON array. Do not include markdown wrappers like ```json."""
 
-    try:
         response = client.models.generate_content(
             model='gemini-2.5-flash',
             contents=prompt
@@ -519,6 +521,7 @@ Respond ONLY with the JSON array. Do not include markdown wrappers like ```json.
         return validated
     except Exception as e:
         print(f"AI Formatting Error: {e}")
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e) or "Failed to process text.")
 
 if __name__ == "__main__":

@@ -25,8 +25,8 @@ export default function RawTextInput() {
         setIsParsing(true);
         const loadingToast = toast.loading('Sending to AI Formatter...');
         
+        const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
         try {
-            const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
             const response = await fetch(`${backendUrl}/api/generate`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -34,8 +34,16 @@ export default function RawTextInput() {
             });
 
             if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error || 'Failed to communicate with API');
+                let errorMessage = `Server error: ${response.status}`;
+                try {
+                    const errorData = await response.json();
+                    errorMessage = errorData.error || errorData.detail || errorMessage;
+                } catch (e) {
+                    // Fallback if the server didn't return JSON (e.g. 500 Internal Server Error plain text)
+                    const errorText = await response.text();
+                    if (errorText) errorMessage += ` - ${errorText.substring(0, 50)}`;
+                }
+                throw new Error(errorMessage);
             }
 
             const data = await response.json();
@@ -62,7 +70,12 @@ export default function RawTextInput() {
             toast.success('Successfully formatted and synced!', { id: loadingToast });
         } catch (err) {
             console.error("AI Formatting Error:", err);
-            toast.error(err.message, { id: loadingToast });
+            // If it's a "Load failed" or "Failed to fetch", append the URL so the user knows what it tried to hit
+            if (err.message.includes('Failed to fetch') || err.message.includes('Load failed')) {
+                toast.error(`Network Error (Load failed). Is the backend running at ${backendUrl}?`, { id: loadingToast, duration: 6000 });
+            } else {
+                toast.error(err.message, { id: loadingToast, duration: 5000 });
+            }
         } finally {
             setIsParsing(false);
         }
