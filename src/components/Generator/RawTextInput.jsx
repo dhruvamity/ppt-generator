@@ -6,8 +6,9 @@ import toast from 'react-hot-toast';
 export default function RawTextInput() {
     const { rawText, setRawText, isParsing, setIsParsing, setAiQuestions, setActiveSlides, aiQuestions } = useStore();
 
-    // Auto-sync text changes to preview
+    // Auto-sync text changes to preview (skip when AI formatted data is active)
     useEffect(() => {
+        if (aiQuestions) return; // AI data is authoritative, don't overwrite
         const timer = setTimeout(() => {
             if (!rawText.trim()) {
                 setActiveSlides([]);
@@ -17,7 +18,7 @@ export default function RawTextInput() {
             setActiveSlides(parsed);
         }, 500);
         return () => clearTimeout(timer);
-    }, [rawText, setActiveSlides]);
+    }, [rawText, setActiveSlides, aiQuestions]);
 
     const handleAutoFormat = async () => {
         if (!rawText.trim()) return;
@@ -40,7 +41,6 @@ export default function RawTextInput() {
             const data = await response.json();
             
             // Reconstruct a clean text string from the AI's structured JSON
-            // Options are placed on separate lines so parseLocalText identifies them easily
             const cleanText = data.map((q, i) => {
                 let str = `Q.${i + 1}: ${q.qText}`;
                 if (q.options && q.options.length > 0) {
@@ -49,8 +49,9 @@ export default function RawTextInput() {
                 return str;
             }).join('\n\n');
             
-            setRawText(cleanText);
+            // Set AI data FIRST so the useEffect guard is active before rawText changes
             setAiQuestions(data);
+            setRawText(cleanText);
             toast.success('Successfully formatted and synced!', { id: loadingToast });
         } catch (err) {
             console.error("AI Formatting Error:", err);
@@ -58,6 +59,14 @@ export default function RawTextInput() {
         } finally {
             setIsParsing(false);
         }
+    };
+
+    const handleTextChange = (e) => {
+        // When user manually edits, clear AI mode so local parser takes over
+        if (aiQuestions) {
+            setAiQuestions(null);
+        }
+        setRawText(e.target.value);
     };
 
     return (
@@ -83,7 +92,7 @@ export default function RawTextInput() {
             <div className="relative">
                 <textarea
                     value={rawText}
-                    onChange={(e) => setRawText(e.target.value)}
+                    onChange={handleTextChange}
                     className="w-full h-80 bg-surface-container-lowest border border-outline-variant rounded-xl p-4 text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary font-mono text-sm leading-relaxed resize-none"
                     placeholder="Paste your messy questions, quiz exports, or word documents here..."
                     spellCheck="false"

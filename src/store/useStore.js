@@ -40,7 +40,7 @@ export const parseLocalText = (rawText) => {
         }
         
         // Question start
-        const qMatch = line.match(/^\s*(Case\s*\d+|Exp\.\s*\d+|Question\s*\d*|Q\d+)[:.-]?\s*(.*)/i);
+        const qMatch = line.match(/^\s*(Case\s*\d+|Exp\.\s*\d+|Question\s*\d*|Q\.?\d+)[:.-]?\s*(.*)/i);
         if (qMatch) {
             if (currentQ) {
                 questions.push(currentQ);
@@ -129,7 +129,7 @@ export const useStore = create(
 
             // Raw Text & Parsing
             rawText: defaultRawText,
-            setRawText: (text) => set({ rawText: text, aiQuestions: null }),
+            setRawText: (text) => set({ rawText: text }),
             
             aiQuestions: null,
             setAiQuestions: (questions) => set({ 
