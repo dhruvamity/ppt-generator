@@ -1,10 +1,52 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
+const LATEX_COMMANDS = 'frac|sqrt|triangle|angle|circ|pi|theta|alpha|beta|gamma|delta|sum|prod|int|lim|infty|pm|times|div|cdot|leq|geq|neq|approx|equiv|subset|supset|cap|cup|in|notin|forall|exists|nabla|partial|rightarrow|leftarrow|Rightarrow|Leftarrow|text';
+
+const applyOutsideMath = (text, fn) => {
+    return text.split(/(\$\$[\s\S]*?\$\$|\$[\s\S]*?\$)/).map(part => {
+        if (part.startsWith('$')) return part;
+        return fn(part);
+    }).join('');
+};
+
+export const normalizeMathText = (text) => {
+    if (!text) return text;
+
+    let normalized = text.replace(/I(\d+)/g, '√$1');
+
+    normalized = applyOutsideMath(normalized, (part) => {
+        let processed = part;
+
+        processed = processed.replace(
+            new RegExp(`\\\\\\\\(${LATEX_COMMANDS})\\b`, 'g'),
+            '\\$1'
+        );
+
+        processed = processed.replace(/\\(triangle|angle|circ)([A-Za-z])/g, '\\$1 $2');
+        processed = processed.replace(/(\\(?:triangle|angle)\s*[A-Za-z]{1,4})(?:\s*)\1/g, '$1');
+        processed = processed.replace(/\b([A-Z]{1,3}\s*=\s*-?\d+(?:\.\d+)?)(?:\s*)\1\b/g, '$1');
+
+        return processed;
+    });
+
+    const wrapOutsideMath = (source, regex) => applyOutsideMath(source, (part) => (
+        part.replace(regex, (match) => `$${match.trim()}$`)
+    ));
+
+    normalized = wrapOutsideMath(
+        normalized,
+        /\\(?:triangle|angle)\s*[A-Za-z]{1,4}(?:\s*=\s*-?\d+(?:\.\d+)?\s*\^\\circ)?/g
+    );
+    normalized = wrapOutsideMath(normalized, /\b-?\d+(?:\.\d+)?\s*\^\\circ\b/g);
+    normalized = wrapOutsideMath(normalized, /\b[A-Z]{1,3}\s*=\s*-?\d+(?:\.\d+)?\b/g);
+
+    return normalized;
+};
+
 export const convertFractions = (text) => {
     if (!text) return text;
-    // OCR cleanups
-    text = text.replace(/I(\d+)/g, '√$1');
+    text = normalizeMathText(text);
     text = text.replace(/([a-zA-Z0-9])\/√(\d+)/g, '$\\frac{$1}{\\sqrt{$2}}$');
     
     let parts = text.split(/(\$\$[\s\S]*?\$\$|\$[\s\S]*?\$)/);
@@ -19,9 +61,6 @@ export const convertFractions = (text) => {
             const e = exp.replace(/^[({]|[)}]$/g, '');
             return `$${base}^{${e}}$`;
         });
-        // Fix missing spaces after LaTeX geometry commands (KaTeX fails without space)
-        // e.g. \triangleABC -> \triangle ABC, \angleA -> \angle A
-        processed = processed.replace(/\\(triangle|angle|circ)([A-Za-z])/g, '\\$1 $2');
         return processed;
     }).join('');
 };
@@ -42,7 +81,7 @@ export const parseLocalText = (rawText) => {
         if (!line) continue;
         
         // Category heading
-        if (/^\d+\.\s+[a-zA-Z\s\(\)0-9]+$/.test(line) && !line.includes(':') && !line.startsWith('Q')) {
+        if (/^\d+\.\s+[a-zA-Z\s()0-9]+$/.test(line) && !line.includes(':') && !line.startsWith('Q')) {
             currentCategory = line.replace(/^\d+\.\s*/, '').trim();
             continue;
         }
@@ -86,7 +125,7 @@ export const parseLocalText = (rawText) => {
             parsedOptions = q.options.map(optStr => {
                 let match = optStr.match(/^(\([a-dA-D]\)|[a-dA-D]\)|[a-dA-D]\.|\(\d+\))\s*(.*)/);
                 if (match) {
-                    let label = match[1].replace(/[\(\)\.]/g, '').toLowerCase();
+                    let label = match[1].replace(/[().]/g, '').toLowerCase();
                     if (!isNaN(label)) {
                         const numMap = { '1': 'a', '2': 'b', '3': 'c', '4': 'd', '5': 'e' };
                         label = numMap[label] || label;

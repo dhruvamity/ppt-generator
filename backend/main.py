@@ -101,6 +101,62 @@ def hex_to_rgb(hex_str: str) -> RGBColor:
     hex_str = hex_str.lstrip('#')
     return RGBColor(int(hex_str[0:2], 16), int(hex_str[2:4], 16), int(hex_str[4:6], 16))
 
+LATEX_COMMANDS = (
+    r"frac|sqrt|triangle|angle|circ|pi|theta|alpha|beta|gamma|delta|sum|prod|int|"
+    r"lim|infty|pm|times|div|cdot|leq|geq|neq|approx|equiv|subset|supset|cap|"
+    r"cup|in|notin|forall|exists|nabla|partial|rightarrow|leftarrow|Rightarrow|"
+    r"Leftarrow|text"
+)
+
+def apply_outside_math(text: str, callback):
+    parts = re.split(r'(\$\$[\s\S]*?\$\$|\$[\s\S]*?\$)', text)
+    cleaned = []
+    for part in parts:
+        if part.startswith('$'):
+            cleaned.append(part)
+        else:
+            cleaned.append(callback(part))
+    return ''.join(cleaned)
+
+def normalize_math_text(text: str) -> str:
+    """Normalize common OCR/AI math leaks before previewing or exporting."""
+    if not text:
+        return text
+
+    text = re.sub(r'I(\d+)', r'√\1', text)
+
+    def cleanup_plain(part: str) -> str:
+        part = re.sub(
+            rf'\\\\({LATEX_COMMANDS})\b',
+            lambda m: '\\' + m.group(1),
+            part
+        )
+        part = re.sub(
+            r'\\(triangle|angle|circ)([A-Za-z])',
+            lambda m: '\\' + m.group(1) + ' ' + m.group(2),
+            part
+        )
+        part = re.sub(r'(\\(?:triangle|angle)\s*[A-Za-z]{1,4})(?:\s*)\1', r'\1', part)
+        part = re.sub(r'\b([A-Z]{1,3}\s*=\s*-?\d+(?:\.\d+)?)(?:\s*)\1\b', r'\1', part)
+        return part
+
+    text = apply_outside_math(text, cleanup_plain)
+
+    def wrap_matches(source: str, pattern: str) -> str:
+        return apply_outside_math(
+            source,
+            lambda part: re.sub(pattern, lambda m: f"${m.group(0).strip()}$", part)
+        )
+
+    text = wrap_matches(
+        text,
+        r'\\(?:triangle|angle)\s*[A-Za-z]{1,4}(?:\s*=\s*-?\d+(?:\.\d+)?\s*\^\\circ)?'
+    )
+    text = wrap_matches(text, r'\b-?\d+(?:\.\d+)?\s*\^\\circ\b')
+    text = wrap_matches(text, r'\b[A-Z]{1,3}\s*=\s*-?\d+(?:\.\d+)?\b')
+
+    return text
+
 def inject_omml_math(paragraph, latex_str: str):
     if not xslt_transformer:
         run = paragraph.add_run()
@@ -128,6 +184,7 @@ def inject_omml_math(paragraph, latex_str: str):
         run.text = f"${latex_str}$"
 
 def populate_paragraph_with_mixed_content(p, text: str, color: str, font_size: int = 14):
+    text = normalize_math_text(text)
     theme_color = hex_to_rgb(color)
     p.line_spacing = 1.5
     parts = re.split(r'(\$\$[\s\S]*?\$\$|\$[\s\S]*?\$)', text)
@@ -494,32 +551,13 @@ Respond ONLY with the JSON array. Do not include markdown wrappers like ```json.
             if not isinstance(options, list):
                 options = []
             
-            # Normalize double-escaped LaTeX: \\frac -> \frac, \\sqrt -> \sqrt, etc.
-            def normalize_latex(s):
-                if not s:
-                    return s
-                # Fix double-escaped LaTeX commands (e.g. \\angle -> \angle)
-                s = re.sub(
-                    r'\\\\(frac|sqrt|triangle|angle|circ|pi|theta|alpha|beta|gamma|delta|sum|prod|int|lim|infty|pm|times|div|cdot|leq|geq|neq|approx|equiv|subset|supset|cap|cup|in|notin|forall|exists|nabla|partial|rightarrow|leftarrow|Rightarrow|Leftarrow|text)\b',
-                    lambda m: '\\' + m.group(1),
-                    s
-                )
-                # Fix missing spaces after LaTeX geometry commands (KaTeX fails without space)
-                # e.g. \triangleABC -> \triangle ABC, \angleA -> \angle A
-                s = re.sub(
-                    r'\\(triangle|angle|circ)([A-Za-z])',
-                    lambda m: '\\' + m.group(1) + ' ' + m.group(2),
-                    s
-                )
-                return s
-            
-            qText = normalize_latex(item.get('qText', ''))
+            qText = normalize_math_text(item.get('qText', ''))
             cleaned_options = []
             for opt in options:
                 if isinstance(opt, dict):
                     cleaned_options.append({
                         "label": opt.get("label", ""),
-                        "text": normalize_latex(opt.get("text", ""))
+                        "text": normalize_math_text(opt.get("text", ""))
                     })
                     
             validated.append({
