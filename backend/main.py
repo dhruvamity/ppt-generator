@@ -7,8 +7,6 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
-from lxml import etree
-import latex2mathml.converter
 from pptx import Presentation
 from pptx.util import Inches, Pt
 from pptx.dml.color import RGBColor
@@ -88,14 +86,7 @@ class GenerateRequest(BaseModel):
 class AIParsingRequest(BaseModel):
     rawText: str
 
-# Load the XSLT transformer once
-XSLT_PATH = os.path.join(os.path.dirname(__file__), 'MML2OMML.XSL')
-try:
-    xslt_doc = etree.parse(XSLT_PATH)
-    xslt_transformer = etree.XSLT(xslt_doc)
-except Exception as e:
-    print(f"Warning: Could not load {XSLT_PATH}: {e}")
-    xslt_transformer = None
+
 
 def hex_to_rgb(hex_str: str) -> RGBColor:
     hex_str = hex_str.lstrip('#')
@@ -157,79 +148,53 @@ def normalize_math_text(text: str) -> str:
 
     return text
 
-def inject_omml_math(paragraph, latex_str: str):
-    if not xslt_transformer:
-        run = paragraph.add_run()
-        run.text = f"${latex_str}$"
-        return
-        
-    try:
-        latex_str = latex_str.replace('\\\\', '\\').strip()
-        mathml = latex2mathml.converter.convert(latex_str)
-        
-        # CRITICAL FIX: Robust regex to inject the namespace into the root <math> tag
-        # latex2mathml outputs <math display="inline">, not bare <math>,
-        # so a simple .replace('<math>', ...) silently fails
-        if 'xmlns=' not in mathml:
-            mathml = re.sub(r'<math([^>]*)>', r'<math\1 xmlns="http://www.w3.org/1998/Math/MathML">', mathml)
-            
-        mathml_doc = etree.fromstring(mathml.encode('utf-8'))
-        omml_doc = xslt_transformer(mathml_doc)
-        omml_root = omml_doc.getroot()
-        
-        paragraph._p.append(omml_root)
-    except Exception as e:
-        print(f"OMML Injection failed for '{latex_str}': {e}")
-        run = paragraph.add_run()
-        run.text = f"${latex_str}$"
-
-def populate_paragraph_with_mixed_content(p, text: str, color: str, font_size: int = 14):
-    text = normalize_math_text(text)
-    theme_color = hex_to_rgb(color)
-    p.line_spacing = 1.5
-    parts = re.split(r'(\$\$[\s\S]*?\$\$|\$[\s\S]*?\$)', text)
+def format_unicode_math(text: str) -> str:
+    if not text:
+        return text
+    # Convert fractions (e.g. 625/36 -> ⁶²⁵/₃₆)
+    sup = str.maketrans("0123456789", "⁰¹²³⁴⁵⁶⁷⁸⁹")
+    sub = str.maketrans("0123456789", "₀₁₂₃₄₅₆₇₈₉")
     
-    for part in parts:
-        if not part:
-            continue
-        if part.startswith('$$') and part.endswith('$$'):
-            inject_omml_math(p, part[2:-2])
-        elif part.startswith('$') and part.endswith('$'):
-            inject_omml_math(p, part[1:-1])
-        else:
-            run = p.add_run()
-            run.text = part
-            run.font.name = 'Arial'
-            run.font.size = Pt(font_size)
-            run.font.color.rgb = theme_color
+    def frac_repl(match):
+        num = match.group(1).translate(sup)
+        den = match.group(2).translate(sub)
+        return f"{num}/{den}"
+        
+    text = re.sub(r'\b(\d+)/(\d+)\b', frac_repl, text)
+    
+    # Convert exponents (e.g. x^2 -> x²)
+    def exp_repl(match):
+        return match.group(1) + match.group(2).translate(sup)
+        
+    text = re.sub(r'([a-zA-Z0-9])\^(\d+)', exp_repl, text)
+    return text
 
 def add_mixed_content(slide, text: str, start_x: float, start_y: float, width: float, color: str, font_size: int = 14) -> float:
-    """Adds a text box, parsing out $...$ or $$...$$ as native OMML math."""
     if not text:
         return start_y
         
+    formatted_text = format_unicode_math(text)
     theme_color = hex_to_rgb(color)
     
-    # Calculate approximate height
-    chars_per_line = int(width / 0.09)
-    lines = 0
-    for line in text.split('\n'):
-        lines += max(1, len(line) // chars_per_line)
-    
-    # 1.5 line spacing multiplier approximate
-    text_height = max(0.2, lines * (font_size * 0.018 * 1.5))
+    # Estimate height (Arial 14pt averages 0.11 inches per char)
+    chars_per_line = width / 0.11
+    lines = sum(max(1, int((len(line) + chars_per_line - 1) // chars_per_line)) for line in formatted_text.split('\n'))
+    text_height = lines * (font_size * 0.025)
     
     txBox = slide.shapes.add_textbox(Inches(start_x), Inches(start_y), Inches(width), Inches(text_height))
     tf = txBox.text_frame
-    tf.margin_top = 0
-    tf.margin_left = 0
-    tf.margin_bottom = 0
-    tf.margin_right = 0
+    tf.margin_top = tf.margin_left = tf.margin_bottom = tf.margin_right = 0
     tf.word_wrap = True
     
-    populate_paragraph_with_mixed_content(tf.paragraphs[0], text, color, font_size)
+    p = tf.paragraphs[0]
+    p.line_spacing = 1.5
+    run = p.add_run()
+    run.text = formatted_text
+    run.font.name = 'Arial'
+    run.font.size = Pt(font_size)
+    run.font.color.rgb = theme_color
 
-    return start_y + text_height + 0.05
+    return start_y + text_height
 
 def add_rect(slide, x, y, w, h, color):
     shape = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, Inches(x), Inches(y), Inches(w), Inches(h))
@@ -473,51 +438,30 @@ def generate_ai(req: AIParsingRequest):
             
         client = genai.Client(api_key=api_key)
         
-        prompt = f"""You are an elite educational data formatter for a presentation generator. Parse the raw text into a valid JSON array of question objects.
+        prompt = f"""You are an elite educational data formatter. Parse the raw text into a valid JSON array of question objects.
 Each object must have exactly these keys: "badge", "tag", "qText", "options".
 
-- "badge": A short capitalized label (e.g. "Q.1", "EXP.13", "CS.1").
-- "tag": A category string based on context headings (e.g. "Practice Question", "Worked Example", "Case Study"). Default to "Practice Question" if ambiguous.
+- "badge": A short capitalized label (e.g. "Q.1").
+- "tag": A category string based on context headings.
 - "qText": The question text as a string.
-- "options": The extracted options as an array of objects, where each object has a "label" (e.g., "a", "b", "1") and "text" (the content). If no options exist, return an empty array [].
+- "options": The extracted options as an array of objects: [{{"label": "A", "text": "value"}}]. If no options exist, return [].
 
-CRITICAL FORMATTING RULES TO PREVENT SLIDE OVERFLOW:
+CRITICAL FORMATTING RULES:
 
-RULE 1 — SPACE ECONOMY (HIGHEST PRIORITY):
-- Presentation slides have limited vertical space. DO NOT use excessive double newlines (\\n\\n).
-- Use single newlines (\\n) to separate sub-parts or bullet points within qText to save space.
+RULE 1 — MANDATORY OPTIONS EXTRACTION:
+- You MUST extract the choices (e.g., a, b, c, d or 1, 2, 3, 4) into the `options` array.
+- Even if the options are on the SAME LINE as the question in the raw text, you MUST split them out into the `options` array and REMOVE them from `qText`. 
 
-RULE 2 — MULTI-PART QUESTIONS:
-If a question has "Part 1" and "Part 2" (or I/II, or Statement I/II), it is ONE question with TWO sub-parts.
-- In "qText": Put both parts separated by a SINGLE newline (\\n).
-- In "options": You MUST extract the final answer options here. Do NOT leave this empty if options (A,B,C,D) exist.
+RULE 2 — UNICODE MATH (NO LATEX):
+- DO NOT use LaTeX (no $ signs, no \\frac, no \\triangle, no \\angle).
+- Use standard readable Unicode symbols. Convert "triangle" to ∆, "angle" to ∠, "degrees" to °.
+- Write exponents naturally using ^ (e.g. x^2).
+- Write fractions naturally using a slash (e.g. 625/36).
+- Example: "In ∆ ABC, ∠ BOC = 130°"
 
-RULE 3 — COMPACT OPTIONS (GRID LAYOUT):
-- ALWAYS extract options into the "options" array. NEVER leave it empty if the text contains choices.
-- ALL options MUST be labeled with lowercase letters: "a", "b", "c", "d". DO NOT use "1", "2", "3", "4" or uppercase letters. Map them if necessary.
-- ONLY use this array structure. Do NOT put options inside "qText".
-
-RULE 4 — MATHEMATICAL NOTATION (CRITICAL):
-- Wrap ALL math expressions in single dollar signs: $...$
-- Use standard LaTeX commands with SINGLE backslashes inside the dollar signs.
-- Fractions: $\\frac{{a}}{{b}}$. Exponents: $x^{{2}}$. Subscripts: $x_{{1}}$. Roots: $\\sqrt{{x}}$.
-- Geometry: $\\triangle ABC$, $\\angle BOC = 130^\\circ$
-- Example: "The area is $\\frac{{625}}{{36}}$ $cm^{{2}}$" NOT "The area is 625/36 cm^2"
-- NEVER output bare caret (^), slash fractions (a/b), or Unicode sub/superscripts as plain text.
-- In the JSON string, backslashes must be escaped as \\\\. So $\\frac{{1}}{{2}}$ in JSON becomes "$\\\\frac{{1}}{{2}}$".
-
-RULE 5 — ASSERTION (A) & REASON (R):
-- Separate the Assertion text and Reason text with a single \\n in qText.
-
-RULE 6 — CLEAN QUESTION TEXT:
-- STRIP out all metadata, filenames, page numbers, or useless headers (e.g., '3. Questions from "35 QA Geometry-3 Q.pdf"'). If it's not a question, option, or valid context, remove it entirely.
-- Do NOT include the original question number or label (like "Exp. 13:", "Case 1:", "Q.1") inside `qText`. Strip it completely. The `qText` should start directly with the actual question content.
-- IGNORE the original question numbers in the source text. Assign the 'badge' sequentially starting from Q.1, Q.2, Q.3 based on their order in the text.
-
-RULE 7 — JSON SAFETY:
-- Escape all newlines as \\n in JSON string values.
-- Escape double quotes with backslash.
-- Do NOT use actual unescaped line breaks inside JSON string values.
+RULE 3 — CLEAN QUESTION TEXT:
+- Strip original question numbers (like "Q.3:", "Case 1:").
+- Assign the 'badge' sequentially (Q.1, Q.2) based on their order in the text.
 
 Raw text to format:
 {req.rawText}

@@ -1,8 +1,6 @@
 fastapi
 uvicorn
 python-pptx
-latex2mathml
-lxml
 pydantic
 python-multipart
 google-genai
