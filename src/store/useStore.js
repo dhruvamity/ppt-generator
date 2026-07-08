@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { generateSlideData } from '../services/gemini';
 
 const LATEX_COMMANDS = 'frac|sqrt|triangle|angle|circ|pi|theta|alpha|beta|gamma|delta|sum|prod|int|lim|infty|pm|times|div|cdot|leq|geq|neq|approx|equiv|subset|supset|cap|cup|in|notin|forall|exists|nabla|partial|rightarrow|leftarrow|Rightarrow|Leftarrow|text';
 
@@ -186,6 +187,24 @@ export const useStore = create(
 
             isParsing: false,
             setIsParsing: (parsing) => set({ isParsing: parsing }),
+
+            generateFromAI: async () => {
+                const { rawText } = get();
+                set({ isParsing: true });
+                try {
+                    const data = await generateSlideData(rawText);
+                    // Re-index badges just to be safe
+                    const indexedData = data.map((slide, i) => ({
+                        ...slide,
+                        badge: `Q.${i + 1}`
+                    }));
+                    set({ aiQuestions: indexedData, activeSlides: indexedData, isParsing: false });
+                } catch (error) {
+                    console.error("AI Generation failed:", error);
+                    set({ isParsing: false });
+                    alert("Failed to generate slides. Check console.");
+                }
+            },
 
             activeSlides: [],
             setActiveSlides: (slides) => set({ activeSlides: slides }),

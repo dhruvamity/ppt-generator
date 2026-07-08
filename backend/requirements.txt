@@ -1,7 +1,0 @@
-fastapi
-uvicorn
-python-pptx
-pydantic
-python-multipart
-google-genai
-python-dotenv

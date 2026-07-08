@@ -22,63 +22,7 @@ export default function RawTextInput() {
 
     const handleAutoFormat = async () => {
         if (!rawText.trim()) return;
-        setIsParsing(true);
-        const loadingToast = toast.loading('Sending to AI Formatter...');
-        
-        const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
-        try {
-            const response = await fetch(`${backendUrl}/api/generate`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ rawText })
-            });
-
-            if (!response.ok) {
-                let errorMessage = `Server error: ${response.status}`;
-                try {
-                    const errorData = await response.json();
-                    errorMessage = errorData.error || errorData.detail || errorMessage;
-                } catch (e) {
-                    // Fallback if the server didn't return JSON (e.g. 500 Internal Server Error plain text)
-                    const errorText = await response.text();
-                    if (errorText) errorMessage += ` - ${errorText.substring(0, 50)}`;
-                }
-                throw new Error(errorMessage);
-            }
-
-            const data = await response.json();
-            
-            // Safety net: run AI output through convertFractions to catch any plain-text math
-            const sanitized = data.map(q => ({
-                ...q,
-                qText: convertFractions(q.qText),
-                options: (q.options || []).map(o => ({ ...o, text: convertFractions(o.text) }))
-            }));
-            
-            // Reconstruct a clean text string from the AI's structured JSON
-            const cleanText = sanitized.map((q, i) => {
-                let str = `Q.${i + 1}: ${q.qText}`;
-                if (q.options && q.options.length > 0) {
-                    str += '\n' + q.options.map(o => `(${o.label}) ${o.text}`).join('\n');
-                }
-                return str;
-            }).join('\n\n');
-            
-            // Set AI data FIRST so the useEffect guard is active before rawText changes
-            setAiQuestions(sanitized);
-            setRawText(cleanText);
-            toast.success('Successfully formatted and synced!', { id: loadingToast });
-        } catch (err) {
-            console.error("AI Formatting Error:", err);
-            // If it's a "Load failed" or "Failed to fetch", append the URL so the user knows what it tried to hit
-            if (err.message.includes('Failed to fetch') || err.message.includes('Load failed')) {
-                toast.error(`Network Error (Load failed). Is the backend running at ${backendUrl}?`, { id: loadingToast, duration: 6000 });
-            } else {
-                toast.error(err.message, { id: loadingToast, duration: 5000 });
-            }
-        } finally {
-            setIsParsing(false);
-        }
+        useStore.getState().generateFromAI();
     };
 
     const handleTextChange = (e) => {

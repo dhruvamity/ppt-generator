@@ -6,6 +6,8 @@ import RawTextInput from '../components/Generator/RawTextInput';
 import SlidePreview from '../components/Generator/SlidePreview';
 import { useStore, parseLocalText } from '../store/useStore';
 import toast from 'react-hot-toast';
+import { exportToRevealJS } from '../utils/exportRevealJS';
+import { THEMES } from '../utils/themeConfig';
 
 export default function Generator() {
     const config = useStore(state => state.config);
@@ -17,45 +19,14 @@ export default function Generator() {
     const addRecentDeck = useStore(state => state.addRecentDeck);
 
     const handleExport = async () => {
-        // Read directly from store at call-time for guaranteed freshness
         const state = useStore.getState();
-        const { config: currentConfig, activeSlides: currentSlides, themeId: currentTheme, layoutId: currentLayout, rawText: currentRawText, aiQuestions: currentAiQuestions } = state;
+        const { config: currentConfig, activeSlides: currentSlides, themeId: currentTheme, layoutId: currentLayout, rawText: currentRawText, aiQuestions: currentAiQuestions, savedThemes } = state;
         
         if (!currentSlides || currentSlides.length === 0) return;
         
         try {
-            const loadingToast = toast.loading('Generating PPTX File...');
-            
-            const payload = {
-                config: currentConfig,
-                activeSlides: currentSlides,
-                themeId: currentTheme,
-                layoutId: currentLayout
-            };
-
-            const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
-            
-            const response = await fetch(`${backendUrl}/api/generate-pptx`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(payload)
-            });
-
-            if (!response.ok) {
-                throw new Error(`Server returned ${response.status}: ${await response.text()}`);
-            }
-
-            const blob = await response.blob();
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `${currentConfig.mainTitle1}_${currentConfig.mainTitle2}_Presentation.pptx`.replace(/\s+/g, '_');
-            document.body.appendChild(a);
-            a.click();
-            window.URL.revokeObjectURL(url);
-            document.body.removeChild(a);
+            const themeData = THEMES[currentTheme] || savedThemes.find(t => t.id === currentTheme) || THEMES['dark-neon'];
+            exportToRevealJS(currentConfig, currentSlides, themeData);
             
             // Save to recent decks
             const newDeck = {
@@ -71,9 +42,9 @@ export default function Generator() {
             };
             state.addRecentDeck(newDeck);
             
-            toast.success('PPTX Downloaded successfully!', { id: loadingToast });
+            toast.success('HTML Presentation Downloaded successfully!');
         } catch (error) {
-            console.error("PPTX Generation Error:", error);
+            console.error("Export Error:", error);
             toast.error(`Export failed: ${error.message}`);
         }
     };
@@ -91,7 +62,7 @@ export default function Generator() {
                         className="w-full flex items-center justify-center gap-2 bg-primary text-on-primary hover:bg-primary/90 disabled:bg-surface-variant disabled:text-outline disabled:cursor-not-allowed px-4 py-3 rounded-xl font-label-md text-sm transition-all shadow-md shadow-primary/20 mt-2"
                     >
                         <Download size={18} />
-                        Export to PowerPoint
+                        Download HTML Presentation
                     </button>
                 </div>
             </aside>
