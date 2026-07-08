@@ -2,7 +2,7 @@ import React from 'react';
 import { Search, Grid, Plus } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useStore } from '../store/useStore';
-import { THEMES } from '../utils/pptxEngine';
+import { THEMES } from '../utils/themeConfig';
 import LiveSlidePreview from '../components/Generator/LiveSlidePreview';
 
 const LAYOUT_IDS = ['modern-sidebar', 'classic-header', 'split-focus'];

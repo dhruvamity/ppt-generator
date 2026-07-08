@@ -68,7 +68,6 @@ export default function LiveSlidePreview({ theme, type = 'title', config, questi
         const cols = totalChars < 50 ? 4 : 2;
 
         return (
-        return (
             <div style={{ 
                 marginTop: '2em', 
                 width: '100%', 

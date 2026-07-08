@@ -1,7 +1,7 @@
 import React from 'react';
 import { useStore } from '../../store/useStore';
 import { Palette, CheckCircle, LayoutTemplate, Columns, PanelTop, PanelLeft } from 'lucide-react';
-import { THEMES } from '../../utils/pptxEngine';
+import { THEMES } from "../../utils/themeConfig";
 
 const LAYOUTS = [
     { id: 'modern-sidebar', name: 'Sidebar', icon: PanelLeft, desc: 'Colored bars & floating circles' },

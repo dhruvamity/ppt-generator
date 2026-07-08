@@ -2,7 +2,7 @@ import React from 'react';
 import { useStore } from '../../store/useStore';
 import { Layers, Trash2, GripVertical } from 'lucide-react';
 import LiveSlidePreview from './LiveSlidePreview';
-import { THEMES } from '../../utils/pptxEngine';
+import { THEMES } from '../../utils/themeConfig';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 
 export default function SlidePreview() {
