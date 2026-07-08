@@ -39,6 +39,16 @@ export default function LiveSlidePreview({ theme, type = 'title', config, questi
 
     const renderOptionsGrid = (options, color) => {
         if (!options || options.length === 0) return null;
+        
+        // Handle legacy cached string format
+        if (!Array.isArray(options)) {
+            return (
+                <div style={{ marginTop: '1.5em', color: `#${color}`, fontSize: fs(14), whiteSpace: 'pre-wrap' }}>
+                    {renderTextWithMath(options)}
+                </div>
+            );
+        }
+
         return (
             <div style={{ 
                 marginTop: '1.5em', 

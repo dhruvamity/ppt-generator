@@ -160,6 +160,13 @@ export const generatePPTX = async (config, finalQuestions, themeId, layoutId = '
     const renderOptionsGrid = async (slide, q, optionsColor, qEndY, startX, contentWidth) => {
         if (q.options && q.options.length > 0) {
             let optionsY = qEndY + (14 * 0.018 * 1.5);
+            
+            // Handle legacy cached string format
+            if (!Array.isArray(q.options)) {
+                await addMixedContent(slide, q.options, startX, optionsY, contentWidth, optionsColor, 14);
+                return;
+            }
+
             let colWidth = contentWidth / 4;
             for (let i = 0; i < q.options.length; i++) {
                 let opt = q.options[i];
