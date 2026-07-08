@@ -12,7 +12,8 @@ export default function RawTextInput() {
         const loadingToast = toast.loading('Sending to AI Formatter...');
         
         try {
-            const response = await fetch('/api/generate', {
+            const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
+            const response = await fetch(`${backendUrl}/api/generate`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ rawText })

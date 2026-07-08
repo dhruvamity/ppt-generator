@@ -6,6 +6,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
+import json
 from lxml import etree
 import latex2mathml.converter
 from pptx import Presentation
@@ -13,6 +14,7 @@ from pptx.util import Inches, Pt
 from pptx.dml.color import RGBColor
 from pptx.enum.shapes import MSO_SHAPE
 from pptx.enum.text import PP_ALIGN
+from google import genai
 
 app = FastAPI(title="SlideGen Pro Backend")
 
@@ -79,6 +81,9 @@ class GenerateRequest(BaseModel):
     activeSlides: List[SlideData]
     themeId: str
     layoutId: str
+
+class AIParsingRequest(BaseModel):
+    rawText: str
 
 # Load the XSLT transformer once
 XSLT_PATH = os.path.join(os.path.dirname(__file__), 'MML2OMML.XSL')
@@ -370,6 +375,97 @@ def generate_pptx(req: GenerateRequest):
         media_type="application/vnd.openxmlformats-officedocument.presentationml.presentation",
         headers={"Content-Disposition": f"attachment; filename={filename}"}
     )
+
+@app.post("/api/generate")
+def generate_ai(req: AIParsingRequest):
+    if not req.rawText or not req.rawText.strip():
+        raise HTTPException(status_code=400, detail="No text provided.")
+        
+    api_key = os.getenv("VITE_GEMINI_API_KEY")
+    if not api_key:
+        raise HTTPException(status_code=500, detail="API Key missing! You need to add VITE_GEMINI_API_KEY to your Environment Variables.")
+        
+    client = genai.Client(api_key=api_key)
+    
+    prompt = f"""You are an elite educational data formatter for a presentation generator. Parse the raw text into a valid JSON array of question objects.
+Each object must have exactly these keys: "badge", "tag", "qText", "options".
+
+- "badge": A short capitalized label (e.g. "Q.1", "EXP.13", "CS.1").
+- "tag": A category string based on context headings (e.g. "Practice Question", "Worked Example", "Case Study"). Default to "Practice Question" if ambiguous.
+- "qText": The question text as a string.
+- "options": The extracted options as an array of objects, where each object has a "label" (e.g., "a", "b", "1") and "text" (the content). If no options exist, return an empty array [].
+
+CRITICAL FORMATTING RULES TO PREVENT SLIDE OVERFLOW:
+
+RULE 1 — SPACE ECONOMY (HIGHEST PRIORITY):
+- Presentation slides have limited vertical space. DO NOT use excessive double newlines (\\n\\n).
+- Use single newlines (\\n) to separate sub-parts or bullet points within qText to save space.
+
+RULE 2 — MULTI-PART QUESTIONS:
+If a question has "Part 1" and "Part 2" (or I/II, or Statement I/II), it is ONE question with TWO sub-parts.
+- In "qText": Put both parts separated by a SINGLE newline (\\n).
+- In "options": You MUST detect when there are TWO separate sets of (a)(b)(c)(d).
+  If it has two separate sets, combine them logically or leave "options" empty and put them in "qText".
+
+RULE 3 — COMPACT OPTIONS (GRID LAYOUT):
+- Always extract options into the "options" array.
+- E.g., if text has (A) 12 (B) 14, options should be [{{"label": "A", "text": "12"}}, {{"label": "B", "text": "14"}}]
+- ONLY use this array structure. Do NOT return a string for options.
+
+RULE 4 — MATHEMATICAL NOTATION:
+- Preserve subscripts and superscripts as plain text: N₁ → "N1", 6⁶ → "6^6", x² → "x^2".
+- Use ^ for exponents and simple notation for subscripts.
+
+RULE 5 — ASSERTION (A) & REASON (R):
+- Separate the Assertion text and Reason text with a single \\n in qText.
+
+RULE 6 — JSON SAFETY:
+- Escape all newlines as \\n in JSON string values.
+- Escape double quotes with backslash.
+- Do NOT use actual unescaped line breaks inside JSON string values.
+
+Raw text to format:
+{req.rawText}
+
+Respond ONLY with the JSON array. Do not include markdown wrappers like ```json."""
+
+    try:
+        response = client.models.generate_content(
+            model='gemini-2.5-flash',
+            contents=prompt
+        )
+        
+        text = response.text
+        text = re.sub(r'```json\s*', '', text, flags=re.IGNORECASE)
+        text = re.sub(r'```\s*', '', text).strip()
+        
+        array_start = text.find('[')
+        array_end = text.rfind(']')
+        if array_start == -1 or array_end == -1:
+            raise HTTPException(status_code=500, detail="AI did not return a valid JSON array.")
+            
+        json_string = text[array_start:array_end + 1]
+        data = json.loads(json_string)
+        
+        if not isinstance(data, list) or len(data) == 0:
+            raise HTTPException(status_code=500, detail="AI returned an empty or invalid array.")
+            
+        validated = []
+        for i, item in enumerate(data):
+            options = item.get('options', [])
+            if not isinstance(options, list):
+                options = []
+            validated.append({
+                "badge": item.get('badge', f"Q.{i + 1}"),
+                "tag": item.get('tag', 'Practice Question'),
+                "qText": item.get('qText', ''),
+                "options": options
+            })
+            
+        return validated
+    except Exception as e:
+        print(f"AI Formatting Error: {e}")
+        raise HTTPException(status_code=500, detail=str(e) or "Failed to process text.")
 
 if __name__ == "__main__":
     import uvicorn
