@@ -136,14 +136,23 @@ export const useStore = create(
 
             activeSlides: [],
             setActiveSlides: (slides) => set({ activeSlides: slides }),
-            removeSlide: (index) => set((state) => ({ 
-                activeSlides: state.activeSlides.filter((_, i) => i !== index) 
-            })),
+            removeSlide: (index) => set((state) => {
+                const filtered = state.activeSlides.filter((_, i) => i !== index);
+                const renumbered = filtered.map((slide, i) => ({
+                    ...slide,
+                    badge: `Q.${i + 1}`
+                }));
+                return { activeSlides: renumbered };
+            }),
             reorderSlides: (startIndex, endIndex) => set((state) => {
                 const result = Array.from(state.activeSlides);
                 const [removed] = result.splice(startIndex, 1);
                 result.splice(endIndex, 0, removed);
-                return { activeSlides: result };
+                const renumbered = result.map((slide, i) => ({
+                    ...slide,
+                    badge: `Q.${i + 1}`
+                }));
+                return { activeSlides: renumbered };
             }),
 
             // Themes

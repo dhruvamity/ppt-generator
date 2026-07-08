@@ -279,9 +279,13 @@ def render_options_grid(slide, q: SlideData, options_color: str, q_end_y: float,
     total_chars = sum(len(opt.text) for opt in q.options)
     
     if total_chars < 60 and len(q.options) == 4:
-        # Single line format with large spacing between options
-        combined_text = "          ".join(f"({opt.label}) {opt.text}" for opt in q.options)
-        add_mixed_content(slide, combined_text, start_x, options_y, content_width, options_color, 14)
+        # 4 columns grid format to take exactly 100% width
+        cols = 4
+        col_width = content_width / cols
+        for i, opt in enumerate(q.options):
+            opt_x = start_x + (i % cols) * col_width
+            opt_y = options_y
+            add_mixed_content(slide, f"({opt.label}) {opt.text}", opt_x, opt_y, col_width - 0.1, options_color, 14)
     else:
         # 2 columns grid format
         cols = 2
@@ -427,7 +431,10 @@ RULE 4 — MATHEMATICAL NOTATION:
 RULE 5 — ASSERTION (A) & REASON (R):
 - Separate the Assertion text and Reason text with a single \\n in qText.
 
-RULE 6 — JSON SAFETY:
+RULE 6 — CLEAN QUESTION TEXT:
+- Do NOT include the original question number or label (like "Exp. 13:", "Case 1:", "Q.1") inside `qText`. Strip it completely. The `qText` should start directly with the actual question content.
+
+RULE 7 — JSON SAFETY:
 - Escape all newlines as \\n in JSON string values.
 - Escape double quotes with backslash.
 - Do NOT use actual unescaped line breaks inside JSON string values.
