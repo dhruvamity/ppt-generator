@@ -19,6 +19,9 @@ export const convertFractions = (text) => {
             const e = exp.replace(/^[({]|[)}]$/g, '');
             return `$${base}^{${e}}$`;
         });
+        // Fix missing spaces after LaTeX geometry commands (KaTeX fails without space)
+        // e.g. \triangleABC -> \triangle ABC, \angleA -> \angle A
+        processed = processed.replace(/\\(triangle|angle|circ)([A-Za-z])/g, '\\$1 $2');
         return processed;
     }).join('');
 };
