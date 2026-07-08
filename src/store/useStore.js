@@ -193,16 +193,25 @@ export const useStore = create(
                 set({ isParsing: true });
                 try {
                     const data = await generateSlideData(rawText);
-                    // Re-index badges just to be safe
+                    
                     const indexedData = data.map((slide, i) => ({
                         ...slide,
                         badge: `Q.${i + 1}`
                     }));
-                    set({ aiQuestions: indexedData, activeSlides: indexedData, isParsing: false });
+                    
+                    const cleanText = indexedData.map((q, i) => {
+                        let str = `${q.badge}: ${q.qText}`;
+                        if (q.options && q.options.length > 0) {
+                            str += '\n' + q.options.map(o => `(${o.label}) ${o.text}`).join('\n');
+                        }
+                        return str;
+                    }).join('\n\n');
+                    
+                    set({ aiQuestions: indexedData, activeSlides: indexedData, rawText: cleanText, isParsing: false });
                 } catch (error) {
                     console.error("AI Generation failed:", error);
                     set({ isParsing: false });
-                    alert("Failed to generate slides. Check console.");
+                    alert(`Failed to generate slides: ${error.message}`);
                 }
             },
 
