@@ -3,10 +3,18 @@ import { persist } from 'zustand/middleware';
 
 const convertFractions = (text) => {
     if (!text) return text;
+    // OCR cleanups
+    text = text.replace(/I(\d+)/g, '√$1');
+    text = text.replace(/([a-zA-Z0-9])\/√(\d+)/g, '$\\frac{$1}{\\sqrt{$2}}$');
+    
     let parts = text.split(/(\$\$[\s\S]*?\$\$|\$[\s\S]*?\$)/);
     return parts.map(part => {
         if (part.startsWith('$')) return part;
-        return part.replace(/\b(\d+)\/(\d+)\b/g, '$\\frac{$1}{$2}$');
+        // Fix fractions
+        let processed = part.replace(/\b(\d+)\/(\d+)\b/g, '$\\frac{$1}{$2}$');
+        // Fix stray square roots if they are standalone
+        processed = processed.replace(/√(\d+)/g, '$\\sqrt{$1}$');
+        return processed;
     }).join('');
 };
 

@@ -5,7 +5,6 @@ import SlideConfigPanel from '../components/Generator/SlideConfigPanel';
 import RawTextInput from '../components/Generator/RawTextInput';
 import SlidePreview from '../components/Generator/SlidePreview';
 import { useStore, parseLocalText } from '../store/useStore';
-import { generatePPTX } from '../utils/pptxEngine';
 import toast from 'react-hot-toast';
 
 export default function Generator() {
@@ -26,7 +25,37 @@ export default function Generator() {
         
         try {
             const loadingToast = toast.loading('Generating PPTX File...');
-            await generatePPTX(currentConfig, currentSlides, currentTheme, currentLayout);
+            
+            const payload = {
+                config: currentConfig,
+                activeSlides: currentSlides,
+                themeId: currentTheme,
+                layoutId: currentLayout
+            };
+
+            const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
+            
+            const response = await fetch(`${backendUrl}/api/generate-pptx`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+                throw new Error(`Server returned ${response.status}: ${await response.text()}`);
+            }
+
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${currentConfig.mainTitle1}_${currentConfig.mainTitle2}_Presentation.pptx`.replace(/\s+/g, '_');
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
             
             // Save to recent decks
             const newDeck = {
