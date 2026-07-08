@@ -92,61 +92,7 @@ def hex_to_rgb(hex_str: str) -> RGBColor:
     hex_str = hex_str.lstrip('#')
     return RGBColor(int(hex_str[0:2], 16), int(hex_str[2:4], 16), int(hex_str[4:6], 16))
 
-LATEX_COMMANDS = (
-    r"frac|sqrt|triangle|angle|circ|pi|theta|alpha|beta|gamma|delta|sum|prod|int|"
-    r"lim|infty|pm|times|div|cdot|leq|geq|neq|approx|equiv|subset|supset|cap|"
-    r"cup|in|notin|forall|exists|nabla|partial|rightarrow|leftarrow|Rightarrow|"
-    r"Leftarrow|text"
-)
 
-def apply_outside_math(text: str, callback):
-    parts = re.split(r'(\$\$[\s\S]*?\$\$|\$[\s\S]*?\$)', text)
-    cleaned = []
-    for part in parts:
-        if part.startswith('$'):
-            cleaned.append(part)
-        else:
-            cleaned.append(callback(part))
-    return ''.join(cleaned)
-
-def normalize_math_text(text: str) -> str:
-    """Normalize common OCR/AI math leaks before previewing or exporting."""
-    if not text:
-        return text
-
-    text = re.sub(r'I(\d+)', r'√\1', text)
-
-    def cleanup_plain(part: str) -> str:
-        part = re.sub(
-            rf'\\\\({LATEX_COMMANDS})\b',
-            lambda m: '\\' + m.group(1),
-            part
-        )
-        part = re.sub(
-            r'\\(triangle|angle|circ)([A-Za-z])',
-            lambda m: '\\' + m.group(1) + ' ' + m.group(2),
-            part
-        )
-        part = re.sub(r'(\\(?:triangle|angle)\s*[A-Za-z]{1,4})(?:\s*)\1', r'\1', part)
-        part = re.sub(r'\b([A-Z]{1,3}\s*=\s*-?\d+(?:\.\d+)?)(?:\s*)\1\b', r'\1', part)
-        return part
-
-    text = apply_outside_math(text, cleanup_plain)
-
-    def wrap_matches(source: str, pattern: str) -> str:
-        return apply_outside_math(
-            source,
-            lambda part: re.sub(pattern, lambda m: f"${m.group(0).strip()}$", part)
-        )
-
-    text = wrap_matches(
-        text,
-        r'\\(?:triangle|angle)\s*[A-Za-z]{1,4}(?:\s*=\s*-?\d+(?:\.\d+)?\s*\^\\circ)?'
-    )
-    text = wrap_matches(text, r'\b-?\d+(?:\.\d+)?\s*\^\\circ\b')
-    text = wrap_matches(text, r'\b[A-Z]{1,3}\s*=\s*-?\d+(?:\.\d+)?\b')
-
-    return text
 
 def format_unicode_math(text: str) -> str:
     if not text:
@@ -485,12 +431,13 @@ RULE 1 — MANDATORY OPTIONS EXTRACTION:
 - You MUST extract the choices (e.g., a, b, c, d or 1, 2, 3, 4) into the `options` array.
 - Even if the options are on the SAME LINE as the question in the raw text, you MUST split them out into the `options` array and REMOVE them from `qText`. 
 
-RULE 2 — UNICODE MATH (NO LATEX):
-- DO NOT use LaTeX (no $ signs, no \\frac, no \\triangle, no \\angle).
-- Use standard readable Unicode symbols. Convert "triangle" to ∆, "angle" to ∠, "degrees" to °.
-- Write exponents naturally using ^ (e.g. x^2).
-- Write fractions naturally using a slash (e.g. 625/36).
-- Example: "In ∆ ABC, ∠ BOC = 130°"
+RULE 2 — MATHEMATICAL NOTATION:
+- Standardize all fractions as \\frac{{a}}{{b}} (e.g. \\frac{{625}}{{36}}). 
+- Standardize all square roots as \\sqrt{{a}} (e.g. \\sqrt{{3}} or \\sqrt{{34}}).
+- Standardize all exponents with carets: x^{{2}} or x^2.
+- Output symbols naturally or as LaTeX: \\angle or ∠, \\triangle or ∆, \\circ or °.
+- Do NOT output XML, MathML, or OMML. Only use inline pseudo-LaTeX.
+- Fix any broken OCR text. For example, if the raw text says "50\\frac{{0}}{{\\sqrt{{3}}}}", correct it to "\\frac{{500}}{{\\sqrt{{3}}}}".
 
 RULE 3 — CLEAN QUESTION TEXT:
 - Strip original question numbers (like "Q.3:", "Case 1:").
@@ -527,13 +474,13 @@ Respond ONLY with the JSON array. Do not include markdown wrappers like ```json.
             if not isinstance(options, list):
                 options = []
             
-            qText = normalize_math_text(item.get('qText', ''))
+            qText = item.get('qText', '')
             cleaned_options = []
             for opt in options:
                 if isinstance(opt, dict):
                     cleaned_options.append({
                         "label": opt.get("label", ""),
-                        "text": normalize_math_text(opt.get("text", ""))
+                        "text": opt.get("text", "")
                     })
                     
             validated.append({
