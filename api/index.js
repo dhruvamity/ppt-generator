@@ -35,7 +35,7 @@ Each object must have exactly these keys: "badge", "tag", "qText", "options".
 - "badge": A short capitalized label (e.g. "Q.1", "EXP.13", "CS.1").
 - "tag": A category string based on context headings (e.g. "Practice Question", "Worked Example", "Case Study"). Default to "Practice Question" if ambiguous.
 - "qText": The question text as a string.
-- "options": The extracted options as a string. If no options exist, return an empty string "".
+- "options": The extracted options as an array of objects, where each object has a "label" (e.g., "a", "b", "1") and "text" (the content). If no options exist, return an empty array [].
 
 CRITICAL FORMATTING RULES TO PREVENT SLIDE OVERFLOW:
 
@@ -46,17 +46,13 @@ RULE 1 — SPACE ECONOMY (HIGHEST PRIORITY):
 RULE 2 — MULTI-PART QUESTIONS:
 If a question has "Part 1" and "Part 2" (or I/II, or Statement I/II), it is ONE question with TWO sub-parts.
 - In "qText": Put both parts separated by a SINGLE newline (\\n).
-- In "options": You MUST detect when there are TWO separate sets of (a)(b)(c)(d). NEVER merge them.
-  Format compactly:
-  "Part 1: (a) 36  (b) 42  (c) 56  (d) 60\\nPart 2: (a) 480  (b) 360  (c) 840  (d) 420"
+- In "options": You MUST detect when there are TWO separate sets of (a)(b)(c)(d).
+  If it has two separate sets, combine them logically or leave "options" empty and put them in "qText".
 
 RULE 3 — COMPACT OPTIONS (GRID LAYOUT):
-- ALWAYS spread options parallelly to save vertical space.
-- If there are 4 or 5 options of short-to-medium length, format them in a compact grid using spaces and a single \\n:
-  "(1) Option A      (2) Option B      (3) Option C\\n(4) Option D      (5) Option E"
-  OR
-  "(a) Option 1      (b) Option 2\\n(c) Option 3      (d) Option 4"
-- ONLY use one-option-per-line if the options are extremely long full sentences.
+- Always extract options into the "options" array.
+- E.g., if text has (A) 12 (B) 14, options should be [{"label": "A", "text": "12"}, {"label": "B", "text": "14"}]
+- ONLY use this array structure. Do NOT return a string for options.
 
 RULE 4 — MATHEMATICAL NOTATION:
 - Preserve subscripts and superscripts as plain text: N₁ → "N1", 6⁶ → "6^6", x² → "x^2".
@@ -104,7 +100,7 @@ Respond ONLY with the JSON array. Do not include markdown wrappers like \`\`\`js
             badge: item.badge || `Q.${i + 1}`,
             tag: item.tag || 'Practice Question',
             qText: item.qText || '',
-            options: item.options || ''
+            options: Array.isArray(item.options) ? item.options : []
         }));
         
         res.json(validated);
