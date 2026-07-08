@@ -124,7 +124,7 @@ export const generatePPTX = async (config, finalQuestions, themeId, layoutId = '
         slide.addText([
             { text: config.mainTitle1 + ' ', options: { color: theme.cyan } },
             { text: config.mainTitle2, options: { color: theme.gold } }
-        ], { x: 1.2, y: 1.5, w: 8, h: 1.5, fontSize: 60, bold: true, fontFace: 'Arial' });
+        ], { x: 1.2, y: 1.5, w: 8, h: 1.5, fontSize: 54, bold: true, fontFace: 'Arial' });
 
         slide.addShape(pres.ShapeType.rect, { x: 1.2, y: 3.0, w: 6.5, h: 0.04, fill: { color: theme.gold } });
         slide.addShape(pres.ShapeType.roundRect, { x: 1.2, y: 3.4, w: 2.8, h: 0.5, fill: { color: theme.cyan }, rectRadius: 0.3 });
@@ -142,7 +142,7 @@ export const generatePPTX = async (config, finalQuestions, themeId, layoutId = '
         slide.addText([
             { text: config.mainTitle1 + ' ', options: { color: theme.textBlack } },
             { text: config.mainTitle2, options: { color: theme.cyan } }
-        ], { x: 0.5, y: 0.3, w: 9, h: 1.2, fontSize: 50, bold: true, fontFace: 'Arial', align: 'center' });
+        ], { x: 0.5, y: 0.3, w: 9, h: 1.2, fontSize: 45, bold: true, fontFace: 'Arial', align: 'center' });
 
         slide.addShape(pres.ShapeType.roundRect, { x: 2, y: 2.8, w: 2.8, h: 0.5, fill: { color: theme.cyan }, rectRadius: 0.2 });
         slide.addText(config.pill1, { x: 2, y: 2.8, w: 2.8, h: 0.5, fontSize: 16, bold: true, color: theme.textBlack, align: 'center', margin: [0,0,0,0], valign: 'middle' });
@@ -167,14 +167,13 @@ export const generatePPTX = async (config, finalQuestions, themeId, layoutId = '
         slide.addText([
             { text: config.mainTitle1 + '\n', options: { color: theme.textWhite } },
             { text: config.mainTitle2, options: { color: theme.cyan } }
-        ], { x: 5, y: 1.5, w: 4.5, h: 2, fontSize: 54, bold: true, fontFace: 'Arial' });
+        ], { x: 5, y: 1.5, w: 4.5, h: 2, fontSize: 49, bold: true, fontFace: 'Arial' });
 
         slide.addText(config.footer, { x: 5, y: 4.5, w: 4.5, h: 0.5, fontSize: 14, color: theme.textWhite, letterSpacing: 2 });
     };
 
-    const renderOptionsGrid = async (slide, q, optionsColor, qEndY, startX, contentWidth) => {
         if (q.options && q.options.length > 0) {
-            let optionsY = qEndY + (14 * 0.018 * 1.5);
+            let optionsY = qEndY + (14 * 0.018 * 2.0); // Increase options vertical gap
             
             if (!Array.isArray(q.options)) {
                 await addMixedContent(slide, q.options, startX, optionsY, contentWidth, optionsColor, 14);
@@ -207,7 +206,7 @@ export const generatePPTX = async (config, finalQuestions, themeId, layoutId = '
         slide.addShape(pres.ShapeType.roundRect, { x: 7.5, y: 5.1, w: 2.0, h: 0.25, fill: { color: theme.bgCard }, line: { color: theme.purple, width: 1 }, rectRadius: 0.1 });
         slide.addText(q.tag.toUpperCase(), { x: 7.5, y: 5.1, w: 2.0, h: 0.25, fontSize: 10, color: theme.purple, align: 'center', margin: [0,0,0,0], valign: 'middle', fontFace: 'Arial', bold: true });
 
-        let startX = 0.8, startY = 0.1, contentWidth = 9.2;
+        let startX = 0.15, startY = 0.5, contentWidth = 9.7;
         let qEndY = await addMixedContent(slide, q.qText, startX, startY, contentWidth, theme.textWhite, 14);
         await renderOptionsGrid(slide, q, theme.cyan, qEndY, startX, contentWidth);
     };
@@ -224,7 +223,7 @@ export const generatePPTX = async (config, finalQuestions, themeId, layoutId = '
         slide.addShape(pres.ShapeType.roundRect, { x: 7.5, y: 5.1, w: 2.0, h: 0.25, fill: { color: theme.bgColor }, line: { color: theme.purple, width: 1 }, rectRadius: 0.1 });
         slide.addText(q.tag.toUpperCase(), { x: 7.5, y: 5.1, w: 2.0, h: 0.25, fontSize: 10, color: theme.purple, align: 'center', margin: [0,0,0,0], valign: 'middle', bold: true, fontFace: 'Arial' });
 
-        let startX = 0.8, startY = 0.1, contentWidth = 9.2;
+        let startX = 0.15, startY = 0.5, contentWidth = 9.7;
         let qEndY = await addMixedContent(slide, q.qText, startX, startY, contentWidth, theme.textWhite, 14);
         await renderOptionsGrid(slide, q, theme.cyan, qEndY, startX, contentWidth);
     };
@@ -240,7 +239,7 @@ export const generatePPTX = async (config, finalQuestions, themeId, layoutId = '
         slide.addShape(pres.ShapeType.roundRect, { x: 7.5, y: 5.1, w: 2.0, h: 0.25, fill: { color: theme.bgColor }, line: { color: theme.purple, width: 1 }, rectRadius: 0.1 });
         slide.addText(q.tag.toUpperCase(), { x: 7.5, y: 5.1, w: 2.0, h: 0.25, fontSize: 10, color: theme.purple, align: 'center', margin: [0,0,0,0], valign: 'middle', bold: true, fontFace: 'Arial' });
 
-        let startX = 0.8, startY = 0.1, contentWidth = 9.2;
+        let startX = 0.15, startY = 0.5, contentWidth = 9.7;
         let qEndY = await addMixedContent(slide, q.qText, startX, startY, contentWidth, theme.textWhite, 14);
         await renderOptionsGrid(slide, q, theme.gold, qEndY, startX, contentWidth);
     };

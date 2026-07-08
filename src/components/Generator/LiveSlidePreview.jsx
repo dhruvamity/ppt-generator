@@ -68,19 +68,20 @@ export default function LiveSlidePreview({ theme, type = 'title', config, questi
         const cols = totalChars < 50 ? 4 : 2;
 
         return (
+        return (
             <div style={{ 
-                marginTop: '1.5em', 
-                marginLeft: x(0.2), 
-                width: w(9.0), 
+                marginTop: '2em', 
+                width: '100%', 
                 color: `#${color}`, 
                 fontSize: fs(14), 
                 display: 'grid',
                 gridTemplateColumns: `repeat(${cols}, 1fr)`,
                 alignItems: 'start',
-                lineHeight: 1.5
+                lineHeight: 1.5,
+                gap: '2em'
             }}>
                 {options.map((opt, i) => (
-                    <div key={i} style={{ paddingRight: '0.5em', boxSizing: 'border-box', whiteSpace: 'pre-wrap', marginBottom: '0.6em' }}>
+                    <div key={i} style={{ boxSizing: 'border-box', whiteSpace: 'pre-wrap', marginBottom: '0.6em' }}>
                         <strong>({opt.label})</strong> {renderTextWithMath(opt.text)}
                     </div>
                 ))}
@@ -94,7 +95,7 @@ export default function LiveSlidePreview({ theme, type = 'title', config, questi
             <div style={{ position: 'absolute', left: x(0), top: y(0), width: w(0.05), height: h(5.625), backgroundColor: `#${theme.cyan}` }}></div>
             <div style={{ position: 'absolute', left: x(0.05), top: y(0), width: w(0.05), height: h(5.625), backgroundColor: `#${theme.purple}` }}></div>
             
-            <div style={{ position: 'absolute', left: x(1.2), top: y(1.5), width: w(8), height: h(1.5), fontSize: fs(60), fontWeight: 'bold', display: 'flex', alignItems: 'center' }}>
+            <div style={{ position: 'absolute', left: x(1.2), top: y(1.5), width: w(8), height: h(1.5), fontSize: fs(54), fontWeight: 'bold', display: 'flex', alignItems: 'center' }}>
                 <span style={{ color: `#${theme.cyan}` }}>{config?.mainTitle1}&nbsp;</span>
                 <span style={{ color: `#${theme.gold}` }}>{config?.mainTitle2}</span>
             </div>
@@ -118,7 +119,7 @@ export default function LiveSlidePreview({ theme, type = 'title', config, questi
             {/* Tag repositioned to bottom right */}
             <div style={{ position: 'absolute', left: x(7.5), top: y(5.1), width: w(2.0), height: h(0.25), backgroundColor: `#${theme.bgCard}`, border: `0.1cqw solid #${theme.purple}`, borderRadius: '0.5cqw', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: fs(10), color: `#${theme.purple}`, boxSizing: 'border-box', fontWeight: 'bold' }}>{questionData?.tag?.toUpperCase()}</div>
 
-            <div style={{ position: 'absolute', left: x(0.8), top: y(0.1), width: w(9.2), textAlign: 'left' }}>
+            <div style={{ position: 'absolute', left: x(0.15), top: y(0.5), width: w(9.7), textAlign: 'left' }}>
                 <div style={{ color: `#${theme.textWhite}`, fontSize: fs(14), lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>
                     {renderTextWithMath(questionData?.qText)}
                 </div>
@@ -133,7 +134,7 @@ export default function LiveSlidePreview({ theme, type = 'title', config, questi
             <div style={{ position: 'absolute', left: x(0), top: y(0), width: w(10), height: h(2), backgroundColor: `#${theme.purple}` }}></div>
             <div style={{ position: 'absolute', left: x(0), top: y(1.9), width: w(10), height: h(0.1), backgroundColor: `#${theme.gold}` }}></div>
 
-            <div style={{ position: 'absolute', left: x(0.5), top: y(0.3), width: w(9), height: h(1.2), fontSize: fs(50), fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
+            <div style={{ position: 'absolute', left: x(0.5), top: y(0.3), width: w(9), height: h(1.2), fontSize: fs(45), fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
                 <span style={{ color: `#${theme.textBlack}` }}>{config?.mainTitle1}&nbsp;</span>
                 <span style={{ color: `#${theme.cyan}` }}>{config?.mainTitle2}</span>
             </div>
@@ -153,7 +154,7 @@ export default function LiveSlidePreview({ theme, type = 'title', config, questi
             <div style={{ position: 'absolute', left: x(0.1), top: y(0.1), width: w(0.6), height: h(0.25), backgroundColor: `#${theme.cyan}`, borderRadius: '0.5cqw', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: fs(12), fontWeight: 'bold', color: `#${theme.textBlack}` }}>{questionData?.badge}</div>
             <div style={{ position: 'absolute', left: x(7.5), top: y(5.1), width: w(2.0), height: h(0.25), backgroundColor: `#${theme.bgColor}`, border: `0.1cqw solid #${theme.purple}`, borderRadius: '0.5cqw', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: fs(10), color: `#${theme.purple}`, fontWeight: 'bold' }}>{questionData?.tag?.toUpperCase()}</div>
 
-            <div style={{ position: 'absolute', left: x(0.8), top: y(0.1), width: w(9.2), textAlign: 'left' }}>
+            <div style={{ position: 'absolute', left: x(0.15), top: y(0.5), width: w(9.7), textAlign: 'left' }}>
                 <div style={{ color: `#${theme.textWhite}`, fontSize: fs(14), lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>
                     {renderTextWithMath(questionData?.qText)}
                 </div>
@@ -171,7 +172,7 @@ export default function LiveSlidePreview({ theme, type = 'title', config, questi
             <div style={{ position: 'absolute', left: x(0.8), top: y(2.0), width: w(2.8), height: h(0.5), backgroundColor: `#${theme.cyan}`, borderRadius: '0.5cqw', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: fs(16), fontWeight: 'bold', color: `#${theme.textBlack}` }}>{config?.pill1}</div>
             <div style={{ position: 'absolute', left: x(0.8), top: y(2.8), width: w(2.8), height: h(0.5), backgroundColor: `#${theme.gold}`, borderRadius: '0.5cqw', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: fs(16), fontWeight: 'bold', color: `#${theme.textBlack}` }}>{config?.pill2}</div>
 
-            <div style={{ position: 'absolute', left: x(5), top: y(1.5), width: w(4.5), height: h(2), fontSize: fs(54), fontWeight: 'bold', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+            <div style={{ position: 'absolute', left: x(5), top: y(1.5), width: w(4.5), height: h(2), fontSize: fs(49), fontWeight: 'bold', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                 <span style={{ color: `#${theme.textWhite}` }}>{config?.mainTitle1}</span>
                 <span style={{ color: `#${theme.cyan}` }}>{config?.mainTitle2}</span>
             </div>
@@ -188,7 +189,7 @@ export default function LiveSlidePreview({ theme, type = 'title', config, questi
             <div style={{ position: 'absolute', left: x(0.15), top: y(0.1), width: w(0.6), height: h(0.25), backgroundColor: `#${theme.cyan}`, borderRadius: '0.5cqw', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: fs(12), fontWeight: 'bold', color: `#${theme.textBlack}` }}>{questionData?.badge}</div>
             <div style={{ position: 'absolute', left: x(7.5), top: y(5.1), width: w(2.0), height: h(0.25), backgroundColor: `#${theme.bgColor}`, border: `0.1cqw solid #${theme.purple}`, borderRadius: '0.5cqw', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: fs(10), color: `#${theme.purple}`, fontWeight: 'bold' }}>{questionData?.tag?.toUpperCase()}</div>
 
-            <div style={{ position: 'absolute', left: x(0.8), top: y(0.1), width: w(9.2), textAlign: 'left' }}>
+            <div style={{ position: 'absolute', left: x(0.15), top: y(0.5), width: w(9.7), textAlign: 'left' }}>
                 <div style={{ color: `#${theme.textWhite}`, fontSize: fs(14), lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>
                     {renderTextWithMath(questionData?.qText)}
                 </div>
