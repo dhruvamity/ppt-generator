@@ -501,14 +501,14 @@ Respond ONLY with the JSON array. Do not include markdown wrappers like ```json.
                 # Fix double-escaped LaTeX commands (e.g. \\angle -> \angle)
                 s = re.sub(
                     r'\\\\(frac|sqrt|triangle|angle|circ|pi|theta|alpha|beta|gamma|delta|sum|prod|int|lim|infty|pm|times|div|cdot|leq|geq|neq|approx|equiv|subset|supset|cap|cup|in|notin|forall|exists|nabla|partial|rightarrow|leftarrow|Rightarrow|Leftarrow|text)\b',
-                    lambda m: '\\\\' + m.group(1),
+                    lambda m: '\\' + m.group(1),
                     s
                 )
                 # Fix missing spaces after LaTeX geometry commands (KaTeX fails without space)
                 # e.g. \triangleABC -> \triangle ABC, \angleA -> \angle A
                 s = re.sub(
-                    r'\\\\(triangle|angle|circ)([A-Za-z])',
-                    lambda m: '\\\\' + m.group(1) + ' ' + m.group(2),
+                    r'\\(triangle|angle|circ)([A-Za-z])',
+                    lambda m: '\\' + m.group(1) + ' ' + m.group(2),
                     s
                 )
                 return s
