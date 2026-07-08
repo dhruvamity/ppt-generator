@@ -104,16 +104,18 @@ def hex_to_rgb(hex_str: str) -> RGBColor:
 def inject_omml_math(paragraph, latex_str: str):
     if not xslt_transformer:
         run = paragraph.add_run()
-        run.text = latex_str
+        run.text = f"${latex_str}$"
         return
         
     try:
-        latex_str = latex_str.replace('\\\\', '\\')
+        latex_str = latex_str.replace('\\\\', '\\').strip()
         mathml = latex2mathml.converter.convert(latex_str)
         
-        # CRITICAL FIX: Inject the required MathML namespace
+        # CRITICAL FIX: Robust regex to inject the namespace into the root <math> tag
+        # latex2mathml outputs <math display="inline">, not bare <math>,
+        # so a simple .replace('<math>', ...) silently fails
         if 'xmlns=' not in mathml:
-            mathml = mathml.replace('<math>', '<math xmlns="http://www.w3.org/1998/Math/MathML">')
+            mathml = re.sub(r'<math([^>]*)>', r'<math\1 xmlns="http://www.w3.org/1998/Math/MathML">', mathml)
             
         mathml_doc = etree.fromstring(mathml.encode('utf-8'))
         omml_doc = xslt_transformer(mathml_doc)
@@ -123,7 +125,7 @@ def inject_omml_math(paragraph, latex_str: str):
     except Exception as e:
         print(f"OMML Injection failed for '{latex_str}': {e}")
         run = paragraph.add_run()
-        run.text = latex_str
+        run.text = f"${latex_str}$"
 
 def populate_paragraph_with_mixed_content(p, text: str, color: str, font_size: int = 14):
     theme_color = hex_to_rgb(color)
@@ -436,11 +438,14 @@ RULE 3 — COMPACT OPTIONS (GRID LAYOUT):
 - ALL options MUST be labeled with lowercase letters: "a", "b", "c", "d". DO NOT use "1", "2", "3", "4" or uppercase letters. Map them if necessary.
 - ONLY use this array structure. Do NOT return a string for options.
 
-RULE 4 — MATHEMATICAL NOTATION:
-- Wrap ALL math expressions in LaTeX delimiters using $...$ (inline).
-- Fractions: $\\frac{{a}}{{b}}$. Exponents: $x^{{2}}$. Subscripts: $x_{{1}}$. Roots: $\\sqrt{{x}}$.
-- Example: "Area = $\\frac{{625}}{{36}}$ $cm^{{2}}$" NOT "Area = 625/36 cm^2"
-- NEVER output bare caret (^), slash fractions (a/b), or Unicode subscripts/superscripts as plain text. Always wrap them in $...$.
+RULE 4 — MATHEMATICAL NOTATION (CRITICAL):
+- Wrap ALL math expressions in single dollar signs: $...$
+- Use standard LaTeX commands with SINGLE backslashes inside the dollar signs.
+- Fractions: $\\frac{a}{b}$. Exponents: $x^{2}$. Subscripts: $x_{1}$. Roots: $\\sqrt{x}$.
+- Geometry: $\\triangle ABC$, $\\angle BOC = 130^\\circ$
+- Example: "The area is $\\frac{625}{36}$ $cm^{2}$" NOT "The area is 625/36 cm^2"
+- NEVER output bare caret (^), slash fractions (a/b), or Unicode sub/superscripts as plain text.
+- In the JSON string, backslashes must be escaped as \\\\. So $\\frac{1}{2}$ in JSON becomes "$\\frac{1}{2}$".
 
 RULE 5 — ASSERTION (A) & REASON (R):
 - Separate the Assertion text and Reason text with a single \\n in qText.
@@ -486,11 +491,29 @@ Respond ONLY with the JSON array. Do not include markdown wrappers like ```json.
             options = item.get('options', [])
             if not isinstance(options, list):
                 options = []
+            
+            # Normalize double-escaped LaTeX: \\frac -> \frac, \\sqrt -> \sqrt, etc.
+            def normalize_latex(s):
+                if not s:
+                    return s
+                # Fix double-escaped LaTeX commands (\\\\frac -> \\frac in the string)
+                s = re.sub(r'\\\\(frac|sqrt|triangle|angle|circ|pi|theta|alpha|beta|gamma|delta|sum|prod|int|lim|infty|pm|times|div|cdot|leq|geq|neq|approx|equiv|subset|supset|cap|cup|in|notin|forall|exists|nabla|partial|rightarrow|leftarrow|Rightarrow|Leftarrow|text)\b', r'\\\1', s)
+                return s
+            
+            qText = normalize_latex(item.get('qText', ''))
+            cleaned_options = []
+            for opt in options:
+                if isinstance(opt, dict):
+                    cleaned_options.append({
+                        "label": opt.get("label", ""),
+                        "text": normalize_latex(opt.get("text", ""))
+                    })
+                    
             validated.append({
                 "badge": f"Q.{i + 1}",
                 "tag": item.get('tag', 'Practice Question'),
-                "qText": item.get('qText', ''),
-                "options": options
+                "qText": qText,
+                "options": cleaned_options
             })
             
         return validated
