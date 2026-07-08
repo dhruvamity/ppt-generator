@@ -274,17 +274,22 @@ def render_options_grid(slide, q: SlideData, options_color: str, q_end_y: float,
     if not q.options:
         return
         
-    options_y = q_end_y + (14 * 0.018 * 2.0)
+    options_y = q_end_y + 0.3
     
     total_chars = sum(len(opt.text) for opt in q.options)
-    cols = 4 if total_chars < 50 else 2
-    col_width = content_width / cols
     
-    for i, opt in enumerate(q.options):
-        opt_x = start_x + (i % cols) * col_width
-        opt_y = options_y + (i // cols) * 0.6
-        add_text_basic(slide, f"({opt.label})", opt_x, opt_y, 0.35, 0.25, options_color, 14, bold=True)
-        add_mixed_content(slide, opt.text, opt_x + 0.35, opt_y, col_width - 0.4, options_color, 14)
+    if total_chars < 60 and len(q.options) == 4:
+        # Single line format with large spacing between options
+        combined_text = "          ".join(f"({opt.label}) {opt.text}" for opt in q.options)
+        add_mixed_content(slide, combined_text, start_x, options_y, content_width, options_color, 14)
+    else:
+        # 2 columns grid format
+        cols = 2
+        col_width = content_width / cols
+        for i, opt in enumerate(q.options):
+            opt_x = start_x + (i % cols) * col_width
+            opt_y = options_y + (i // cols) * 0.6
+            add_mixed_content(slide, f"({opt.label}) {opt.text}", opt_x, opt_y, col_width - 0.2, options_color, 14)
 
 def build_modern_sidebar_question(slide, q: SlideData, theme):
     render_global_decorations(slide, theme)
@@ -292,14 +297,14 @@ def build_modern_sidebar_question(slide, q: SlideData, theme):
     add_rect(slide, 0.05, 0, 0.05, 5.625, theme['purple'])
     
     # Badge
-    add_round_rect(slide, 0.15, 0.1, 0.6, 0.25, theme['cyan'])
-    add_text_basic(slide, q.badge, 0.15, 0.1, 0.6, 0.25, theme['textBlack'], 12, bold=True, align=PP_ALIGN.CENTER)
+    add_round_rect(slide, 0.4, 0.2, 0.6, 0.25, theme['cyan'])
+    add_text_basic(slide, q.badge, 0.4, 0.2, 0.6, 0.25, theme['textBlack'], 12, bold=True, align=PP_ALIGN.CENTER)
     
     # Tag bottom right
     add_round_rect(slide, 7.5, 5.1, 2.0, 0.25, theme['bgCard'], border_color=theme['purple'])
     add_text_basic(slide, q.tag.upper(), 7.5, 5.1, 2.0, 0.25, theme['purple'], 10, bold=True, align=PP_ALIGN.CENTER)
     
-    start_x, start_y, content_width = 0.15, 0.5, 9.7
+    start_x, start_y, content_width = 0.4, 0.6, 9.4
     q_end_y = add_mixed_content(slide, q.qText, start_x, start_y, content_width, theme['textWhite'], 14)
     render_options_grid(slide, q, theme['cyan'], q_end_y, start_x, content_width)
 
@@ -308,13 +313,13 @@ def build_classic_header_question(slide, q: SlideData, theme):
     add_rect(slide, 0, 0, 10, 0.05, theme['purple'])
     add_rect(slide, 0, 0.05, 10, 0.02, theme['gold'])
     
-    add_round_rect(slide, 0.1, 0.1, 0.6, 0.25, theme['cyan'])
-    add_text_basic(slide, q.badge, 0.1, 0.1, 0.6, 0.25, theme['textBlack'], 12, bold=True, align=PP_ALIGN.CENTER)
+    add_round_rect(slide, 0.4, 0.2, 0.6, 0.25, theme['cyan'])
+    add_text_basic(slide, q.badge, 0.4, 0.2, 0.6, 0.25, theme['textBlack'], 12, bold=True, align=PP_ALIGN.CENTER)
     
     add_round_rect(slide, 7.5, 5.1, 2.0, 0.25, theme['bgColor'], border_color=theme['purple'])
     add_text_basic(slide, q.tag.upper(), 7.5, 5.1, 2.0, 0.25, theme['purple'], 10, bold=True, align=PP_ALIGN.CENTER)
     
-    start_x, start_y, content_width = 0.15, 0.5, 9.7
+    start_x, start_y, content_width = 0.4, 0.6, 9.4
     q_end_y = add_mixed_content(slide, q.qText, start_x, start_y, content_width, theme['textWhite'], 14)
     render_options_grid(slide, q, theme['cyan'], q_end_y, start_x, content_width)
 
@@ -322,13 +327,13 @@ def build_split_focus_question(slide, q: SlideData, theme):
     render_global_decorations(slide, theme)
     add_rect(slide, 0, 0, 0.1, 5.625, theme['purple'])
     
-    add_round_rect(slide, 0.15, 0.1, 0.6, 0.25, theme['cyan'])
-    add_text_basic(slide, q.badge, 0.15, 0.1, 0.6, 0.25, theme['textBlack'], 12, bold=True, align=PP_ALIGN.CENTER)
+    add_round_rect(slide, 0.4, 0.2, 0.6, 0.25, theme['cyan'])
+    add_text_basic(slide, q.badge, 0.4, 0.2, 0.6, 0.25, theme['textBlack'], 12, bold=True, align=PP_ALIGN.CENTER)
     
     add_round_rect(slide, 7.5, 5.1, 2.0, 0.25, theme['bgColor'], border_color=theme['purple'])
     add_text_basic(slide, q.tag.upper(), 7.5, 5.1, 2.0, 0.25, theme['purple'], 10, bold=True, align=PP_ALIGN.CENTER)
     
-    start_x, start_y, content_width = 0.15, 0.5, 9.7
+    start_x, start_y, content_width = 0.4, 0.6, 9.4
     q_end_y = add_mixed_content(slide, q.qText, start_x, start_y, content_width, theme['textWhite'], 14)
     render_options_grid(slide, q, theme['gold'], q_end_y, start_x, content_width)
 
@@ -459,7 +464,7 @@ Respond ONLY with the JSON array. Do not include markdown wrappers like ```json.
             if not isinstance(options, list):
                 options = []
             validated.append({
-                "badge": item.get('badge', f"Q.{i + 1}"),
+                "badge": f"Q.{i + 1}",
                 "tag": item.get('tag', 'Practice Question'),
                 "qText": item.get('qText', ''),
                 "options": options
