@@ -181,6 +181,14 @@ export const useStore = create(
         }),
         {
             name: 'slidegen-storage', 
+            partialize: (state) => Object.fromEntries(
+                Object.entries(state).filter(([key]) => key !== 'isParsing')
+            ),
+            onRehydrateStorage: () => (state) => {
+                if (state) {
+                    state.isParsing = false;
+                }
+            }
         }
     )
 );
