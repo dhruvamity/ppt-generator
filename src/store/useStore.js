@@ -64,22 +64,24 @@ export const parseLocalText = (rawText) => {
     
     return questions.map(q => {
         let qText = q.text.join('\n');
-        let allOptionsStr = q.options.join(' ');
         
-        let formattedOptions = "";
-        if (allOptionsStr) {
-            formattedOptions = allOptionsStr
-                .replace(/(\([aA]\)|^[aA]\)|\b[aA]\.)/g, '(a)  ')
-                .replace(/(\([bB]\)|[bB]\)|\b[bB]\.)/g, '      (b)  ')
-                .replace(/(\([cC]\)|[cC]\)|\b[cC]\.)/g, '      (c)  ')
-                .replace(/(\([dD]\)|[dD]\)|\b[dD]\.)/g, '      (d)  ');
+        let parsedOptions = [];
+        if (q.options && q.options.length > 0) {
+            parsedOptions = q.options.map(optStr => {
+                let match = optStr.match(/^(\([a-dA-D]\)|[a-dA-D]\)|[a-dA-D]\.|\(\d+\))\s*(.*)/);
+                if (match) {
+                    let label = match[1].replace(/[\(\)\.]/g, '').toLowerCase();
+                    return { label: label, text: match[2].trim() };
+                }
+                return { label: '', text: optStr.trim() };
+            });
         }
         
         return {
             badge: q.badge,
             tag: q.tag,
             qText: qText,
-            options: formattedOptions
+            options: parsedOptions
         };
     });
 };
