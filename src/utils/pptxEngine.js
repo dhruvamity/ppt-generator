@@ -85,9 +85,9 @@ const addMixedContent = async (slide, text, startX, startY, width, themeColor, f
             
             const charsPerLine = Math.floor(width / 0.09);
             const lines = trimmed.split('\n').reduce((acc, line) => acc + Math.ceil((line.length || 1) / charsPerLine), 0);
-            const textHeight = Math.max(0.2, lines * (fontSize * 0.018));
+            const textHeight = Math.max(0.2, lines * (fontSize * 0.018 * 1.5)); // Accounts for 1.5 spacing
             
-            slide.addText(trimmed, { x: startX, y: currentY, w: width, h: textHeight, color: themeColor, fontSize: fontSize, fontFace: 'Arial', valign: 'top', margin: [0,0,0,0] });
+            slide.addText(trimmed, { x: startX, y: currentY, w: width, h: textHeight, color: themeColor, fontSize: fontSize, fontFace: 'Arial', valign: 'top', margin: [0,0,0,0], lineSpacingMultiple: 1.5 });
             currentY += textHeight + 0.05;
         }
     }
@@ -101,13 +101,26 @@ export const generatePPTX = async (config, finalQuestions, themeId, layoutId = '
     let pres = new pptxgen();
     pres.layout = 'LAYOUT_16x9';
 
+    const renderGlobalDecorations = (slide) => {
+        // Corner floating ellipses
+        slide.addShape(pres.ShapeType.ellipse, { x: -0.5, y: -0.5, w: 2.0, h: 2.0, fill: { color: theme.tealDecor, transparency: 80 } });
+        slide.addShape(pres.ShapeType.ellipse, { x: 8.5, y: 4.125, w: 2.0, h: 2.0, fill: { color: theme.decorPurple, transparency: 80 } });
+        
+        // Bottom Ribbon
+        slide.addShape(pres.ShapeType.rect, { x: 0, y: 5.5, w: 10, h: 0.125, fill: { color: theme.gold, transparency: 20 } });
+        
+        // Logo Placeholder
+        slide.addText([
+            { text: 'SLIDEGEN', options: { color: theme.cyan, bold: true } }, 
+            { text: ' PRO', options: { color: theme.textWhite } }
+        ], { x: 0.3, y: 5.2, w: 3.0, h: 0.25, fontSize: 10, align: 'left', letterSpacing: 1, transparency: 40 });
+    };
+
     const buildModernSidebarTitle = (slide) => {
+        renderGlobalDecorations(slide);
         slide.addShape(pres.ShapeType.rect, { x: 0, y: 0, w: 0.05, h: 5.625, fill: { color: theme.cyan } });
         slide.addShape(pres.ShapeType.rect, { x: 0.05, y: 0, w: 0.05, h: 5.625, fill: { color: theme.purple } });
         
-        slide.addShape(pres.ShapeType.ellipse, { x: 0, y: 4.125, w: 1.5, h: 1.5, fill: { color: theme.tealDecor, transparency: 70 } });
-        slide.addShape(pres.ShapeType.ellipse, { x: 8.5, y: 0, w: 1.5, h: 1.5, fill: { color: theme.decorPurple, transparency: 75 } });
-
         slide.addText([
             { text: config.mainTitle1 + ' ', options: { color: theme.cyan } },
             { text: config.mainTitle2, options: { color: theme.gold } }
@@ -122,6 +135,7 @@ export const generatePPTX = async (config, finalQuestions, themeId, layoutId = '
     };
 
     const buildClassicHeaderTitle = (slide) => {
+        renderGlobalDecorations(slide);
         slide.addShape(pres.ShapeType.rect, { x: 0, y: 0, w: 10, h: 2, fill: { color: theme.purple } });
         slide.addShape(pres.ShapeType.rect, { x: 0, y: 1.9, w: 10, h: 0.1, fill: { color: theme.gold } });
         
@@ -140,6 +154,7 @@ export const generatePPTX = async (config, finalQuestions, themeId, layoutId = '
     };
 
     const buildSplitFocusTitle = (slide) => {
+        renderGlobalDecorations(slide);
         slide.addShape(pres.ShapeType.rect, { x: 0, y: 0, w: 4.5, h: 5.625, fill: { color: theme.purple } });
         slide.addShape(pres.ShapeType.rect, { x: 4.5, y: 0, w: 0.05, h: 5.625, fill: { color: theme.gold } });
 
@@ -161,17 +176,19 @@ export const generatePPTX = async (config, finalQuestions, themeId, layoutId = '
         if (q.options && q.options.length > 0) {
             let optionsY = qEndY + (14 * 0.018 * 1.5);
             
-            // Handle legacy cached string format
             if (!Array.isArray(q.options)) {
                 await addMixedContent(slide, q.options, startX, optionsY, contentWidth, optionsColor, 14);
                 return;
             }
 
-            let colWidth = contentWidth / 4;
+            const totalChars = q.options.reduce((sum, opt) => sum + (opt.text ? opt.text.length : 0), 0);
+            const cols = totalChars < 50 ? 4 : 2;
+            let colWidth = contentWidth / cols;
+            
             for (let i = 0; i < q.options.length; i++) {
                 let opt = q.options[i];
-                let optX = startX + (i % 4) * colWidth;
-                let optY = optionsY + Math.floor(i / 4) * 0.6;
+                let optX = startX + (i % cols) * colWidth;
+                let optY = optionsY + Math.floor(i / cols) * 0.6;
                 slide.addText(`(${opt.label})`, { x: optX, y: optY, w: 0.35, h: 0.25, color: optionsColor, bold: true, fontSize: 14, fontFace: 'Arial' });
                 await addMixedContent(slide, opt.text, optX + 0.35, optY, colWidth - 0.4, optionsColor, 14);
             }
@@ -179,14 +196,16 @@ export const generatePPTX = async (config, finalQuestions, themeId, layoutId = '
     };
 
     const buildModernSidebarQuestion = async (slide, q) => {
+        renderGlobalDecorations(slide);
         slide.addShape(pres.ShapeType.rect, { x: 0, y: 0, w: 0.05, h: 5.625, fill: { color: theme.cyan } });
         slide.addShape(pres.ShapeType.rect, { x: 0.05, y: 0, w: 0.05, h: 5.625, fill: { color: theme.purple } });
         
         slide.addShape(pres.ShapeType.roundRect, { x: 0.15, y: 0.1, w: 0.6, h: 0.25, fill: { color: theme.cyan }, rectRadius: 0.1 });
         slide.addText(q.badge, { x: 0.15, y: 0.1, w: 0.6, h: 0.25, fontSize: 12, bold: true, color: theme.textBlack, align: 'center', margin: [0,0,0,0], valign: 'middle', fontFace: 'Arial' });
         
-        slide.addShape(pres.ShapeType.roundRect, { x: 9.0, y: 0.1, w: 0.8, h: 0.25, fill: { color: theme.bgCard }, line: { color: theme.purple, width: 1 }, rectRadius: 0.1 });
-        slide.addText(q.tag.toUpperCase(), { x: 9.0, y: 0.1, w: 0.8, h: 0.25, fontSize: 10, color: theme.purple, align: 'center', margin: [0,0,0,0], valign: 'middle', fontFace: 'Arial' });
+        // Tag bottom right
+        slide.addShape(pres.ShapeType.roundRect, { x: 7.5, y: 5.1, w: 2.0, h: 0.25, fill: { color: theme.bgCard }, line: { color: theme.purple, width: 1 }, rectRadius: 0.1 });
+        slide.addText(q.tag.toUpperCase(), { x: 7.5, y: 5.1, w: 2.0, h: 0.25, fontSize: 10, color: theme.purple, align: 'center', margin: [0,0,0,0], valign: 'middle', fontFace: 'Arial', bold: true });
 
         let startX = 0.8, startY = 0.1, contentWidth = 9.2;
         let qEndY = await addMixedContent(slide, q.qText, startX, startY, contentWidth, theme.textWhite, 14);
@@ -194,14 +213,16 @@ export const generatePPTX = async (config, finalQuestions, themeId, layoutId = '
     };
 
     const buildClassicHeaderQuestion = async (slide, q) => {
+        renderGlobalDecorations(slide);
         slide.addShape(pres.ShapeType.rect, { x: 0, y: 0, w: 10, h: 0.05, fill: { color: theme.purple } });
         slide.addShape(pres.ShapeType.rect, { x: 0, y: 0.05, w: 10, h: 0.02, fill: { color: theme.gold } });
 
         slide.addShape(pres.ShapeType.roundRect, { x: 0.1, y: 0.1, w: 0.6, h: 0.25, fill: { color: theme.cyan }, rectRadius: 0.1 });
         slide.addText(q.badge, { x: 0.1, y: 0.1, w: 0.6, h: 0.25, fontSize: 12, bold: true, color: theme.textBlack, align: 'center', margin: [0,0,0,0], valign: 'middle', fontFace: 'Arial' });
 
-        slide.addShape(pres.ShapeType.roundRect, { x: 9.0, y: 0.1, w: 0.8, h: 0.25, fill: { color: theme.bgColor }, rectRadius: 0.1 });
-        slide.addText(q.tag.toUpperCase(), { x: 9.0, y: 0.1, w: 0.8, h: 0.25, fontSize: 10, color: theme.purple, align: 'center', margin: [0,0,0,0], valign: 'middle', bold: true, fontFace: 'Arial' });
+        // Tag bottom right
+        slide.addShape(pres.ShapeType.roundRect, { x: 7.5, y: 5.1, w: 2.0, h: 0.25, fill: { color: theme.bgColor }, line: { color: theme.purple, width: 1 }, rectRadius: 0.1 });
+        slide.addText(q.tag.toUpperCase(), { x: 7.5, y: 5.1, w: 2.0, h: 0.25, fontSize: 10, color: theme.purple, align: 'center', margin: [0,0,0,0], valign: 'middle', bold: true, fontFace: 'Arial' });
 
         let startX = 0.8, startY = 0.1, contentWidth = 9.2;
         let qEndY = await addMixedContent(slide, q.qText, startX, startY, contentWidth, theme.textWhite, 14);
@@ -209,13 +230,15 @@ export const generatePPTX = async (config, finalQuestions, themeId, layoutId = '
     };
 
     const buildSplitFocusQuestion = async (slide, q) => {
+        renderGlobalDecorations(slide);
         slide.addShape(pres.ShapeType.rect, { x: 0, y: 0, w: 0.1, h: 5.625, fill: { color: theme.purple } });
         
         slide.addShape(pres.ShapeType.roundRect, { x: 0.15, y: 0.1, w: 0.6, h: 0.25, fill: { color: theme.cyan }, rectRadius: 0.1 });
         slide.addText(q.badge, { x: 0.15, y: 0.1, w: 0.6, h: 0.25, fontSize: 12, bold: true, color: theme.textBlack, align: 'center', margin: [0,0,0,0], valign: 'middle', fontFace: 'Arial' });
 
-        slide.addShape(pres.ShapeType.roundRect, { x: 9.0, y: 0.1, w: 0.8, h: 0.25, fill: { color: theme.bgColor }, rectRadius: 0.1 });
-        slide.addText(q.tag.toUpperCase(), { x: 9.0, y: 0.1, w: 0.8, h: 0.25, fontSize: 10, color: theme.purple, align: 'center', margin: [0,0,0,0], valign: 'middle', bold: true, fontFace: 'Arial' });
+        // Tag bottom right
+        slide.addShape(pres.ShapeType.roundRect, { x: 7.5, y: 5.1, w: 2.0, h: 0.25, fill: { color: theme.bgColor }, line: { color: theme.purple, width: 1 }, rectRadius: 0.1 });
+        slide.addText(q.tag.toUpperCase(), { x: 7.5, y: 5.1, w: 2.0, h: 0.25, fontSize: 10, color: theme.purple, align: 'center', margin: [0,0,0,0], valign: 'middle', bold: true, fontFace: 'Arial' });
 
         let startX = 0.8, startY = 0.1, contentWidth = 9.2;
         let qEndY = await addMixedContent(slide, q.qText, startX, startY, contentWidth, theme.textWhite, 14);

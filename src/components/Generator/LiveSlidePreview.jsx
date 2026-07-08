@@ -37,31 +37,50 @@ export default function LiveSlidePreview({ theme, type = 'title', config, questi
         fontFamily: 'Arial, sans-serif'
     };
 
+    const renderGlobalDecorations = () => (
+        <>
+            {/* Corner floating ellipses */}
+            <div style={{ position: 'absolute', left: x(-0.5), top: y(-0.5), width: w(2.0), height: h(2.0), backgroundColor: `#${theme.tealDecor}`, opacity: 0.2, borderRadius: '50%', pointerEvents: 'none' }}></div>
+            <div style={{ position: 'absolute', left: x(8.5), top: y(4.125), width: w(2.0), height: h(2.0), backgroundColor: `#${theme.decorPurple}`, opacity: 0.2, borderRadius: '50%', pointerEvents: 'none' }}></div>
+            
+            {/* Bottom Ribbon */}
+            <div style={{ position: 'absolute', left: x(0), top: y(5.5), width: w(10), height: h(0.125), backgroundColor: `#${theme.gold}`, opacity: 0.8 }}></div>
+            
+            {/* Logo Placeholder */}
+            <div style={{ position: 'absolute', left: x(0.3), top: y(5.2), width: w(3.0), height: h(0.25), fontSize: fs(10), color: `#${theme.textWhite}`, opacity: 0.6, display: 'flex', alignItems: 'center', letterSpacing: '0.1cqw' }}>
+                <strong style={{ color: `#${theme.cyan}` }}>SLIDEGEN</strong>&nbsp;PRO
+            </div>
+        </>
+    );
+
     const renderOptionsGrid = (options, color) => {
         if (!options || options.length === 0) return null;
         
-        // Handle legacy cached string format
         if (!Array.isArray(options)) {
             return (
-                <div style={{ marginTop: '1.5em', color: `#${color}`, fontSize: fs(14), whiteSpace: 'pre-wrap' }}>
+                <div style={{ marginTop: '1.5em', color: `#${color}`, fontSize: fs(14), whiteSpace: 'pre-wrap', lineHeight: 1.5 }}>
                     {renderTextWithMath(options)}
                 </div>
             );
         }
 
+        const totalChars = options.reduce((sum, opt) => sum + (opt.text ? opt.text.length : 0), 0);
+        const cols = totalChars < 50 ? 4 : 2;
+
         return (
             <div style={{ 
                 marginTop: '1.5em', 
-                marginLeft: x(0.2), // offset to start at 1.0 (text container is at 0.8)
-                width: w(9.0), // from 1.0 to 10.0
+                marginLeft: x(0.2), 
+                width: w(9.0), 
                 color: `#${color}`, 
                 fontSize: fs(14), 
                 display: 'grid',
-                gridTemplateColumns: 'repeat(4, 1fr)',
-                alignItems: 'start'
+                gridTemplateColumns: `repeat(${cols}, 1fr)`,
+                alignItems: 'start',
+                lineHeight: 1.5
             }}>
                 {options.map((opt, i) => (
-                    <div key={i} style={{ paddingRight: '0.5em', boxSizing: 'border-box', whiteSpace: 'pre-wrap' }}>
+                    <div key={i} style={{ paddingRight: '0.5em', boxSizing: 'border-box', whiteSpace: 'pre-wrap', marginBottom: '0.6em' }}>
                         <strong>({opt.label})</strong> {renderTextWithMath(opt.text)}
                     </div>
                 ))}
@@ -71,13 +90,10 @@ export default function LiveSlidePreview({ theme, type = 'title', config, questi
 
     const renderModernSidebarTitle = () => (
         <>
+            {renderGlobalDecorations()}
             <div style={{ position: 'absolute', left: x(0), top: y(0), width: w(0.05), height: h(5.625), backgroundColor: `#${theme.cyan}` }}></div>
             <div style={{ position: 'absolute', left: x(0.05), top: y(0), width: w(0.05), height: h(5.625), backgroundColor: `#${theme.purple}` }}></div>
             
-            {/* Adjusted Edge Decorations */}
-            <div style={{ position: 'absolute', left: x(0), top: y(4.125), width: w(1.5), height: h(1.5), backgroundColor: `#${theme.tealDecor}`, opacity: 0.3, borderRadius: '50%' }}></div>
-            <div style={{ position: 'absolute', left: x(8.5), top: y(0), width: w(1.5), height: h(1.5), backgroundColor: `#${theme.decorPurple}`, opacity: 0.25, borderRadius: '50%' }}></div>
-
             <div style={{ position: 'absolute', left: x(1.2), top: y(1.5), width: w(8), height: h(1.5), fontSize: fs(60), fontWeight: 'bold', display: 'flex', alignItems: 'center' }}>
                 <span style={{ color: `#${theme.cyan}` }}>{config?.mainTitle1}&nbsp;</span>
                 <span style={{ color: `#${theme.gold}` }}>{config?.mainTitle2}</span>
@@ -93,11 +109,14 @@ export default function LiveSlidePreview({ theme, type = 'title', config, questi
 
     const renderModernSidebarQuestion = () => (
         <>
+            {renderGlobalDecorations()}
             <div style={{ position: 'absolute', left: x(0), top: y(0), width: w(0.05), height: h(5.625), backgroundColor: `#${theme.cyan}` }}></div>
             <div style={{ position: 'absolute', left: x(0.05), top: y(0), width: w(0.05), height: h(5.625), backgroundColor: `#${theme.purple}` }}></div>
             
             <div style={{ position: 'absolute', left: x(0.15), top: y(0.1), width: w(0.6), height: h(0.25), backgroundColor: `#${theme.cyan}`, borderRadius: '0.5cqw', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: fs(12), fontWeight: 'bold', color: `#${theme.textBlack}` }}>{questionData?.badge}</div>
-            <div style={{ position: 'absolute', left: x(9.0), top: y(0.1), width: w(0.8), height: h(0.25), backgroundColor: `#${theme.bgCard}`, border: `0.1cqw solid #${theme.purple}`, borderRadius: '0.5cqw', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: fs(10), color: `#${theme.purple}`, boxSizing: 'border-box' }}>{questionData?.tag?.toUpperCase()}</div>
+            
+            {/* Tag repositioned to bottom right */}
+            <div style={{ position: 'absolute', left: x(7.5), top: y(5.1), width: w(2.0), height: h(0.25), backgroundColor: `#${theme.bgCard}`, border: `0.1cqw solid #${theme.purple}`, borderRadius: '0.5cqw', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: fs(10), color: `#${theme.purple}`, boxSizing: 'border-box', fontWeight: 'bold' }}>{questionData?.tag?.toUpperCase()}</div>
 
             <div style={{ position: 'absolute', left: x(0.8), top: y(0.1), width: w(9.2), textAlign: 'left' }}>
                 <div style={{ color: `#${theme.textWhite}`, fontSize: fs(14), lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>
@@ -110,6 +129,7 @@ export default function LiveSlidePreview({ theme, type = 'title', config, questi
 
     const renderClassicHeaderTitle = () => (
         <>
+            {renderGlobalDecorations()}
             <div style={{ position: 'absolute', left: x(0), top: y(0), width: w(10), height: h(2), backgroundColor: `#${theme.purple}` }}></div>
             <div style={{ position: 'absolute', left: x(0), top: y(1.9), width: w(10), height: h(0.1), backgroundColor: `#${theme.gold}` }}></div>
 
@@ -126,11 +146,12 @@ export default function LiveSlidePreview({ theme, type = 'title', config, questi
 
     const renderClassicHeaderQuestion = () => (
         <>
+            {renderGlobalDecorations()}
             <div style={{ position: 'absolute', left: x(0), top: y(0), width: w(10), height: h(0.05), backgroundColor: `#${theme.purple}` }}></div>
             <div style={{ position: 'absolute', left: x(0), top: y(0.05), width: w(10), height: h(0.02), backgroundColor: `#${theme.gold}` }}></div>
 
             <div style={{ position: 'absolute', left: x(0.1), top: y(0.1), width: w(0.6), height: h(0.25), backgroundColor: `#${theme.cyan}`, borderRadius: '0.5cqw', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: fs(12), fontWeight: 'bold', color: `#${theme.textBlack}` }}>{questionData?.badge}</div>
-            <div style={{ position: 'absolute', left: x(9.0), top: y(0.1), width: w(0.8), height: h(0.25), backgroundColor: `#${theme.bgColor}`, borderRadius: '0.5cqw', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: fs(10), color: `#${theme.purple}`, fontWeight: 'bold' }}>{questionData?.tag?.toUpperCase()}</div>
+            <div style={{ position: 'absolute', left: x(7.5), top: y(5.1), width: w(2.0), height: h(0.25), backgroundColor: `#${theme.bgColor}`, border: `0.1cqw solid #${theme.purple}`, borderRadius: '0.5cqw', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: fs(10), color: `#${theme.purple}`, fontWeight: 'bold' }}>{questionData?.tag?.toUpperCase()}</div>
 
             <div style={{ position: 'absolute', left: x(0.8), top: y(0.1), width: w(9.2), textAlign: 'left' }}>
                 <div style={{ color: `#${theme.textWhite}`, fontSize: fs(14), lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>
@@ -143,6 +164,7 @@ export default function LiveSlidePreview({ theme, type = 'title', config, questi
 
     const renderSplitFocusTitle = () => (
         <>
+            {renderGlobalDecorations()}
             <div style={{ position: 'absolute', left: x(0), top: y(0), width: w(4.5), height: h(5.625), backgroundColor: `#${theme.purple}` }}></div>
             <div style={{ position: 'absolute', left: x(4.5), top: y(0), width: w(0.05), height: h(5.625), backgroundColor: `#${theme.gold}` }}></div>
 
@@ -160,10 +182,11 @@ export default function LiveSlidePreview({ theme, type = 'title', config, questi
 
     const renderSplitFocusQuestion = () => (
         <>
+            {renderGlobalDecorations()}
             <div style={{ position: 'absolute', left: x(0), top: y(0), width: w(0.1), height: h(5.625), backgroundColor: `#${theme.purple}` }}></div>
             
             <div style={{ position: 'absolute', left: x(0.15), top: y(0.1), width: w(0.6), height: h(0.25), backgroundColor: `#${theme.cyan}`, borderRadius: '0.5cqw', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: fs(12), fontWeight: 'bold', color: `#${theme.textBlack}` }}>{questionData?.badge}</div>
-            <div style={{ position: 'absolute', left: x(9.0), top: y(0.1), width: w(0.8), height: h(0.25), backgroundColor: `#${theme.bgColor}`, borderRadius: '0.5cqw', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: fs(10), color: `#${theme.purple}`, fontWeight: 'bold' }}>{questionData?.tag?.toUpperCase()}</div>
+            <div style={{ position: 'absolute', left: x(7.5), top: y(5.1), width: w(2.0), height: h(0.25), backgroundColor: `#${theme.bgColor}`, border: `0.1cqw solid #${theme.purple}`, borderRadius: '0.5cqw', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: fs(10), color: `#${theme.purple}`, fontWeight: 'bold' }}>{questionData?.tag?.toUpperCase()}</div>
 
             <div style={{ position: 'absolute', left: x(0.8), top: y(0.1), width: w(9.2), textAlign: 'left' }}>
                 <div style={{ color: `#${theme.textWhite}`, fontSize: fs(14), lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>

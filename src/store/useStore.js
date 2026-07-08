@@ -1,6 +1,15 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
+const convertFractions = (text) => {
+    if (!text) return text;
+    let parts = text.split(/(\$\$[\s\S]*?\$\$|\$[\s\S]*?\$)/);
+    return parts.map(part => {
+        if (part.startsWith('$')) return part;
+        return part.replace(/\b(\d+)\/(\d+)\b/g, '$\\frac{$1}{$2}$');
+    }).join('');
+};
+
 // Helper function for local parsing
 export const parseLocalText = (rawText) => {
     if (!rawText || !rawText.trim()) return [];
@@ -26,20 +35,9 @@ export const parseLocalText = (rawText) => {
             if (currentQ) {
                 questions.push(currentQ);
             }
-            let rawBadge = qMatch[1].trim();
-            
-            let badge = "Q";
-            if (/case/i.test(rawBadge)) {
-                badge = rawBadge.replace(/case/i, 'CS').replace(/\s/g, '.');
-            } else if (/exp/i.test(rawBadge)) {
-                badge = rawBadge.replace(/exp/i, 'EXP').replace(/\s/g, '.');
-            } else if (/question/i.test(rawBadge) || /^q\d/i.test(rawBadge.replace(/\s/g, ''))) {
-                let numMatch = rawBadge.match(/\d+/);
-                badge = numMatch ? `Q.${numMatch[0]}` : "Q";
-            }
             
             currentQ = {
-                badge: badge.toUpperCase(),
+                badge: 'Q', // Temporary, overridden in map
                 tag: currentCategory,
                 text: [qMatch[2].trim()],
                 options: []
@@ -62,7 +60,7 @@ export const parseLocalText = (rawText) => {
         questions.push(currentQ);
     }
     
-    return questions.map(q => {
+    return questions.map((q, index) => {
         let qText = q.text.join('\n');
         
         let parsedOptions = [];
@@ -71,16 +69,16 @@ export const parseLocalText = (rawText) => {
                 let match = optStr.match(/^(\([a-dA-D]\)|[a-dA-D]\)|[a-dA-D]\.|\(\d+\))\s*(.*)/);
                 if (match) {
                     let label = match[1].replace(/[\(\)\.]/g, '').toLowerCase();
-                    return { label: label, text: match[2].trim() };
+                    return { label: label, text: convertFractions(match[2].trim()) };
                 }
-                return { label: '', text: optStr.trim() };
+                return { label: '', text: convertFractions(optStr.trim()) };
             });
         }
         
         return {
-            badge: q.badge,
+            badge: `Q.${index + 1}`,
             tag: q.tag,
-            qText: qText,
+            qText: convertFractions(qText),
             options: parsedOptions
         };
     });
