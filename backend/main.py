@@ -490,13 +490,12 @@ RULE 1 — SPACE ECONOMY (HIGHEST PRIORITY):
 RULE 2 — MULTI-PART QUESTIONS:
 If a question has "Part 1" and "Part 2" (or I/II, or Statement I/II), it is ONE question with TWO sub-parts.
 - In "qText": Put both parts separated by a SINGLE newline (\\n).
-- In "options": You MUST detect when there are TWO separate sets of (a)(b)(c)(d).
-  If it has two separate sets, combine them logically or leave "options" empty and put them in "qText".
+- In "options": You MUST extract the final answer options here. Do NOT leave this empty if options (A,B,C,D) exist.
 
 RULE 3 — COMPACT OPTIONS (GRID LAYOUT):
-- Always extract options into the "options" array.
+- ALWAYS extract options into the "options" array. NEVER leave it empty if the text contains choices.
 - ALL options MUST be labeled with lowercase letters: "a", "b", "c", "d". DO NOT use "1", "2", "3", "4" or uppercase letters. Map them if necessary.
-- ONLY use this array structure. Do NOT return a string for options.
+- ONLY use this array structure. Do NOT put options inside "qText".
 
 RULE 4 — MATHEMATICAL NOTATION (CRITICAL):
 - Wrap ALL math expressions in single dollar signs: $...$
