@@ -97,55 +97,62 @@ def hex_to_rgb(hex_str: str) -> RGBColor:
 def format_unicode_math(text: str) -> str:
     if not text:
         return text
-        
-    # Translation tables for superscripts and subscripts
-    SUP = str.maketrans("0123456789+-=()abcdefghijklmnopqrstuvwxyz", "⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻⁼⁽⁾ᵃᵇᶜᵈᵉᶠᵍʰⁱʲᵏˡᵐⁿᵒᵖ𐑾ʳˢᵗᵘᵛʷˣʸᶻ")
-    # Subscripts are more limited in Unicode, but digits are fully supported
-    SUB = str.maketrans("0123456789+-=()aehijklmnoprstuvx", "₀₁₂₃₄₅₆₇₈₉₊₋₌₍₎ₐₑₕᵢⱼₖₗₘₙₒₚᵣₛₜᵤᵥₓ")
 
-    # 1. Convert LaTeX fractions: \frac{num}{den} -> ⁿᵘᵐ/dₑₙ
+    # 1. Defensively repair escape character corruption (\t and \f eating backslashes)
+    text = text.replace('\t', '')
+    text = text.replace('riangle', '∆')
+    text = text.replace('\f', '')
+    text = text.replace('rac{', '\\frac{')
+
+    # 2. Strip out LaTeX math mode wrappers to prevent regex failures
+    text = text.replace('$', '')
+
+    # 3. Unicode Maps (Safe Dictionary approach)
+    sup_map = {"0": "⁰", "1": "¹", "2": "²", "3": "³", "4": "⁴", "5": "⁵", "6": "⁶", "7": "⁷", "8": "⁸", "9": "⁹", "+": "⁺", "-": "⁻", "=": "⁼", "(": "⁽", ")": "⁾", "n": "ⁿ", "x": "ˣ", "y": "ʸ"}
+    sub_map = {"0": "₀", "1": "₁", "2": "₂", "3": "₃", "4": "₄", "5": "₅", "6": "₆", "7": "₇", "8": "₈", "9": "₉", "+": "₊", "-": "₋", "=": "₌", "(": "₍", ")": "₎"}
+
+    def to_sup(s):
+        return "".join(sup_map.get(c, c) for c in s)
+    def to_sub(s):
+        return "".join(sub_map.get(c, c) for c in s)
+
+    # 4. Convert Fractions: \frac{a}{b}
     def frac_repl(m):
-        num = m.group(1).translate(SUP)
-        den = m.group(2).translate(SUB)
+        num = to_sup(m.group(1))
+        den = to_sub(m.group(2))
         return f"{num}/{den}"
     text = re.sub(r'\\frac\{([^{}]+)\}\{([^{}]+)\}', frac_repl, text)
+    # Run twice to catch nested fractions
+    text = re.sub(r'\\frac\{([^{}]+)\}\{([^{}]+)\}', frac_repl, text)
 
-    # 2. Convert standard inline fractions: 625/36 -> ⁶²⁵/₃₆ (Only digits to prevent path/URL corruption)
-    def raw_frac_repl(m):
-        num = m.group(1).translate(SUP)
-        den = m.group(2).translate(SUB)
-        return f"{num}/{den}"
-    text = re.sub(r'\b(\d+)/(\d+)\b', raw_frac_repl, text)
-
-    # 3. Convert square roots: \sqrt{3} -> √3 or \sqrt{x+1} -> √(x+1)
+    # 5. Convert Square Roots: \sqrt{a}
     def sqrt_repl(m):
         val = m.group(1)
-        if val.isdigit() or len(val) == 1:
+        if val.isdigit():
             return f"√{val}"
         return f"√({val})"
     text = re.sub(r'\\sqrt\{([^{}]+)\}', sqrt_repl, text)
-    text = text.replace(r'\sqrt', '√') # Fallback for raw \sqrt
+    text = text.replace(r'\sqrt', '√')
 
-    # 4. Convert Exponents: ^2 or ^{23}
+    # 6. Convert Exponents: ^2 or ^{2}
     def exp_repl(m):
         val = m.group(1) or m.group(2)
-        return val.translate(SUP)
+        return to_sup(val)
     text = re.sub(r'\^\{([^{}]+)\}|\^([a-zA-Z0-9])', exp_repl, text)
 
-    # 5. Clean up remaining LaTeX symbols & delimiters
-    replacements = {
+    # 7. Convert Standard Math Symbols
+    syms = {
         r'\circ': '°',
         r'\angle': '∠',
         r'\triangle': '∆',
         r'\pi': 'π',
         r'\le': '≤',
         r'\ge': '≥',
-        r'\cdot': '·',
-        '$': '' # Strip out LaTeX math mode wrappers
+        r'\cdot': '·'
     }
-    for k, v in replacements.items():
+    for k, v in syms.items():
         text = text.replace(k, v)
-        
+
     return text
 
 def add_mixed_content(slide, text: str, start_x: float, start_y: float, width: float, color: str, font_size: int = 14) -> float:
@@ -155,7 +162,6 @@ def add_mixed_content(slide, text: str, start_x: float, start_y: float, width: f
     formatted_text = format_unicode_math(text)
     theme_color = hex_to_rgb(color)
     
-    # Estimate height (Arial 14pt averages 0.11 inches per char)
     chars_per_line = width / 0.11
     lines = sum(max(1, int((len(line) + chars_per_line - 1) // chars_per_line)) for line in formatted_text.split('\n'))
     text_height = lines * (font_size * 0.025)
@@ -167,6 +173,8 @@ def add_mixed_content(slide, text: str, start_x: float, start_y: float, width: f
     
     p = tf.paragraphs[0]
     p.line_spacing = 1.5
+    
+    # CRITICAL: Append a single run. Do NOT loop or split by '$'.
     run = p.add_run()
     run.text = formatted_text
     run.font.name = 'Arial'
@@ -308,7 +316,16 @@ def render_options_grid(slide, q: SlideData, options_color: str, q_end_y: float,
         cell = table.cell(row_idx, col_idx)
         
         p = cell.text_frame.paragraphs[0]
-        populate_paragraph_with_mixed_content(p, f"({opt.label}) {opt.text}", options_color, 14)
+        p.line_spacing = 1.5
+        
+        # Apply formatting here!
+        formatted_opt = format_unicode_math(f"({opt.label}) {opt.text}")
+        run = p.add_run()
+        run.text = formatted_opt
+        
+        run.font.name = 'Arial'
+        run.font.size = Pt(14)
+        run.font.color.rgb = hex_to_rgb(options_color)
 
 def build_modern_sidebar_question(slide, q: SlideData, theme):
     render_global_decorations(slide, theme)
