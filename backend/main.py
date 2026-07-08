@@ -151,22 +151,55 @@ def normalize_math_text(text: str) -> str:
 def format_unicode_math(text: str) -> str:
     if not text:
         return text
-    # Convert fractions (e.g. 625/36 -> ⁶²⁵/₃₆)
-    sup = str.maketrans("0123456789", "⁰¹²³⁴⁵⁶⁷⁸⁹")
-    sub = str.maketrans("0123456789", "₀₁₂₃₄₅₆₇₈₉")
-    
-    def frac_repl(match):
-        num = match.group(1).translate(sup)
-        den = match.group(2).translate(sub)
+        
+    # Translation tables for superscripts and subscripts
+    SUP = str.maketrans("0123456789+-=()abcdefghijklmnopqrstuvwxyz", "⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻⁼⁽⁾ᵃᵇᶜᵈᵉᶠᵍʰⁱʲᵏˡᵐⁿᵒᵖ𐑾ʳˢᵗᵘᵛʷˣʸᶻ")
+    # Subscripts are more limited in Unicode, but digits are fully supported
+    SUB = str.maketrans("0123456789+-=()aehijklmnoprstuvx", "₀₁₂₃₄₅₆₇₈₉₊₋₌₍₎ₐₑₕᵢⱼₖₗₘₙₒₚᵣₛₜᵤᵥₓ")
+
+    # 1. Convert LaTeX fractions: \frac{num}{den} -> ⁿᵘᵐ/dₑₙ
+    def frac_repl(m):
+        num = m.group(1).translate(SUP)
+        den = m.group(2).translate(SUB)
         return f"{num}/{den}"
+    text = re.sub(r'\\frac\{([^{}]+)\}\{([^{}]+)\}', frac_repl, text)
+
+    # 2. Convert standard inline fractions: 625/36 -> ⁶²⁵/₃₆ (Only digits to prevent path/URL corruption)
+    def raw_frac_repl(m):
+        num = m.group(1).translate(SUP)
+        den = m.group(2).translate(SUB)
+        return f"{num}/{den}"
+    text = re.sub(r'\b(\d+)/(\d+)\b', raw_frac_repl, text)
+
+    # 3. Convert square roots: \sqrt{3} -> √3 or \sqrt{x+1} -> √(x+1)
+    def sqrt_repl(m):
+        val = m.group(1)
+        if val.isdigit() or len(val) == 1:
+            return f"√{val}"
+        return f"√({val})"
+    text = re.sub(r'\\sqrt\{([^{}]+)\}', sqrt_repl, text)
+    text = text.replace(r'\sqrt', '√') # Fallback for raw \sqrt
+
+    # 4. Convert Exponents: ^2 or ^{23}
+    def exp_repl(m):
+        val = m.group(1) or m.group(2)
+        return val.translate(SUP)
+    text = re.sub(r'\^\{([^{}]+)\}|\^([a-zA-Z0-9])', exp_repl, text)
+
+    # 5. Clean up remaining LaTeX symbols & delimiters
+    replacements = {
+        r'\circ': '°',
+        r'\angle': '∠',
+        r'\triangle': '∆',
+        r'\pi': 'π',
+        r'\le': '≤',
+        r'\ge': '≥',
+        r'\cdot': '·',
+        '$': '' # Strip out LaTeX math mode wrappers
+    }
+    for k, v in replacements.items():
+        text = text.replace(k, v)
         
-    text = re.sub(r'\b(\d+)/(\d+)\b', frac_repl, text)
-    
-    # Convert exponents (e.g. x^2 -> x²)
-    def exp_repl(match):
-        return match.group(1) + match.group(2).translate(sup)
-        
-    text = re.sub(r'([a-zA-Z0-9])\^(\d+)', exp_repl, text)
     return text
 
 def add_mixed_content(slide, text: str, start_x: float, start_y: float, width: float, color: str, font_size: int = 14) -> float:
