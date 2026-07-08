@@ -1,12 +1,12 @@
 import os
 import re
+import json
 from io import BytesIO
 from typing import List, Optional
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
-import json
 from lxml import etree
 import latex2mathml.converter
 from pptx import Presentation
@@ -15,6 +15,9 @@ from pptx.dml.color import RGBColor
 from pptx.enum.shapes import MSO_SHAPE
 from pptx.enum.text import PP_ALIGN
 from google import genai
+from dotenv import load_dotenv
+
+load_dotenv(os.path.join(os.path.dirname(__file__), '..', '.env'))
 
 app = FastAPI(title="SlideGen Pro Backend")
 
