@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { useStore, parseLocalText } from '../../store/useStore';
+import { useStore, parseLocalText, convertFractions } from '../../store/useStore';
 import { Sparkles, Loader2, FileText, CheckCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -40,8 +40,15 @@ export default function RawTextInput() {
 
             const data = await response.json();
             
+            // Safety net: run AI output through convertFractions to catch any plain-text math
+            const sanitized = data.map(q => ({
+                ...q,
+                qText: convertFractions(q.qText),
+                options: (q.options || []).map(o => ({ ...o, text: convertFractions(o.text) }))
+            }));
+            
             // Reconstruct a clean text string from the AI's structured JSON
-            const cleanText = data.map((q, i) => {
+            const cleanText = sanitized.map((q, i) => {
                 let str = `Q.${i + 1}: ${q.qText}`;
                 if (q.options && q.options.length > 0) {
                     str += '\n' + q.options.map(o => `(${o.label}) ${o.text}`).join('\n');
@@ -50,7 +57,7 @@ export default function RawTextInput() {
             }).join('\n\n');
             
             // Set AI data FIRST so the useEffect guard is active before rawText changes
-            setAiQuestions(data);
+            setAiQuestions(sanitized);
             setRawText(cleanText);
             toast.success('Successfully formatted and synced!', { id: loadingToast });
         } catch (err) {

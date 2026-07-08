@@ -437,8 +437,10 @@ RULE 3 — COMPACT OPTIONS (GRID LAYOUT):
 - ONLY use this array structure. Do NOT return a string for options.
 
 RULE 4 — MATHEMATICAL NOTATION:
-- Preserve subscripts and superscripts as plain text: N₁ → "N1", 6⁶ → "6^6", x² → "x^2".
-- Use ^ for exponents and simple notation for subscripts.
+- Wrap ALL math expressions in LaTeX delimiters using $...$ (inline).
+- Fractions: $\\frac{{a}}{{b}}$. Exponents: $x^{{2}}$. Subscripts: $x_{{1}}$. Roots: $\\sqrt{{x}}$.
+- Example: "Area = $\\frac{{625}}{{36}}$ $cm^{{2}}$" NOT "Area = 625/36 cm^2"
+- NEVER output bare caret (^), slash fractions (a/b), or Unicode subscripts/superscripts as plain text. Always wrap them in $...$.
 
 RULE 5 — ASSERTION (A) & REASON (R):
 - Separate the Assertion text and Reason text with a single \\n in qText.

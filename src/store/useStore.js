@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-const convertFractions = (text) => {
+export const convertFractions = (text) => {
     if (!text) return text;
     // OCR cleanups
     text = text.replace(/I(\d+)/g, '√$1');
@@ -14,6 +14,11 @@ const convertFractions = (text) => {
         let processed = part.replace(/\b(\d+)\/(\d+)\b/g, '$\\frac{$1}{$2}$');
         // Fix stray square roots if they are standalone
         processed = processed.replace(/√(\d+)/g, '$\\sqrt{$1}$');
+        // Wrap exponents/powers as LaTeX superscripts
+        processed = processed.replace(/\b([a-zA-Z0-9]+)\^(-?\d+|\([^)]+\)|\{[^}]+\})/g, (m, base, exp) => {
+            const e = exp.replace(/^[({]|[)}]$/g, '');
+            return `$${base}^{${e}}$`;
+        });
         return processed;
     }).join('');
 };
