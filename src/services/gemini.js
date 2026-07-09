@@ -1,5 +1,6 @@
 export const generateSlideData = async (rawText, token) => {
-    const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:8000";
+    const rawBackendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:8000";
+    const backendUrl = rawBackendUrl.replace(/\/+$/, '');
     const response = await fetch(`${backendUrl}/api/generate`, {
         method: "POST",
         headers: {
