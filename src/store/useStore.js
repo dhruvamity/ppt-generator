@@ -261,7 +261,7 @@ export const useStore = create(
             }),
 
             // Themes
-            themeId: 'dark-neon',
+            themeId: 'modern-neon',
             setThemeId: (id) => set({ themeId: id }),
 
             // Layout (independent from theme colors)
@@ -296,7 +296,7 @@ export const useStore = create(
             clearGeneratorState: () => set({
                 config: initialConfig,
                 rawText: defaultRawText,
-                themeId: 'dark-neon',
+                themeId: 'modern-neon',
                 layoutId: 'modern-sidebar',
                 aiQuestions: null
             })

@@ -193,6 +193,82 @@ export default function LiveSlidePreview({ theme, type = 'title', config, questi
         </>
     );
 
+    const renderModernNeonDecorations = (isWorkspace, qNum) => (
+        <>
+            <div style={{ position: 'absolute', right: x(-1.0), top: y(-1.5), width: w(4.0), height: h(4.0), backgroundColor: `#${theme.purple}`, border: `1.5cqw solid #${theme.gold}`, borderRadius: '50%', zIndex: 0 }}></div>
+            <div style={{ position: 'absolute', left: x(-1.5), bottom: y(-2.0), width: w(4.0), height: h(4.0), backgroundColor: `#${theme.cyan}`, borderRadius: '50%', zIndex: 0 }}></div>
+            {!isWorkspace && qNum && <div style={{ position: 'absolute', right: x(0.5), bottom: y(0.8), fontSize: fs(150), fontWeight: 'bold', color: `#${theme.watermark}`, zIndex: 0, lineHeight: 1 }}>{qNum}</div>}
+            <div style={{ position: 'absolute', left: 0, bottom: 0, width: '40%', height: h(0.4), backgroundColor: `#${theme.magenta}`, zIndex: 1 }}></div>
+            <div style={{ position: 'absolute', left: '40%', bottom: 0, width: '60%', height: h(0.4), backgroundColor: `#${theme.purple}`, zIndex: 1 }}></div>
+        </>
+    );
+
+    const renderModernNeonTitle = () => (
+        <>
+            {renderModernNeonDecorations(false, '')}
+            <div style={{ position: 'absolute', left: 0, top: 0, width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: 10 }}>
+                <div style={{ fontSize: fs(60), fontWeight: 'bold', color: `#${theme.textWhite}`, textAlign: 'center', marginBottom: '20px' }}>
+                    {config?.mainTitle1} <span style={{ color: `#${theme.cyan}` }}>{config?.mainTitle2}</span>
+                </div>
+                <div style={{ display: 'flex', gap: '20px' }}>
+                    <div style={{ backgroundColor: `#${theme.cyan}`, padding: '10px 30px', borderRadius: '8px', fontSize: fs(16), fontWeight: 'bold', color: `#${theme.textBlack}` }}>{config?.pill1}</div>
+                    <div style={{ border: `2px solid #${theme.magenta}`, padding: '10px 30px', borderRadius: '8px', fontSize: fs(16), fontWeight: 'bold', color: `#${theme.magenta}` }}>{config?.pill2}</div>
+                </div>
+                <div style={{ marginTop: '40px', fontSize: fs(18), color: `#${theme.textWhite}`, letterSpacing: '0.2cqw' }}>{config?.footer}</div>
+            </div>
+        </>
+    );
+
+    const renderModernNeonQuestion = () => {
+        const isWorkspace = questionData?.isWorkspace || false;
+        const accentColor = isWorkspace ? theme.gold : theme.cyan;
+        const headerText = isWorkspace ? 'WORK SPACE' : questionData?.badge || 'Q';
+        const qNum = questionData?.badge ? questionData.badge.replace('Q.', 'Q') : 'Q1';
+
+        let bodyContent;
+        if (isWorkspace) {
+            bodyContent = <div style={{ width: '100%', height: '100%', background: `repeating-linear-gradient(to bottom, transparent, transparent 49px, #${theme.watermark} 49px, #${theme.watermark} 50px)` }}></div>;
+        } else {
+            bodyContent = (
+                <>
+                    <div style={{ color: `#${theme.textWhite}`, fontSize: fs(11), lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>
+                        <EditableBlock 
+                            value={questionData?.qText} 
+                            theme={theme}
+                            onChange={(newVal) => updateSlideQuestion(questionData?.index, newVal)} 
+                        />
+                    </div>
+                    {renderOptionsGrid(questionData?.options, theme.textWhite, questionData?.index)}
+                </>
+            );
+        }
+
+        return (
+            <>
+                {renderModernNeonDecorations(isWorkspace, qNum)}
+                <div style={{ position: 'absolute', left: x(0.5), top: y(0.5), display: 'flex', alignItems: 'center', zIndex: 10, width: w(9.0) }}>
+                    {isWorkspace 
+                        ? <div style={{ fontSize: fs(14), fontWeight: 'bold', color: `#${theme.gold}`, paddingRight: '15px' }}>WORK SPACE</div>
+                        : <div style={{ backgroundColor: `#${theme.cyan}`, padding: '5px 20px', fontSize: fs(14), fontWeight: 'bold', color: `#${theme.textBlack}`, borderRadius: '8px 0 0 8px' }}>{headerText}</div>
+                    }
+                    <div style={{ flexGrow: 1, height: '2px', backgroundColor: `#${accentColor}` }}></div>
+                    <div style={{ backgroundColor: `#${theme.bgColor}`, border: `1px solid #${theme.cyan}`, padding: '5px 15px', fontSize: fs(10), fontWeight: 'bold', color: `#${theme.textWhite}`, marginLeft: '10px' }}>{(questionData?.tag || '').toUpperCase()}</div>
+                </div>
+                <div style={{ position: 'absolute', left: 0, top: 0, width: '100%', height: '100%', padding: '120px 60px 60px 60px', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', zIndex: 10 }}>
+                    {bodyContent}
+                </div>
+            </>
+        );
+    };
+
+    if (theme.name === 'Cyberpunk Neon') {
+        return (
+            <div style={baseStyle} className="shadow-md rounded-lg border border-outline-variant/30 flex-shrink-0">
+                {type === 'title' ? renderModernNeonTitle() : renderModernNeonQuestion()}
+            </div>
+        );
+    }
+
     return (
         <div style={baseStyle} className="shadow-md rounded-lg border border-outline-variant/30 flex-shrink-0">
             {type === 'title' && layoutType === 'modern-sidebar' && renderModernSidebarTitle()}

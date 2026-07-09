@@ -1,4 +1,9 @@
 export const THEMES = {
+    'modern-neon': {
+        name: 'Cyberpunk Neon', bgColor: '110F1A', cyan: '00C6D4', purple: '7E32C6',
+        gold: 'C4961A', magenta: 'CC00FF', watermark: '2B2043', tealDecor: '00C6D4', 
+        bgCard: '110F1A', textWhite: 'FFFFFF', textBlack: '000000', decorPurple: '7E32C6'
+    },
     'dark-neon': {
         name: 'Dark Neon', bgColor: '05050F', cyan: '00E5FF', purple: '7C3AED',
         gold: 'FFD700', tealDecor: '008080', bgCard: '0A0A1F', textWhite: 'FFFFFF',

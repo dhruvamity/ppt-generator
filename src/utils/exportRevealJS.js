@@ -124,6 +124,73 @@ export const exportToRevealJS = (config, activeSlides, theme, layoutId = 'modern
     const generateSlideHtml = (isTitle, slide, layoutType) => {
         let slideHtml = '';
 
+        if (theme.name === 'Cyberpunk Neon') {
+            const isWorkspace = slide?.isWorkspace || false;
+            const accentColor = isWorkspace ? theme.gold : theme.cyan;
+            const headerText = isWorkspace ? 'WORK SPACE' : slide?.badge || 'Q';
+            const qNum = slide?.badge ? slide.badge.replace('Q.', 'Q') : 'Q1';
+
+            const renderModernNeonDecorations = () => `
+                <div style="position: absolute; right: ${x(-1.0)}; top: ${y(-1.5)}; width: ${w(4.0)}; height: ${h(4.0)}; background-color: #${theme.purple}; border: 24px solid #${theme.gold}; border-radius: 50%; z-index: 0;"></div>
+                <div style="position: absolute; left: ${x(-1.5)}; bottom: ${y(-2.0)}; width: ${w(4.0)}; height: ${h(4.0)}; background-color: #${theme.cyan}; border-radius: 50%; z-index: 0;"></div>
+                ${!isTitle ? `<div style="position: absolute; right: ${x(0.5)}; bottom: ${y(0.8)}; font-size: ${fs(150)}; font-weight: bold; color: #${theme.watermark}; z-index: 0; line-height: 1;">${qNum}</div>` : ''}
+                <div style="position: absolute; left: 0; bottom: 0; width: 40%; height: ${h(0.4)}; background-color: #${theme.magenta}; z-index: 1;"></div>
+                <div style="position: absolute; left: 40%; bottom: 0; width: 60%; height: ${h(0.4)}; background-color: #${theme.purple}; z-index: 1;"></div>
+            `;
+
+            if (isTitle) {
+                slideHtml = `
+                    ${renderModernNeonDecorations()}
+                    <div style="position: absolute; left: 0; top: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10;">
+                        <div style="font-size: ${fs(60)}; font-weight: bold; color: #${theme.textWhite}; text-align: center; margin-bottom: 20px;">
+                            ${config?.mainTitle1} <span style="color: #${theme.cyan}">${config?.mainTitle2}</span>
+                        </div>
+                        <div style="display: flex; gap: 20px;">
+                            <div style="background-color: #${theme.cyan}; padding: 10px 30px; border-radius: 8px; font-size: ${fs(16)}; font-weight: bold; color: #${theme.textBlack}">${config?.pill1}</div>
+                            <div style="border: 2px solid #${theme.magenta}; padding: 10px 30px; border-radius: 8px; font-size: ${fs(16)}; font-weight: bold; color: #${theme.magenta}">${config?.pill2}</div>
+                        </div>
+                        <div style="margin-top: 40px; font-size: ${fs(18)}; color: #${theme.textWhite}; letter-spacing: 4px;">${config?.footer}</div>
+                    </div>
+                `;
+            } else {
+                let bodyContent = '';
+                if (isWorkspace) {
+                    bodyContent = `
+                        <div style="width: 100%; height: 100%; background: repeating-linear-gradient(to bottom, transparent, transparent 49px, #${theme.watermark} 49px, #${theme.watermark} 50px);"></div>
+                    `;
+                } else {
+                    bodyContent = `
+                        <div style="color: #${theme.textWhite}; font-size: ${fs(11)}; line-height: 1.5; white-space: pre-wrap;">${enforceDisplayMath(slide.qText)}</div>
+                        ${renderOptionsGrid(slide.options, theme.cyan)}
+                    `;
+                }
+
+                slideHtml = `
+                    ${renderModernNeonDecorations()}
+                    
+                    <div style="position: absolute; left: ${x(0.5)}; top: ${y(0.5)}; display: flex; align-items: center; z-index: 10; width: ${w(9.0)};">
+                        ${isWorkspace 
+                            ? `<div style="font-size: ${fs(14)}; font-weight: bold; color: #${theme.gold}; padding-right: 15px;">WORK SPACE</div>` 
+                            : `<div style="background-color: #${theme.cyan}; padding: 5px 20px; font-size: ${fs(14)}; font-weight: bold; color: #${theme.textBlack}; border-radius: 8px 0 0 8px;">${headerText}</div>`
+                        }
+                        <div style="flex-grow: 1; height: 2px; background-color: #${accentColor};"></div>
+                        <div style="background-color: #${theme.bgColor}; border: 1px solid #${theme.cyan}; padding: 5px 15px; font-size: ${fs(10)}; font-weight: bold; color: #${theme.textWhite}; margin-left: 10px;">${(slide?.tag || '').toUpperCase()}</div>
+                    </div>
+
+                    <div style="position: absolute; left: 0; top: 0; width: 100%; height: 100%; padding: 120px 60px 60px 60px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: flex-start; z-index: 10;">
+                        ${bodyContent}
+                    </div>
+                `;
+            }
+            
+            return `
+                <section>
+                    <div class="slide-container">
+                        ${slideHtml}
+                    </div>
+                </section>`;
+        }
+
         if (isTitle && layoutType === 'modern-sidebar') {
             slideHtml = `
                 ${renderGlobalDecorations()}
