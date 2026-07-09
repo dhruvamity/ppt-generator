@@ -1,7 +1,15 @@
-// Helper to force \displaystyle on all inline math so fractions are tall
+// Safely injects \displaystyle inside math blocks so MathJax renders tall fractions
 const enforceDisplayMath = (text) => {
     if (!text) return "";
-    return text.replace(/\$([^$]+)\$/g, '$\\displaystyle $1$');
+    const parts = text.split('$');
+    return parts.map((part, index) => {
+        if (part === '') return '';
+        // Odd indices are math blocks
+        if (index % 2 !== 0) {
+            return `$\\displaystyle ${part}$`;
+        }
+        return part;
+    }).join('');
 };
 
 export const exportToRevealJS = (config, activeSlides, theme) => {
@@ -42,8 +50,8 @@ export const exportToRevealJS = (config, activeSlides, theme) => {
         }
         
         .q-text { 
-            font-size: 40px; 
-            line-height: 1.5; 
+            font-size: 36px; 
+            line-height: 1.6; 
             margin-bottom: 50px; 
         }
         
@@ -51,13 +59,12 @@ export const exportToRevealJS = (config, activeSlides, theme) => {
             display: grid; 
             grid-template-columns: 1fr 1fr; 
             gap: 40px 20px; 
-            font-size: 36px; 
+            font-size: 32px; 
         }
         .options-grid.cols-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
         
         .opt-item strong { color: #${theme.cyan}; margin-right: 15px; }
         
-        /* MathJax adjustments */
         .MathJax { font-size: 1.1em !important; }
     </style>
 </head>
@@ -95,6 +102,7 @@ export const exportToRevealJS = (config, activeSlides, theme) => {
         </div>
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/plugin/math/math.min.js"></script>
     <script>
         Reveal.initialize({
             width: 1280,
@@ -106,7 +114,7 @@ export const exportToRevealJS = (config, activeSlides, theme) => {
                 config: 'TeX-AMS_HTML-full',
                 tex2jax: { inlineMath: [['$','$']], displayMath: [['$$','$$']], processEscapes: true }
             },
-            dependencies: [ { src: 'https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/plugin/math/math.min.js', async: true } ]
+            plugins: [ RevealMath ]
         });
     </script>
 </body>

@@ -1,19 +1,15 @@
 import { GoogleGenerativeAI, SchemaType } from '@google/generative-ai';
 
-// SAFETY NET: Finds naked LaTeX and forces dollar signs around it
-const autoWrapMath = (str) => {
-    if (typeof str !== 'string' || !str) return str;
-    let s = str;
-    // Fix unwrapped fractions
-    s = s.replace(/(?<!\$)(\\frac{[^{}]+}{[^{}]+})(?!\$)/g, '$$$1$$');
-    // Fix unwrapped square roots
-    s = s.replace(/(?<!\$)(\\sqrt{[^{}]+})(?!\$)/g, '$$$1$$');
-    // Fix unwrapped geometry symbols
-    s = s.replace(/(?<!\$)(\\triangle\s*[A-Z]*)(?!\$)/g, '$$$1$$');
-    s = s.replace(/(?<!\$)(\\angle\s*[A-Z]*)(?!\$)/g, '$$$1$$');
-    // Fix stray degree symbols
-    s = s.replace(/(?<!\$)(\d+^\circ)(?!\$)/g, '$$$1$$');
-    return s;
+// Fault-Tolerant Cleanup: Removes nested $ signs inside fractions or roots if the AI disobeys
+const cleanMangledMath = (text) => {
+    if (!text) return text;
+    let cleanText = text;
+    // Remove $ signs that are immediately followed by \sqrt or inside \frac
+    cleanText = cleanText.replace(/{\$/g, '{').replace(/\$}/g, '}');
+    cleanText = cleanText.replace(/\$\\sqrt/g, '\\sqrt');
+    // Combine adjacent math blocks separated by spaces e.g., $4$ $x$ -> $4 x$
+    cleanText = cleanText.replace(/\$\s+\$/g, ' ');
+    return cleanText;
 };
 
 export const generateSlideData = async (rawText) => {
@@ -46,20 +42,35 @@ export const generateSlideData = async (rawText) => {
         }
     });
 
-    const prompt = `Parse the text into a JSON array. Extract choices into the options array. 
-CRITICAL: ALL math, fractions, and symbols MUST be in LaTeX AND wrapped in dollar signs ($). 
-Use \\frac{a}{b} for fractions. NO SLASHES.\n\n${rawText}`;
+    const prompt = `You are an elite educational data formatter. Parse the text into a JSON array.
+
+CRITICAL MATH RULES:
+1. USE ONLY ONE PAIR OF DOLLAR SIGNS per equation/expression. Combine adjacent numbers and math!
+   - BAD: 4($\\sqrt{2}$ - 1) cm
+   - GOOD: $4(\\sqrt{2} - 1)$ cm
+2. NEVER NEST DOLLAR SIGNS. DO NOT put $ inside fractions or roots!
+   - BAD: $\\frac{500}{$\\sqrt{3}$}$
+   - GOOD: $\\frac{500}{\\sqrt{3}}$
+   - BAD: Area ($\\triangle$ADE)
+   - GOOD: Area $(\\triangle ADE)$
+3. NO SLASHES for fractions. ALWAYS use \\frac{numerator}{denominator}.
+   - BAD: $1/2$
+   - GOOD: $\\frac{1}{2}$
+
+Extract all choices (1, 2, 3, 4) into the "options" array.
+Raw text:
+${rawText}`;
 
     const result = await model.generateContent(prompt);
     const rawData = JSON.parse(result.response.text());
 
-    // Apply the safety net to all text fields
-    return rawData.map(slide => ({
+    return rawData.map((slide, i) => ({
         ...slide,
-        qText: autoWrapMath(slide.qText),
+        badge: `Q.${i + 1}`, // Ensure standard numbering
+        qText: cleanMangledMath(slide.qText),
         options: (slide.options || []).map(opt => ({
-            label: opt.label.replace(/[()]/g, ''),
-            text: autoWrapMath(opt.text)
+            label: String(opt.label).replace(/[()]/g, ''),
+            text: cleanMangledMath(opt.text)
         }))
     }));
 };
