@@ -79,12 +79,13 @@ export const exportToRevealJS = (config, activeSlides, theme) => {
 
     activeSlides.forEach(slide => {
         let optionsHtml = '';
-        if (slide.options && slide.options.length > 0) {
-            const totalChars = slide.options.reduce((sum, opt) => sum + (opt.text ? opt.text.length : 0), 0);
-            const gridClass = (totalChars < 50 && slide.options.length === 4) ? 'cols-4' : '';
+        const optionsArray = Array.isArray(slide.options) ? slide.options : [];
+        if (optionsArray.length > 0) {
+            const totalChars = optionsArray.reduce((sum, opt) => sum + (opt.text ? opt.text.length : 0), 0);
+            const gridClass = (totalChars < 60 && optionsArray.length === 4) ? 'cols-4' : '';
             
             optionsHtml = `<div class="options-grid ${gridClass}">`;
-            slide.options.forEach(opt => {
+            optionsArray.forEach(opt => {
                 optionsHtml += `<div class="opt-item"><strong>(${opt.label})</strong> ${enforceDisplayMath(opt.text)}</div>`;
             });
             optionsHtml += '</div>';
