@@ -133,7 +133,7 @@ export const exportToRevealJS = (config, activeSlides, theme, layoutId = 'modern
             const renderModernNeonDecorations = () => `
                 <div style="position: absolute; right: ${x(-1.0)}; top: ${y(-1.5)}; width: ${w(4.0)}; height: ${h(4.0)}; background-color: #${theme.purple}; border: 24px solid #${theme.gold}; border-radius: 50%; z-index: 0;"></div>
                 <div style="position: absolute; left: ${x(-1.5)}; bottom: ${y(-2.0)}; width: ${w(4.0)}; height: ${h(4.0)}; background-color: #${theme.cyan}; border-radius: 50%; z-index: 0;"></div>
-                ${!isTitle ? `<div style="position: absolute; right: ${x(0.5)}; bottom: ${y(0.8)}; font-size: ${fs(150)}; font-weight: bold; color: #${theme.watermark}; z-index: 0; line-height: 1;">${qNum}</div>` : ''}
+                ${!isTitle ? `<div style="position: absolute; right: ${x(0.5)}; bottom: ${y(0.8)}; font-size: ${fs(150)}; font-weight: bold; color: #${theme.watermark}; opacity: 0.1; z-index: 0; line-height: 1;">${qNum}</div>` : ''}
                 <div style="position: absolute; left: 0; bottom: 0; width: 40%; height: ${h(0.4)}; background-color: #${theme.magenta}; z-index: 1;"></div>
                 <div style="position: absolute; left: 40%; bottom: 0; width: 60%; height: ${h(0.4)}; background-color: #${theme.purple}; z-index: 1;"></div>
             `;

@@ -170,6 +170,7 @@ CRITICAL MATH RULES:
 5. ADVANCED MATH: Use proper LaTeX for integrals (\\int), derivatives (\\frac{{d}}{{dx}}), sums (\\sum), and limits (\\lim).
 
 For each question, identify the specific mathematical or subject topic (e.g., 'Trigonometry', 'Algebra', 'HCF & LCM'). Keep it concise (1-4 words). Add this to the `topic` key in the JSON.
+Additionally, assign a short tag (e.g., 'MCQ', 'Concept', 'Hard', 'Easy') to the `tag` key.
 
 Extract all choices (1, 2, 3, 4) or (A, B, C, D) into the "options" array.
 Raw text:
@@ -200,6 +201,7 @@ Raw text:
         processed_data = []
         for i, slide in enumerate(raw_data):
             slide["badge"] = f"Q.{i + 1}"
+            slide["tag"] = slide.get("tag") or "PRACTICE"
             slide["qText"] = sanitize_math(slide.get("qText") or "")
             slide["topic"] = slide.get("topic") or "General Practice"
             

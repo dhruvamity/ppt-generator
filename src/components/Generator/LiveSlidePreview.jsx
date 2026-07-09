@@ -197,7 +197,7 @@ export default function LiveSlidePreview({ theme, type = 'title', config, questi
         <>
             <div style={{ position: 'absolute', right: x(-1.0), top: y(-1.5), width: w(4.0), height: h(4.0), backgroundColor: `#${theme.purple}`, border: `1.5cqw solid #${theme.gold}`, borderRadius: '50%', zIndex: 0 }}></div>
             <div style={{ position: 'absolute', left: x(-1.5), bottom: y(-2.0), width: w(4.0), height: h(4.0), backgroundColor: `#${theme.cyan}`, borderRadius: '50%', zIndex: 0 }}></div>
-            {!isWorkspace && qNum && <div style={{ position: 'absolute', right: x(0.5), bottom: y(0.8), fontSize: fs(150), fontWeight: 'bold', color: `#${theme.watermark}`, zIndex: 0, lineHeight: 1 }}>{qNum}</div>}
+            {!isWorkspace && qNum && <div style={{ position: 'absolute', right: x(0.5), bottom: y(0.8), fontSize: fs(150), fontWeight: 'bold', color: `#${theme.watermark}`, opacity: 0.1, zIndex: 0, lineHeight: 1 }}>{qNum}</div>}
             <div style={{ position: 'absolute', left: 0, bottom: 0, width: '40%', height: h(0.4), backgroundColor: `#${theme.magenta}`, zIndex: 1 }}></div>
             <div style={{ position: 'absolute', left: '40%', bottom: 0, width: '60%', height: h(0.4), backgroundColor: `#${theme.purple}`, zIndex: 1 }}></div>
         </>
