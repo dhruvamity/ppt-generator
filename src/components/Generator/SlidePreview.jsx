@@ -92,7 +92,7 @@ export default function SlidePreview() {
                                                         </button>
                                                     </div>
                                                 </div>
-                                                <LiveSlidePreview theme={currentTheme} type="question" questionData={q} layoutId={layoutId} />
+                                                <LiveSlidePreview theme={currentTheme} type="question" questionData={{ ...q, index: idx }} layoutId={layoutId} />
                                             </div>
                                         )}
                                     </Draggable>

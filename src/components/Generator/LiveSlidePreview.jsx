@@ -1,6 +1,6 @@
 import React from 'react';
-import 'katex/dist/katex.min.css';
-import { InlineMath, BlockMath } from 'react-katex';
+import EditableBlock from './EditableBlock';
+import { useStore } from '../../store/useStore';
 
 // Math helpers to map PPTX inches to CSS percentages
 const x = (val) => `${(val / 10) * 100}%`;
@@ -9,20 +9,8 @@ const w = (val) => `${(val / 10) * 100}%`;
 const h = (val) => `${(val / 5.625) * 100}%`;
 const fs = (pt) => `${pt * 0.1388}cqw`;
 
-const renderTextWithMath = (text) => {
-    if (!text) return null;
-    const parts = text.split(/(\$\$[\s\S]*?\$\$|\$[\s\S]*?\$)/);
-    return parts.map((part, index) => {
-        if (part.startsWith('$$') && part.endsWith('$$')) {
-            return <BlockMath key={index} math={part.slice(2, -2)} settings={{ output: 'mathml' }} />;
-        } else if (part.startsWith('$') && part.endsWith('$')) {
-            return <InlineMath key={index} math={part.slice(1, -1)} settings={{ output: 'mathml' }} />;
-        }
-        return <span key={index}>{part}</span>;
-    });
-};
-
 export default function LiveSlidePreview({ theme, type = 'title', config, questionData, layoutId }) {
+    const { updateSlideQuestion, updateSlideOption } = useStore();
     if (!theme) return null;
 
     const layoutType = layoutId || 'modern-sidebar';
@@ -53,38 +41,23 @@ export default function LiveSlidePreview({ theme, type = 'title', config, questi
         </>
     );
 
-    const renderOptionsGrid = (options, color) => {
+    const renderOptionsGrid = (options, color, slideIndex) => {
         if (!options || options.length === 0) return null;
         
-        if (!Array.isArray(options)) {
-            return (
-                <div style={{ marginTop: '1.5em', color: `#${color}`, fontSize: fs(14), whiteSpace: 'pre-wrap', lineHeight: 1.5 }}>
-                    {renderTextWithMath(options)}
-                </div>
-            );
-        }
-
         const totalChars = options.reduce((sum, opt) => sum + (opt.text ? opt.text.length : 0), 0);
         const cols = totalChars < 60 && options.length === 4 ? 4 : 2;
 
         return (
-            <div style={{ 
-                marginTop: '2em', 
-                display: 'flex',
-                flexWrap: 'wrap',
-                width: '100%',
-                justifyContent: 'space-between',
-                gap: '1rem'
-            }}>
+            <div style={{ marginTop: '2em', display: 'flex', flexWrap: 'wrap', width: '100%', justifyContent: 'space-between', gap: '1rem' }}>
                 {options.map((opt, i) => (
-                    <div key={i} style={{ 
-                        width: cols === 4 ? '23%' : '48%',
-                        marginBottom: '0.25rem',
-                        color: `#${color}`, 
-                        fontSize: fs(14),
-                        lineHeight: 1.5
-                    }}>
-                        <strong>({opt.label})</strong> {renderTextWithMath(opt.text)}
+                    <div key={i} style={{ width: cols === 4 ? '23%' : '48%', marginBottom: '0.25rem', color: `#${color}`, fontSize: fs(14), lineHeight: 1.5 }}>
+                        <strong>({opt.label})</strong> 
+                        <EditableBlock 
+                            value={opt.text} 
+                            theme={theme}
+                            onChange={(newVal) => updateSlideOption(slideIndex, i, newVal)} 
+                            style={{ display: 'inline' }}
+                        />
                     </div>
                 ))}
             </div>
@@ -123,9 +96,13 @@ export default function LiveSlidePreview({ theme, type = 'title', config, questi
 
             <div style={{ position: 'absolute', left: x(0.4), top: y(0.6), width: w(9.4), textAlign: 'left' }}>
                 <div style={{ color: `#${theme.textWhite}`, fontSize: fs(14), lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>
-                    {renderTextWithMath(questionData?.qText)}
+                    <EditableBlock 
+                        value={questionData?.qText} 
+                        theme={theme}
+                        onChange={(newVal) => updateSlideQuestion(questionData?.index, newVal)} 
+                    />
                 </div>
-                {renderOptionsGrid(questionData?.options, theme.cyan)}
+                {renderOptionsGrid(questionData?.options, theme.cyan, questionData?.index)}
             </div>
         </>
     );
@@ -158,9 +135,13 @@ export default function LiveSlidePreview({ theme, type = 'title', config, questi
 
             <div style={{ position: 'absolute', left: x(0.4), top: y(0.6), width: w(9.4), textAlign: 'left' }}>
                 <div style={{ color: `#${theme.textWhite}`, fontSize: fs(14), lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>
-                    {renderTextWithMath(questionData?.qText)}
+                    <EditableBlock 
+                        value={questionData?.qText} 
+                        theme={theme}
+                        onChange={(newVal) => updateSlideQuestion(questionData?.index, newVal)} 
+                    />
                 </div>
-                {renderOptionsGrid(questionData?.options, theme.cyan)}
+                {renderOptionsGrid(questionData?.options, theme.cyan, questionData?.index)}
             </div>
         </>
     );
@@ -193,9 +174,13 @@ export default function LiveSlidePreview({ theme, type = 'title', config, questi
 
             <div style={{ position: 'absolute', left: x(0.4), top: y(0.6), width: w(9.4), textAlign: 'left' }}>
                 <div style={{ color: `#${theme.textWhite}`, fontSize: fs(14), lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>
-                    {renderTextWithMath(questionData?.qText)}
+                    <EditableBlock 
+                        value={questionData?.qText} 
+                        theme={theme}
+                        onChange={(newVal) => updateSlideQuestion(questionData?.index, newVal)} 
+                    />
                 </div>
-                {renderOptionsGrid(questionData?.options, theme.gold)}
+                {renderOptionsGrid(questionData?.options, theme.gold, questionData?.index)}
             </div>
         </>
     );

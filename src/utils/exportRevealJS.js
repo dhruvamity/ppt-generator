@@ -65,7 +65,8 @@ export const exportToRevealJS = (config, activeSlides, theme) => {
                     inlineMath: [['$','$'], ['\\\\(','\\\\)']],
                     displayMath: [['$$','$$'], ['\\\\[','\\\\]']],
                     processEscapes: true
-                }
+                },
+                TeX: { Macros: { frac: ["\\\\displaystyle\\\\frac{#1}{#2}", 2] } }
             },
             plugins: [ RevealMath ]
         });

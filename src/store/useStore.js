@@ -217,6 +217,16 @@ export const useStore = create(
 
             activeSlides: [],
             setActiveSlides: (slides) => set({ activeSlides: slides }),
+            updateSlideQuestion: (slideIndex, newText) => set((state) => {
+                const newSlides = [...state.activeSlides];
+                newSlides[slideIndex].qText = newText;
+                return { activeSlides: newSlides, aiQuestions: newSlides };
+            }),
+            updateSlideOption: (slideIndex, optIndex, newText) => set((state) => {
+                const newSlides = [...state.activeSlides];
+                newSlides[slideIndex].options[optIndex].text = newText;
+                return { activeSlides: newSlides, aiQuestions: newSlides };
+            }),
             removeSlide: (index) => set((state) => {
                 const filtered = state.activeSlides.filter((_, i) => i !== index);
                 const renumbered = filtered.map((slide, i) => ({
