@@ -28,7 +28,7 @@ export const exportToRevealJS = (config, activeSlides, theme, layoutId = 'modern
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.min.css">
     
     <style>
-        body { background-color: #${theme.bgColor}; }
+        html, body, .reveal { background-color: #${theme.bgColor} !important; margin: 0; padding: 0; width: 100%; height: 100%; }
         .reveal { font-family: 'Segoe UI', Arial, sans-serif; color: #${theme.textWhite}; }
         .reveal .slides section {
             text-align: left;
@@ -253,7 +253,9 @@ export const exportToRevealJS = (config, activeSlides, theme, layoutId = 'modern
         Reveal.initialize({
             width: 1280,
             height: 720,
-            margin: 0.04,
+            margin: 0,
+            minScale: 0.1,
+            maxScale: 3.0,
             controls: true, progress: true, center: true, hash: true, transition: 'slide',
             pdfSeparateFragments: false,
             math: {
