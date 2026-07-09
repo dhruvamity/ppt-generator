@@ -135,6 +135,7 @@ class SlideSchema(BaseModel):
     tag: Optional[str] = None
     qText: Optional[str] = None
     options: Optional[List[OptionSchema]] = None
+    topic: Optional[str] = None
 
 class BeamerRequest(BaseModel):
     slides: List[dict]
@@ -168,6 +169,8 @@ CRITICAL MATH RULES:
    - GOOD: $A = \\begin{{bmatrix}} 2 & -1 \\cr 3 & 4 \\end{{bmatrix}}$
 5. ADVANCED MATH: Use proper LaTeX for integrals (\\int), derivatives (\\frac{{d}}{{dx}}), sums (\\sum), and limits (\\lim).
 
+For each question, identify the specific mathematical or subject topic (e.g., 'Trigonometry', 'Algebra', 'HCF & LCM'). Keep it concise (1-4 words). Add this to the `topic` key in the JSON.
+
 Extract all choices (1, 2, 3, 4) or (A, B, C, D) into the "options" array.
 Raw text:
 {request.rawText}"""
@@ -198,6 +201,7 @@ Raw text:
         for i, slide in enumerate(raw_data):
             slide["badge"] = f"Q.{i + 1}"
             slide["qText"] = sanitize_math(slide.get("qText") or "")
+            slide["topic"] = slide.get("topic") or "General Practice"
             
             options = []
             for opt in slide.get("options") or []:

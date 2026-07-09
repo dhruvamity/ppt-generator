@@ -10,7 +10,7 @@ const h = (val) => `${(val / 5.625) * 100}%`;
 const fs = (pt) => `${pt * 0.1388}cqw`;
 
 export default function LiveSlidePreview({ theme, type = 'title', config, questionData, layoutId }) {
-    const { updateSlideQuestion, updateSlideOption } = useStore();
+    const { updateSlideQuestion, updateSlideOption, updateSlideTopic } = useStore();
     if (!theme) return null;
 
     const layoutType = layoutId || 'modern-sidebar';
@@ -420,10 +420,27 @@ export default function LiveSlidePreview({ theme, type = 'title', config, questi
         );
     };
 
+    const renderTopicTag = () => {
+        if (type === 'title' || questionData?.isWorkspace) return null;
+        let color = theme.cyan || theme.gold || theme.blueOrb || theme.acidGreen || theme.textWhite;
+        if (theme.name === 'Neo-Brutalism') color = theme.textBlack;
+        
+        return (
+            <div style={{ position: 'absolute', bottom: '15px', right: '30px', zIndex: 20, fontSize: fs(10), fontWeight: 'bold', color: `#${color}`, opacity: 0.8, backgroundColor: 'transparent' }}>
+                <EditableBlock 
+                    value={questionData?.topic || "General Practice"} 
+                    theme={theme}
+                    onChange={(newVal) => updateSlideTopic(questionData?.index, newVal)} 
+                />
+            </div>
+        );
+    };
+
     if (theme.name === 'Blueprint Architect') {
         return (
             <div style={baseStyle} className="shadow-md rounded-lg border border-outline-variant/30 flex-shrink-0">
                 {type === 'title' ? renderBlueprintTitle() : renderBlueprintQuestion()}
+                {renderTopicTag()}
             </div>
         );
     }
@@ -432,6 +449,7 @@ export default function LiveSlidePreview({ theme, type = 'title', config, questi
         return (
             <div style={baseStyle} className="shadow-md rounded-lg border border-outline-variant/30 flex-shrink-0">
                 {type === 'title' ? renderAuroraTitle() : renderAuroraQuestion()}
+                {renderTopicTag()}
             </div>
         );
     }
@@ -440,6 +458,7 @@ export default function LiveSlidePreview({ theme, type = 'title', config, questi
         return (
             <div style={baseStyle} className="shadow-md rounded-lg border border-outline-variant/30 flex-shrink-0">
                 {type === 'title' ? renderNeoBrutalismTitle() : renderNeoBrutalismQuestion()}
+                {renderTopicTag()}
             </div>
         );
     }
@@ -448,6 +467,7 @@ export default function LiveSlidePreview({ theme, type = 'title', config, questi
         return (
             <div style={baseStyle} className="shadow-md rounded-lg border border-outline-variant/30 flex-shrink-0">
                 {type === 'title' ? renderModernNeonTitle() : renderModernNeonQuestion()}
+                {renderTopicTag()}
             </div>
         );
     }
@@ -462,6 +482,8 @@ export default function LiveSlidePreview({ theme, type = 'title', config, questi
             
             {type === 'title' && layoutType === 'split-focus' && renderSplitFocusTitle()}
             {type === 'question' && layoutType === 'split-focus' && renderSplitFocusQuestion()}
+            
+            {renderTopicTag()}
         </div>
     );
 }

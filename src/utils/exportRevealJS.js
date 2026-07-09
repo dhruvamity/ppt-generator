@@ -462,7 +462,18 @@ export const exportToRevealJS = (config, activeSlides, theme, layoutId = 'modern
                 </div>
             `;
         }
-        
+        if (!isTitle && !slide?.isWorkspace) {
+            const slideTopic = slide?.topic || "General Practice";
+            let topicColor = theme.cyan || theme.gold || theme.blueOrb || theme.acidGreen || theme.textWhite;
+            if (theme.name === 'Neo-Brutalism') topicColor = theme.textBlack;
+
+            slideHtml += `
+                <div style="position: absolute; right: 30px; bottom: 15px; font-size: ${fs(10)}; font-weight: bold; color: #${topicColor}; opacity: 0.8; z-index: 20;">
+                    ${slideTopic}
+                </div>
+            `;
+        }
+
         return `
             <section>
                 <div class="slide-container">

@@ -236,6 +236,11 @@ export const useStore = create(
                 newSlides[slideIndex].qText = newText;
                 return { activeSlides: newSlides, aiQuestions: newSlides };
             }),
+            updateSlideTopic: (slideIndex, newTopic) => set((state) => {
+                const newSlides = [...state.activeSlides];
+                newSlides[slideIndex].topic = newTopic;
+                return { activeSlides: newSlides, aiQuestions: newSlides };
+            }),
             updateSlideOption: (slideIndex, optIndex, newText) => set((state) => {
                 const newSlides = [...state.activeSlides];
                 newSlides[slideIndex].options[optIndex].text = newText;
