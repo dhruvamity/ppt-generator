@@ -33,6 +33,7 @@ const sanitizeMath = (str) => {
     s = applyOutsideMath(s, /(\\sqrt{(?:[^{}]|{[^{}]*})*})/g);
     s = applyOutsideMath(s, /(\\triangle\s*[A-Z]*)/g);
     s = applyOutsideMath(s, /(\\angle\s*[A-Z]*)/g);
+    s = applyOutsideMath(s, /(\\begin{[^}]+}[\s\S]*?\\end{[^}]+})/g);
 
     // 5. BALANCE DOLLAR SIGNS: Prevent text.split('$') from flipping text/math indexes
     const dollarCount = (s.match(/\$/g) || []).length;
@@ -91,8 +92,14 @@ CRITICAL MATH RULES:
 3. NO SLASHES for fractions. ALWAYS use \\frac{numerator}{denominator}.
    - BAD: $1/2$
    - GOOD: $\\frac{1}{2}$
+4. MATRICES & VECTORS: If the text contains a matrix or vector, YOU MUST format it as a proper LaTeX matrix using \\begin{pmatrix} ... \\end{pmatrix}. DO NOT leave it as a flat string!
+   - BAD: A = (2 -1 3 4) or A = [2 -1, 3 4]
+   - GOOD: $A = \\begin{pmatrix} 2 & -1 \\\\ 3 & 4 \\end{pmatrix}$
+   - BAD: X(1 2 0 1) = (3 -1 2 4)
+   - GOOD: $X \\begin{pmatrix} 1 & 2 \\\\ 0 & 1 \\end{pmatrix} = \\begin{pmatrix} 3 & -1 \\\\ 2 & 4 \\end{pmatrix}$
+5. ADVANCED MATH: Use proper LaTeX for integrals (\\int), derivatives (\\frac{d}{dx}), sums (\\sum), and limits (\\lim).
 
-Extract all choices (1, 2, 3, 4) into the "options" array.
+Extract all choices (1, 2, 3, 4) or (A, B, C, D) into the "options" array.
 Raw text:
 ${rawText}`;
 
