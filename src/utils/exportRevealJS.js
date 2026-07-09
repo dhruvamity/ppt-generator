@@ -1,3 +1,9 @@
+// Helper to force \displaystyle on all inline math so fractions are tall
+const enforceDisplayMath = (text) => {
+    if (!text) return "";
+    return text.replace(/\$([^$]+)\$/g, '$\\displaystyle $1$');
+};
+
 export const exportToRevealJS = (config, activeSlides, theme) => {
     let htmlContent = `<!DOCTYPE html>
 <html lang="en">
@@ -5,39 +11,74 @@ export const exportToRevealJS = (config, activeSlides, theme) => {
     <meta charset="utf-8">
     <title>${config.mainTitle1} ${config.mainTitle2}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reset.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/theme/black.min.css">
     
     <style>
-        .reveal { background-color: #${theme.bgColor}; font-family: Arial, sans-serif; }
-        .reveal h1, .reveal h2 { color: #${theme.cyan}; }
+        body { background-color: #${theme.bgColor}; }
+        .reveal { font-family: 'Segoe UI', Arial, sans-serif; color: #${theme.textWhite}; }
+        
+        /* Force PPT-Style Top-Left Alignment */
+        .reveal .slides section {
+            text-align: left;
+            height: 100%;
+            padding: 60px 80px !important;
+            box-sizing: border-box;
+        }
+        
+        .reveal h1 { color: #${theme.cyan}; font-size: 64px; font-weight: bold; margin-top: 15%; text-align: center; }
         .reveal h1 span { color: #${theme.gold}; }
-        .badge { display: inline-block; background: #${theme.cyan}; color: #${theme.textBlack}; padding: 5px 15px; border-radius: 8px; font-size: 0.5em; margin-bottom: 20px;}
-        .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; text-align: left; margin-top: 40px; font-size: 0.8em; color: #${theme.textWhite}; }
+        .subtitle { text-align: center; font-size: 32px; letter-spacing: 2px; color: #${theme.textWhite}; margin-top: 20px;}
+        
+        .badge { 
+            display: inline-block; 
+            background: #${theme.cyan}; 
+            color: #${theme.textBlack}; 
+            padding: 8px 24px; 
+            border-radius: 8px; 
+            font-size: 24px; 
+            font-weight: bold;
+            margin-bottom: 40px;
+        }
+        
+        .q-text { 
+            font-size: 40px; 
+            line-height: 1.5; 
+            margin-bottom: 50px; 
+        }
+        
+        .options-grid { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 40px 20px; 
+            font-size: 36px; 
+        }
         .options-grid.cols-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
-        .q-text { color: #${theme.textWhite}; text-align: left; font-size: 0.9em; line-height: 1.5; }
+        
+        .opt-item strong { color: #${theme.cyan}; margin-right: 15px; }
+        
+        /* MathJax adjustments */
+        .MathJax { font-size: 1.1em !important; }
     </style>
 </head>
 <body>
     <div class="reveal">
         <div class="slides">
-            <section>
+            <section style="justify-content: center; align-items: center; display: flex; flex-direction: column;">
                 <h1>${config.mainTitle1} <span>${config.mainTitle2}</span></h1>
-                <p style="color: #${theme.textWhite};">${config.pill1} | ${config.pill2}</p>
-                <p style="font-size: 0.5em; color: #${theme.gold};">${config.footer}</p>
+                <div class="subtitle">${config.pill1} | ${config.pill2}</div>
+                <div style="position: absolute; bottom: 40px; width: 100%; text-align: center; color:#${theme.gold}; font-size: 20px;">${config.footer}</div>
             </section>`;
 
     activeSlides.forEach(slide => {
         let optionsHtml = '';
         if (slide.options && slide.options.length > 0) {
             const totalChars = slide.options.reduce((sum, opt) => sum + (opt.text ? opt.text.length : 0), 0);
-            const gridClass = (totalChars < 60 && slide.options.length === 4) ? 'cols-4' : '';
+            const gridClass = (totalChars < 50 && slide.options.length === 4) ? 'cols-4' : '';
             
             optionsHtml = `<div class="options-grid ${gridClass}">`;
             slide.options.forEach(opt => {
-                optionsHtml += `<div><strong>(${opt.label})</strong> ${opt.text}</div>`;
+                optionsHtml += `<div class="opt-item"><strong>(${opt.label})</strong> ${enforceDisplayMath(opt.text)}</div>`;
             });
             optionsHtml += '</div>';
         }
@@ -45,7 +86,7 @@ export const exportToRevealJS = (config, activeSlides, theme) => {
         htmlContent += `
             <section>
                 <div class="badge">${slide.badge} &mdash; ${slide.tag}</div>
-                <div class="q-text">${slide.qText}</div>
+                <div class="q-text">${enforceDisplayMath(slide.qText)}</div>
                 ${optionsHtml}
             </section>`;
     });
@@ -54,21 +95,18 @@ export const exportToRevealJS = (config, activeSlides, theme) => {
         </div>
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/plugin/math/math.min.js"></script>
     <script>
         Reveal.initialize({
-            controls: true, progress: true, center: true, hash: true, transition: 'slide',
+            width: 1280,
+            height: 720,
+            margin: 0.04,
+            controls: true, progress: true, center: false, hash: true, transition: 'slide',
             math: {
                 mathjax: 'https://cdn.jsdelivr.net/gh/mathjax/mathjax@2.7.8/MathJax.js',
                 config: 'TeX-AMS_HTML-full',
-                tex2jax: {
-                    inlineMath: [['$','$'], ['\\\\(','\\\\)']],
-                    displayMath: [['$$','$$'], ['\\\\[','\\\\]']],
-                    processEscapes: true
-                },
-                TeX: { Macros: { frac: ["\\\\displaystyle\\\\frac{#1}{#2}", 2] } }
+                tex2jax: { inlineMath: [['$','$']], displayMath: [['$$','$$']], processEscapes: true }
             },
-            plugins: [ RevealMath ]
+            dependencies: [ { src: 'https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/plugin/math/math.min.js', async: true } ]
         });
     </script>
 </body>
@@ -78,7 +116,7 @@ export const exportToRevealJS = (config, activeSlides, theme) => {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `${config.mainTitle1}_${config.mainTitle2}_Presentation.html`.replace(/ /g, '_');
+    link.download = `${config.mainTitle1}_${config.mainTitle2}_Slides.html`.replace(/ /g, '_');
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);

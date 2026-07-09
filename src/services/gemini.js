@@ -1,12 +1,26 @@
 import { GoogleGenerativeAI, SchemaType } from '@google/generative-ai';
 
+// SAFETY NET: Finds naked LaTeX and forces dollar signs around it
+const autoWrapMath = (str) => {
+    if (typeof str !== 'string' || !str) return str;
+    let s = str;
+    // Fix unwrapped fractions
+    s = s.replace(/(?<!\$)(\\frac{[^{}]+}{[^{}]+})(?!\$)/g, '$$$1$$');
+    // Fix unwrapped square roots
+    s = s.replace(/(?<!\$)(\\sqrt{[^{}]+})(?!\$)/g, '$$$1$$');
+    // Fix unwrapped geometry symbols
+    s = s.replace(/(?<!\$)(\\triangle\s*[A-Z]*)(?!\$)/g, '$$$1$$');
+    s = s.replace(/(?<!\$)(\\angle\s*[A-Z]*)(?!\$)/g, '$$$1$$');
+    // Fix stray degree symbols
+    s = s.replace(/(?<!\$)(\d+^\circ)(?!\$)/g, '$$$1$$');
+    return s;
+};
+
 export const generateSlideData = async (rawText) => {
     const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
     if (!apiKey) throw new Error("VITE_GEMINI_API_KEY is missing in .env");
 
     const genAI = new GoogleGenerativeAI(apiKey);
-    
-    // Use gemini-1.5-flash or 2.5-flash depending on your account access
     const model = genAI.getGenerativeModel({ 
         model: "gemini-2.5-flash",
         generationConfig: {
@@ -23,36 +37,29 @@ export const generateSlideData = async (rawText) => {
                             type: SchemaType.ARRAY,
                             items: {
                                 type: SchemaType.OBJECT,
-                                properties: {
-                                    label: { type: SchemaType.STRING },
-                                    text: { type: SchemaType.STRING }
-                                },
-                                required: ["label", "text"]
+                                properties: { label: { type: SchemaType.STRING }, text: { type: SchemaType.STRING } }
                             }
                         }
-                    },
-                    required: ["badge", "tag", "qText", "options"]
+                    }
                 }
             }
         }
     });
 
-    const prompt = `You are an elite educational data formatter. Parse the text into a JSON array.
-
-CRITICAL RULES:
-1. OPTIONS EXTRACTION: Extract choices (A, B, 1, 2) into the options array.
-2. THE DOLLAR SIGN RULE: ALL math, numbers, symbols, and fractions MUST be formatted in standard LaTeX AND wrapped in dollar signs ($).
-3. STRICT FRACTION RULE: ABSOLUTELY NO SLASHES for fractions. You MUST use \\frac{numerator}{denominator}. 
-   - BAD: $625/36$
-   - GOOD: $\\frac{625}{36}$
-   - BAD: $1/2$
-   - GOOD: $\\frac{1}{2}$
-4. NO DOUBLE ESCAPING: Use standard JSON string escaping (the SDK handles this).
-
-Raw text:
-${rawText}`;
+    const prompt = `Parse the text into a JSON array. Extract choices into the options array. 
+CRITICAL: ALL math, fractions, and symbols MUST be in LaTeX AND wrapped in dollar signs ($). 
+Use \\frac{a}{b} for fractions. NO SLASHES.\n\n${rawText}`;
 
     const result = await model.generateContent(prompt);
-    const response = await result.response;
-    return JSON.parse(response.text());
+    const rawData = JSON.parse(result.response.text());
+
+    // Apply the safety net to all text fields
+    return rawData.map(slide => ({
+        ...slide,
+        qText: autoWrapMath(slide.qText),
+        options: (slide.options || []).map(opt => ({
+            label: opt.label.replace(/[()]/g, ''),
+            text: autoWrapMath(opt.text)
+        }))
+    }));
 };

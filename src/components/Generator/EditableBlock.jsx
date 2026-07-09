@@ -19,15 +19,13 @@ export default function EditableBlock({ value, onChange, className, style, theme
 
     const renderTextWithMath = (text) => {
         if (!text) return null;
-        // Split by $$block$$ or $ inline $
         const parts = text.split(/(\$\$[\s\S]*?\$\$|\$[\s\S]*?\$)/);
         return parts.map((part, index) => {
             if (part.startsWith('$$') && part.endsWith('$$')) {
                 return <BlockMath key={index} math={`\\displaystyle ${part.slice(2, -2)}`} />;
             } else if (part.startsWith('$') && part.endsWith('$')) {
-                // The magic fix: \\displaystyle forces inline math to render at full vertical size
                 return (
-                    <span key={index} className="math-inline-display" style={{ padding: '0 4px' }}>
+                    <span key={index} className="inline-flex items-center px-1">
                         <InlineMath math={`\\displaystyle ${part.slice(1, -1)}`} />
                     </span>
                 );
@@ -43,7 +41,7 @@ export default function EditableBlock({ value, onChange, className, style, theme
                 value={tempValue}
                 onChange={(e) => setTempValue(e.target.value)}
                 onBlur={handleBlur}
-                className="w-full min-h-[3em] bg-white/10 border border-dashed border-white/50 rounded p-2 text-inherit font-mono outline-none resize-y"
+                className="w-full min-h-[4em] bg-black/40 border-2 border-dashed border-blue-400 rounded p-3 text-inherit font-mono outline-none resize-y"
                 style={style}
             />
         );
