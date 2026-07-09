@@ -126,6 +126,16 @@ def sanitize_math(text: str) -> str:
 class GenerateRequest(BaseModel):
     rawText: str
 
+class OptionSchema(BaseModel):
+    label: Optional[str] = None
+    text: Optional[str] = None
+
+class SlideSchema(BaseModel):
+    badge: Optional[str] = None
+    tag: Optional[str] = None
+    qText: Optional[str] = None
+    options: Optional[List[OptionSchema]] = None
+
 class BeamerRequest(BaseModel):
     slides: List[dict]
 
@@ -168,22 +178,33 @@ Raw text:
             contents=prompt,
             config=types.GenerateContentConfig(
                 response_mime_type="application/json",
+                response_schema=list[SlideSchema],
             )
         )
         
-        raw_data = json.loads(response.text)
+        # Safely strip markdown block wrappers if present
+        raw_text = response.text.strip()
+        if raw_text.startswith("```json"):
+            raw_text = raw_text[7:]
+        elif raw_text.startswith("```"):
+            raw_text = raw_text[3:]
+        if raw_text.endswith("```"):
+            raw_text = raw_text[:-3]
+        raw_text = raw_text.strip()
+        
+        raw_data = json.loads(raw_text)
         
         processed_data = []
         for i, slide in enumerate(raw_data):
             slide["badge"] = f"Q.{i + 1}"
-            slide["qText"] = sanitize_math(slide.get("qText", ""))
+            slide["qText"] = sanitize_math(slide.get("qText") or "")
             
             options = []
-            for opt in slide.get("options", []):
-                opt_label = re.sub(r'[()]', '', str(opt.get("label", "")))
+            for opt in slide.get("options") or []:
+                opt_label = re.sub(r'[()]', '', str(opt.get("label") or ""))
                 options.append({
                     "label": opt_label,
-                    "text": sanitize_math(opt.get("text", ""))
+                    "text": sanitize_math(opt.get("text") or "")
                 })
             slide["options"] = options
             processed_data.append(slide)
