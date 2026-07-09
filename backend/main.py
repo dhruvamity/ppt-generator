@@ -87,7 +87,7 @@ def sanitize_math(text: str) -> str:
     # 2.5 FIX AI HALLUCINATIONS
     s = re.sub(r'\\angle([A-Za-z])', r'\\angle \1', s)
     s = re.sub(r'\\triangle([A-Za-z])', r'\\triangle \1', s)
-    s = re.sub(r'(?:\^)?(?:\{)?(?:\\)?(?:c?irc)(?:\})?(?!\w)', r'^{\circ}', s)
+    s = re.sub(r'(?:\^)?(?:\{)?(?:\\)?(?:c?irc)(?:\})?(?!\w)', r'^{\\circ}', s)
     s = re.sub(r'\\text\{\^([^}]+)\}', r'^{\1}', s)
 
     # 3. COMBINE ADJACENT MATH
