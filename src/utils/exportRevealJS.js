@@ -47,6 +47,44 @@ export const exportToRevealJS = (config, activeSlides, theme, layoutId = 'modern
             overflow: hidden;
             box-sizing: border-box;
         }
+
+        @media print {
+            @page {
+                size: 1280px 720px;
+                margin: 0;
+            }
+            body {
+                background-color: #${theme.bgColor} !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+            .reveal, .reveal .slides {
+                width: 1280px !important;
+                height: 720px !important;
+                transform: none !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                overflow: visible !important;
+            }
+            .reveal .slides section {
+                display: block !important;
+                opacity: 1 !important;
+                position: relative !important;
+                width: 1280px !important;
+                height: 720px !important;
+                page-break-after: always !important;
+                page-break-inside: avoid !important;
+                transform: none !important;
+                visibility: visible !important;
+                top: 0 !important;
+                left: 0 !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+            #pdf-btn { display: none !important; }
+        }
     </style>
 </head>
 <body>
@@ -186,6 +224,9 @@ export const exportToRevealJS = (config, activeSlides, theme, layoutId = 'modern
             </section>`;
     };
 
+    // Wrap all slides in a single section for vertical (up-down) navigation
+    htmlContent += `<section>\n`;
+
     // GENERATE TITLE SLIDE FIRST
     htmlContent += generateSlideHtml(true, null, layoutId);
 
@@ -193,6 +234,9 @@ export const exportToRevealJS = (config, activeSlides, theme, layoutId = 'modern
     activeSlides.forEach(slide => {
         htmlContent += generateSlideHtml(false, slide, layoutId);
     });
+
+    // Close the vertical stack
+    htmlContent += `</section>\n`;
 
     htmlContent += `
         </div>
