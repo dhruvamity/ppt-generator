@@ -12,6 +12,11 @@ const sanitizeMath = (str) => {
     // 2. NORMALIZE BLOCK MATH: Convert $$ to $ so text.split('$') doesn't break on empty strings
     s = s.replace(/\$\$/g, '$');
 
+    // 2.5 FIX AI HALLUCINATIONS: Restore missing spaces and fix \circ tokenization glitches
+    s = s.replace(/\\angle([A-Za-z])/g, '\\angle $1'); // \angleABC -> \angle ABC
+    s = s.replace(/\\triangle([A-Za-z])/g, '\\triangle $1'); // \triangleABC -> \triangle ABC
+    s = s.replace(/(?:\^?\{c?irc\})|(?:\^?c?irc\b)/g, '^{\\circ}'); // 45^{irc} -> 45^{\circ}
+
     // 3. COMBINE ADJACENT MATH: $4$ $x$ -> $4 x$
     s = s.replace(/\$\s+\$/g, ' ');
 
