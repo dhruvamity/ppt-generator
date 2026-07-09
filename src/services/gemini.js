@@ -21,7 +21,14 @@ const sanitizeMath = (str) => {
     // 3. COMBINE ADJACENT MATH: $4$ $x$ -> $4 x$
     s = s.replace(/\$\s+\$/g, ' ');
 
-    // 4. WRAP NAKED LATEX: Catch fractions/symbols the AI forgot to wrap
+    // 4. WRAP NAKED LATEX & FIX MATRIX ROW BREAKS
+    // First, fix broken JSON escapes inside matrices.
+    // If Gemini outputs "\\" inside JSON, it gets parsed as a single "\ ".
+    // We catch matrices and replace "\ " with "\cr " to fix row breaks.
+    s = s.replace(/(\\begin{[^}]+}[\s\S]*?\\end{[^}]+})/g, (match) => {
+        return match.replace(/\\\s/g, '\\cr ');
+    });
+
     const applyOutsideMath = (text, regex) => {
         return text.split('$').map((part, index) => {
             if (index % 2 !== 0) return part; // inside math block
@@ -92,11 +99,10 @@ CRITICAL MATH RULES:
 3. NO SLASHES for fractions. ALWAYS use \\frac{numerator}{denominator}.
    - BAD: $1/2$
    - GOOD: $\\frac{1}{2}$
-4. MATRICES & VECTORS: If the text contains a matrix or vector, YOU MUST format it as a proper LaTeX matrix using \\begin{pmatrix} ... \\end{pmatrix}. DO NOT leave it as a flat string!
-   - BAD: A = (2 -1 3 4) or A = [2 -1, 3 4]
-   - GOOD: $A = \\begin{pmatrix} 2 & -1 \\\\ 3 & 4 \\end{pmatrix}$
-   - BAD: X(1 2 0 1) = (3 -1 2 4)
-   - GOOD: $X \\begin{pmatrix} 1 & 2 \\\\ 0 & 1 \\end{pmatrix} = \\begin{pmatrix} 3 & -1 \\\\ 2 & 4 \\end{pmatrix}$
+4. MATRICES & VECTORS: Format as proper LaTeX matrix using \\begin{pmatrix} ... \\end{pmatrix}. 
+   CRITICAL: Use \\cr instead of \\\\ for row breaks! JSON escaping breaks \\\\!
+   - BAD: A = [2 -1, 3 4]
+   - GOOD: $A = \\begin{pmatrix} 2 & -1 \\cr 3 & 4 \\end{pmatrix}$
 5. ADVANCED MATH: Use proper LaTeX for integrals (\\int), derivatives (\\frac{d}{dx}), sums (\\sum), and limits (\\lim).
 
 Extract all choices (1, 2, 3, 4) or (A, B, C, D) into the "options" array.
