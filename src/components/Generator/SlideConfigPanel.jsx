@@ -68,6 +68,19 @@ export default function SlideConfigPanel() {
                         className="w-full bg-surface-container-low border border-outline-variant rounded-lg p-2 text-sm text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
                     />
                 </div>
+                <div className="flex items-center gap-2 mt-2 pt-2 border-t border-outline-variant/30">
+                    <input 
+                        type="checkbox" 
+                        id="insertBlankSlides"
+                        name="insertBlankSlides"
+                        checked={config.insertBlankSlides || false}
+                        onChange={(e) => setConfig({ insertBlankSlides: e.target.checked })}
+                        className="w-4 h-4 text-primary bg-surface-container-low border-outline-variant rounded focus:ring-primary"
+                    />
+                    <label htmlFor="insertBlankSlides" className="font-label-sm text-sm font-semibold text-on-surface">
+                        Insert Blank Solution Slides
+                    </label>
+                </div>
             </div>
         </div>
     );

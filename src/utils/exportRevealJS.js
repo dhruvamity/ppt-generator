@@ -112,7 +112,7 @@ export const exportToRevealJS = (config, activeSlides, theme, layoutId = 'modern
         let optsHtml = `<div style="margin-top: 2em; display: flex; flex-wrap: wrap; width: 100%; justify-content: space-between; gap: 1rem;">`;
         optionsArray.forEach(opt => {
             optsHtml += `
-                <div style="width: ${width}; margin-bottom: 0.25rem; color: #${color}; font-size: ${fs(9)}; line-height: 1.5;">
+                <div style="width: ${width}; margin-bottom: 0.25rem; color: #${color}; font-size: ${fs(11)}; line-height: 1.5;">
                     <strong>(${opt.label})</strong> <span style="display: inline-block; width: 80%; vertical-align: top;">${enforceDisplayMath(opt.text)}</span>
                 </div>
             `;
@@ -149,10 +149,12 @@ export const exportToRevealJS = (config, activeSlides, theme, layoutId = 'modern
                 
                 <div style="position: absolute; left: ${x(0.4)}; top: ${y(0.2)}; width: ${w(0.6)}; height: ${h(0.25)}; background-color: #${theme.cyan}; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: ${fs(12)}; font-weight: bold; color: #${theme.textBlack}">${slide.badge}</div>
                 
+                <div style="position: absolute; left: ${x(1.2)}; top: ${y(0.7)}; width: ${w(8.6)}; height: ${h(0.02)}; background-color: #${theme.cyan}; opacity: 0.5;"></div>
+
                 <div style="position: absolute; left: ${x(7.5)}; top: ${y(5.1)}; width: ${w(2.0)}; height: ${h(0.25)}; background-color: #${theme.bgCard}; border: 1.5px solid #${theme.purple}; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: ${fs(10)}; color: #${theme.purple}; box-sizing: border-box; font-weight: bold;">${(slide.tag || '').toUpperCase()}</div>
 
-                <div style="position: absolute; left: 0; top: 0; width: 100%; height: 100%; padding: 40px 40px 40px 80px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: flex-start;">
-                    <div style="color: #${theme.textWhite}; font-size: ${fs(9)}; line-height: 1.5; white-space: pre-wrap;">${enforceDisplayMath(slide.qText)}</div>
+                <div style="position: absolute; left: 0; top: 0; width: 100%; height: 100%; padding: 100px 40px 40px 80px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: flex-start;">
+                    <div style="color: #${theme.textWhite}; font-size: ${fs(11)}; line-height: 1.5; white-space: pre-wrap;">${enforceDisplayMath(slide.qText)}</div>
                     ${renderOptionsGrid(slide.options, theme.cyan)}
                 </div>
             `;
@@ -178,10 +180,13 @@ export const exportToRevealJS = (config, activeSlides, theme, layoutId = 'modern
                 <div style="position: absolute; left: ${x(0)}; top: ${y(0.05)}; width: ${w(10)}; height: ${h(0.02)}; background-color: #${theme.gold}"></div>
 
                 <div style="position: absolute; left: ${x(0.4)}; top: ${y(0.2)}; width: ${w(0.6)}; height: ${h(0.25)}; background-color: #${theme.cyan}; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: ${fs(12)}; font-weight: bold; color: #${theme.textBlack}">${slide.badge}</div>
+                
+                <div style="position: absolute; left: ${x(1.2)}; top: ${y(0.7)}; width: ${w(8.6)}; height: ${h(0.02)}; background-color: #${theme.cyan}; opacity: 0.5;"></div>
+
                 <div style="position: absolute; left: ${x(7.5)}; top: ${y(5.1)}; width: ${w(2.0)}; height: ${h(0.25)}; background-color: #${theme.bgColor}; border: 1.5px solid #${theme.purple}; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: ${fs(10)}; color: #${theme.purple}; font-weight: bold;">${(slide.tag || '').toUpperCase()}</div>
 
-                <div style="position: absolute; left: 0; top: 0; width: 100%; height: 100%; padding: 40px 40px 40px 80px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: flex-start;">
-                    <div style="color: #${theme.textWhite}; font-size: ${fs(9)}; line-height: 1.5; white-space: pre-wrap;">${enforceDisplayMath(slide.qText)}</div>
+                <div style="position: absolute; left: 0; top: 0; width: 100%; height: 100%; padding: 100px 40px 40px 80px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: flex-start;">
+                    <div style="color: #${theme.textWhite}; font-size: ${fs(11)}; line-height: 1.5; white-space: pre-wrap;">${enforceDisplayMath(slide.qText)}</div>
                     ${renderOptionsGrid(slide.options, theme.cyan)}
                 </div>
             `;
@@ -207,10 +212,13 @@ export const exportToRevealJS = (config, activeSlides, theme, layoutId = 'modern
                 <div style="position: absolute; left: ${x(0)}; top: ${y(0)}; width: ${w(0.1)}; height: ${h(5.625)}; background-color: #${theme.purple}"></div>
                 
                 <div style="position: absolute; left: ${x(0.4)}; top: ${y(0.2)}; width: ${w(0.6)}; height: ${h(0.25)}; background-color: #${theme.cyan}; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: ${fs(12)}; font-weight: bold; color: #${theme.textBlack}">${slide.badge}</div>
+                
+                <div style="position: absolute; left: ${x(1.2)}; top: ${y(0.7)}; width: ${w(8.6)}; height: ${h(0.02)}; background-color: #${theme.cyan}; opacity: 0.5;"></div>
+
                 <div style="position: absolute; left: ${x(7.5)}; top: ${y(5.1)}; width: ${w(2.0)}; height: ${h(0.25)}; background-color: #${theme.bgColor}; border: 1.5px solid #${theme.purple}; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: ${fs(10)}; color: #${theme.purple}; font-weight: bold;">${(slide.tag || '').toUpperCase()}</div>
 
-                <div style="position: absolute; left: 0; top: 0; width: 100%; height: 100%; padding: 40px 40px 40px 80px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: flex-start;">
-                    <div style="color: #${theme.textWhite}; font-size: ${fs(9)}; line-height: 1.5; white-space: pre-wrap;">${enforceDisplayMath(slide.qText)}</div>
+                <div style="position: absolute; left: 0; top: 0; width: 100%; height: 100%; padding: 100px 40px 40px 80px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: flex-start;">
+                    <div style="color: #${theme.textWhite}; font-size: ${fs(11)}; line-height: 1.5; white-space: pre-wrap;">${enforceDisplayMath(slide.qText)}</div>
                     ${renderOptionsGrid(slide.options, theme.gold)}
                 </div>
             `;
@@ -233,6 +241,12 @@ export const exportToRevealJS = (config, activeSlides, theme, layoutId = 'modern
     // GENERATE QUESTION SLIDES
     activeSlides.forEach(slide => {
         htmlContent += generateSlideHtml(false, slide, layoutId);
+        
+        if (config.insertBlankSlides) {
+            // Generate identical slide but without qText or options
+            const blankSlide = { ...slide, qText: '', options: [] };
+            htmlContent += generateSlideHtml(false, blankSlide, layoutId);
+        }
     });
 
     // Close the vertical stack

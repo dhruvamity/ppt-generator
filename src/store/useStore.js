@@ -167,6 +167,7 @@ const initialConfig = {
     pill1: 'MATHEMATICS',
     pill2: '2026 EDITION',
     footer: 'JEE | CAT | COMPETITIVE EXAMS',
+    insertBlankSlides: false,
 };
 
 export const useStore = create(
