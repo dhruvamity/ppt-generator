@@ -99,10 +99,10 @@ CRITICAL MATH RULES:
 3. NO SLASHES for fractions. ALWAYS use \\frac{numerator}{denominator}.
    - BAD: $1/2$
    - GOOD: $\\frac{1}{2}$
-4. MATRICES & VECTORS: Format as proper LaTeX matrix using \\begin{pmatrix} ... \\end{pmatrix}. 
+4. MATRICES & VECTORS: Format as proper LaTeX matrix using \\begin{bmatrix} ... \\end{bmatrix} for square brackets. 
    CRITICAL: Use \\cr instead of \\\\ for row breaks! JSON escaping breaks \\\\!
    - BAD: A = [2 -1, 3 4]
-   - GOOD: $A = \\begin{pmatrix} 2 & -1 \\cr 3 & 4 \\end{pmatrix}$
+   - GOOD: $A = \\begin{bmatrix} 2 & -1 \\cr 3 & 4 \\end{bmatrix}$
 5. ADVANCED MATH: Use proper LaTeX for integrals (\\int), derivatives (\\frac{d}{dx}), sums (\\sum), and limits (\\lim).
 
 Extract all choices (1, 2, 3, 4) or (A, B, C, D) into the "options" array.
