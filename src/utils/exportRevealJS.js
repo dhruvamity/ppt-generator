@@ -32,7 +32,6 @@ export const exportToRevealJS = (config, activeSlides, theme, layoutId = 'modern
         .reveal { font-family: 'Segoe UI', Arial, sans-serif; color: #${theme.textWhite}; }
         .reveal .slides section {
             text-align: left;
-            height: 100%;
             padding: 0 !important;
             margin: 0 !important;
             box-sizing: border-box;
@@ -198,6 +197,12 @@ export const exportToRevealJS = (config, activeSlides, theme, layoutId = 'modern
     htmlContent += `
         </div>
     </div>
+
+    <!-- Floating PDF Export Button -->
+    <div id="pdf-btn" style="position: fixed; bottom: 20px; right: 20px; z-index: 9999; background: #${theme.cyan}; color: black; padding: 10px 20px; border-radius: 8px; font-family: sans-serif; font-weight: bold; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.5); opacity: 0.8; transition: opacity 0.2s;">
+        📥 Save as PDF
+    </div>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/plugin/math/math.min.js"></script>
     <script>
@@ -206,6 +211,7 @@ export const exportToRevealJS = (config, activeSlides, theme, layoutId = 'modern
             height: 720,
             margin: 0.04,
             controls: true, progress: true, center: true, hash: true, transition: 'slide',
+            pdfSeparateFragments: false,
             math: {
                 mathjax: 'https://cdn.jsdelivr.net/gh/mathjax/mathjax@2.7.8/MathJax.js',
                 config: 'TeX-AMS_HTML-full',
@@ -213,6 +219,23 @@ export const exportToRevealJS = (config, activeSlides, theme, layoutId = 'modern
             },
             plugins: [ RevealMath ]
         });
+
+        // PDF Print Logic
+        document.getElementById('pdf-btn').addEventListener('click', () => {
+            if (!window.location.search.match(/print-pdf/gi)) {
+                window.location.search = '?print-pdf';
+            } else {
+                window.print();
+            }
+        });
+
+        // Auto-print if URL contains ?print-pdf
+        if (window.location.search.match(/print-pdf/gi)) {
+            document.getElementById('pdf-btn').innerText = "🖨️ Click to Print";
+            setTimeout(() => {
+                window.print();
+            }, 2000); // Wait for MathJax to render
+        }
     </script>
 </body>
 </html>`;
