@@ -16,21 +16,33 @@ const sanitizeMath = (str) => {
     s = s.replace(/\\angle([A-Za-z])/g, '\\angle $1'); // \angleABC -> \angle ABC
     s = s.replace(/\\triangle([A-Za-z])/g, '\\triangle $1'); // \triangleABC -> \triangle ABC
     s = s.replace(/(?:\^)?(?:\{)?(?:\\)?(?:c?irc)(?:\})?(?!\w)/g, '^{\\circ}'); // normalize all variations of circ/irc to ^{\circ}
+    s = s.replace(/\\text\{\^([^}]+)\}/g, '^{$1}'); // normalize \text{^2} -> ^{2}
 
     // 3. COMBINE ADJACENT MATH: $4$ $x$ -> $4 x$
     s = s.replace(/\$\s+\$/g, ' ');
 
     // 4. WRAP NAKED LATEX: Catch fractions/symbols the AI forgot to wrap
-    s = s.replace(/(?<!\$)(\\frac{[^{}]+}{[^{}]+})(?!\$)/g, '$$$1$$');
-    s = s.replace(/(?<!\$)(\\sqrt{[^{}]+})(?!\$)/g, '$$$1$$');
-    s = s.replace(/(?<!\$)(\\triangle\s*[A-Z]*)(?!\$)/g, '$$$1$$');
-    s = s.replace(/(?<!\$)(\\angle\s*[A-Z]*)(?!\$)/g, '$$$1$$');
+    const applyOutsideMath = (text, regex) => {
+        return text.split('$').map((part, index) => {
+            if (index % 2 !== 0) return part; // inside math block
+            return part.replace(regex, '$$$1$$');
+        }).join('$');
+    };
+
+    s = applyOutsideMath(s, /(\\frac{(?:[^{}]|{[^{}]*})*}{(?:[^{}]|{[^{}]*})*})/g);
+    s = applyOutsideMath(s, /(\\sqrt{(?:[^{}]|{[^{}]*})*})/g);
+    s = applyOutsideMath(s, /(\\triangle\s*[A-Z]*)/g);
+    s = applyOutsideMath(s, /(\\angle\s*[A-Z]*)/g);
 
     // 5. BALANCE DOLLAR SIGNS: Prevent text.split('$') from flipping text/math indexes
     const dollarCount = (s.match(/\$/g) || []).length;
     if (dollarCount % 2 !== 0) {
         s += '$'; // Append a closing $ to the end to stabilize the parser
     }
+    
+    // One final pass to clean up empty math blocks or adjacent math blocks
+    s = s.replace(/\$\$/g, '$');
+    s = s.replace(/\$\s+\$/g, ' ');
 
     return s;
 };
