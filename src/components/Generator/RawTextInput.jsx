@@ -2,9 +2,11 @@ import React, { useEffect } from 'react';
 import { useStore, parseLocalText, convertFractions } from '../../store/useStore';
 import { Sparkles, Loader2, FileText, CheckCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { useAuth } from '@clerk/clerk-react';
 
 export default function RawTextInput() {
     const { rawText, setRawText, isParsing, setIsParsing, setAiQuestions, setActiveSlides, aiQuestions } = useStore();
+    const { getToken } = useAuth();
 
     // Auto-sync text changes to preview (skip when AI formatted data is active)
     useEffect(() => {
@@ -22,7 +24,8 @@ export default function RawTextInput() {
 
     const handleAutoFormat = async () => {
         if (!rawText.trim()) return;
-        useStore.getState().generateFromAI();
+        const token = await getToken();
+        useStore.getState().generateFromAI(token);
     };
 
     const handleTextChange = (e) => {

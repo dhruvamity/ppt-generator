@@ -10,7 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@google/generative-ai": "^0.24.1",
+    "@clerk/clerk-react": "^5.61.8",
     "@hello-pangea/dnd": "^18.0.1",
     "autoprefixer": "^10.5.2",
     "katex": "^0.17.0",

@@ -1,5 +1,6 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Link, Navigate } from 'react-router-dom';
+import { SignedIn, SignedOut } from '@clerk/clerk-react';
 import TopNavBar from './components/TopNavBar';
 import Landing from './pages/Landing';
 import Dashboard from './pages/Dashboard';
@@ -21,6 +22,15 @@ function NotFound() {
     );
 }
 
+function ProtectedRoute({ children }) {
+    return (
+        <>
+            <SignedIn>{children}</SignedIn>
+            <SignedOut><Navigate to="/" replace /></SignedOut>
+        </>
+    );
+}
+
 export default function App() {
     return (
         <ErrorBoundary>
@@ -29,10 +39,15 @@ export default function App() {
                     <TopNavBar />
                     
                     <Routes>
-                        <Route path="/" element={<Landing />} />
-                        <Route path="/dashboard" element={<Dashboard />} />
-                        <Route path="/generator" element={<Generator />} />
-                        <Route path="/templates" element={<Templates />} />
+                        <Route path="/" element={
+                            <>
+                                <SignedIn><Navigate to="/dashboard" replace /></SignedIn>
+                                <SignedOut><Landing /></SignedOut>
+                            </>
+                        } />
+                        <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+                        <Route path="/generator" element={<ProtectedRoute><Generator /></ProtectedRoute>} />
+                        <Route path="/templates" element={<ProtectedRoute><Templates /></ProtectedRoute>} />
                         <Route path="*" element={<NotFound />} />
                     </Routes>
                     

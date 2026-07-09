@@ -189,11 +189,11 @@ export const useStore = create(
             isParsing: false,
             setIsParsing: (parsing) => set({ isParsing: parsing }),
 
-            generateFromAI: async () => {
+            generateFromAI: async (token) => {
                 const { rawText } = get();
                 set({ isParsing: true });
                 try {
-                    const data = await generateSlideData(rawText);
+                    const data = await generateSlideData(rawText, token);
                     
                     const indexedData = data.map((slide, i) => ({
                         ...slide,

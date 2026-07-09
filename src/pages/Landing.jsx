@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Sparkles, ArrowRight, ArrowDown } from 'lucide-react';
+import { SignInButton } from '@clerk/clerk-react';
 
 export default function Landing() {
     return (
@@ -39,7 +40,9 @@ export default function Landing() {
                                         <span className="material-symbols-outlined text-outline">description</span>
                                         Paste Raw Content
                                     </label>
-                                    <Link to="/generator" className="text-primary text-label-sm font-label-sm hover:underline">Start Generating</Link>
+                                    <SignInButton mode="modal">
+                                        <button className="text-primary text-label-sm font-label-sm hover:underline bg-transparent border-0 cursor-pointer p-0">Start Generating</button>
+                                    </SignInButton>
                                 </div>
                                 <textarea readOnly className="w-full h-64 md:h-80 resize-none border-0 focus:ring-0 bg-transparent text-body-md font-body-md text-on-surface-variant placeholder:text-outline-variant p-0" placeholder="Paste your messy quiz questions, reading notes, or lesson outlines here..." value={"Q1: what is photosynthesis??? a) breathing b) making food c) sleeping d) running. ans is b.\n\n2. true/false... mitochondria is powerhouse of cell. (true)"}></textarea>
                             </div>
@@ -51,10 +54,12 @@ export default function Landing() {
                                     </div>
                                     <h3 className="font-headline-md text-headline-md text-on-surface mb-2">Ready to Transform?</h3>
                                     <p className="font-body-md text-body-md text-on-surface-variant mb-6 max-w-[250px]">Click below to see the magic happen instantly.</p>
-                                    <Link to="/generator" className="bg-primary text-on-primary font-label-md text-label-md px-6 py-3 rounded-full hover:bg-primary/90 transition-all shadow-lg hover:shadow-xl flex items-center gap-2">
-                                        Try it out
-                                        <ArrowRight size={18} />
-                                    </Link>
+                                    <SignInButton mode="modal">
+                                        <button className="bg-primary text-on-primary font-label-md text-label-md px-6 py-3 rounded-full hover:bg-primary/90 transition-all shadow-lg hover:shadow-xl flex items-center gap-2 border-0 cursor-pointer">
+                                            Try it out
+                                            <ArrowRight size={18} />
+                                        </button>
+                                    </SignInButton>
                                 </div>
                             </div>
                         </div>
