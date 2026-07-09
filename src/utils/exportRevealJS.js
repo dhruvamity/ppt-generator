@@ -217,7 +217,7 @@ export const exportToRevealJS = (config, activeSlides, theme, layoutId = 'modern
                 config: 'TeX-AMS_HTML-full',
                 tex2jax: { inlineMath: [['$','$']], displayMath: [['$$','$$']], processEscapes: true }
             },
-            plugins: [ RevealMath ]
+            plugins: [ RevealMath.MathJax2 ]
         });
 
         // PDF Print Logic
