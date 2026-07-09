@@ -26,7 +26,7 @@ export default function Generator() {
         
         try {
             const themeData = THEMES[currentTheme] || savedThemes.find(t => t.id === currentTheme) || THEMES['dark-neon'];
-            exportToRevealJS(currentConfig, currentSlides, themeData);
+            exportToRevealJS(currentConfig, currentSlides, themeData, currentLayout);
             
             // Save to recent decks
             const newDeck = {
