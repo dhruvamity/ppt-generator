@@ -261,6 +261,189 @@ export default function LiveSlidePreview({ theme, type = 'title', config, questi
         );
     };
 
+    const renderBlueprintDecorations = () => (
+        <>
+            <div style={{ position: 'absolute', left: '16px', top: '16px', right: '16px', bottom: '16px', border: `2px solid #${theme.cyan}`, zIndex: 0, pointerEvents: 'none' }}></div>
+            <div style={{ position: 'absolute', left: '8px', top: '8px', width: '40px', height: '40px', borderTop: `4px solid #${theme.orange}`, borderLeft: `4px solid #${theme.orange}`, zIndex: 1 }}></div>
+            <div style={{ position: 'absolute', right: '8px', bottom: '8px', width: '40px', height: '40px', borderBottom: `4px solid #${theme.orange}`, borderRight: `4px solid #${theme.orange}`, zIndex: 1 }}></div>
+        </>
+    );
+
+    const renderBlueprintTitle = () => (
+        <>
+            {renderBlueprintDecorations()}
+            <div style={{ position: 'absolute', left: 0, top: 0, width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: 10 }}>
+                <div style={{ fontSize: fs(60), fontWeight: 'bold', color: `#${theme.textWhite}`, textAlign: 'center', marginBottom: '20px' }}>
+                    {config?.mainTitle1} <span style={{ color: `#${theme.cyan}` }}>{config?.mainTitle2}</span>
+                </div>
+                <div style={{ display: 'flex', gap: '20px' }}>
+                    <div style={{ backgroundColor: `#${theme.orange}`, padding: '10px 30px', fontSize: fs(16), fontWeight: 'bold', color: `#${theme.textBlack}` }}>{config?.pill1}</div>
+                    <div style={{ border: `2px solid #${theme.cyan}`, padding: '10px 30px', fontSize: fs(16), fontWeight: 'bold', color: `#${theme.textWhite}` }}>{config?.pill2}</div>
+                </div>
+                <div style={{ marginTop: '40px', fontSize: fs(18), color: `#${theme.textWhite}`, letterSpacing: '0.2cqw' }}>{config?.footer}</div>
+            </div>
+        </>
+    );
+
+    const renderBlueprintQuestion = () => {
+        const isWorkspace = questionData?.isWorkspace || false;
+        const headerText = isWorkspace ? 'WORK SPACE' : questionData?.badge || 'Q';
+        let bodyContent;
+        if (isWorkspace) {
+            bodyContent = <div style={{ width: '100%', height: '100%', background: `linear-gradient(rgba(0, 255, 204, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 255, 204, 0.1) 1px, transparent 1px)`, backgroundSize: '40px 40px' }}></div>;
+        } else {
+            bodyContent = (
+                <>
+                    <div style={{ color: `#${theme.textWhite}`, fontSize: fs(11), lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>
+                        <EditableBlock value={questionData?.qText} theme={theme} onChange={(newVal) => updateSlideQuestion(questionData?.index, newVal)} />
+                    </div>
+                    {renderOptionsGrid(questionData?.options, theme.cyan, questionData?.index)}
+                </>
+            );
+        }
+        return (
+            <>
+                {renderBlueprintDecorations()}
+                <div style={{ position: 'absolute', left: x(0.5), top: y(0.5), display: 'flex', alignItems: 'center', zIndex: 10, width: w(9.0) }}>
+                    <div style={{ backgroundColor: `#${theme.orange}`, padding: '5px 20px', fontSize: fs(14), fontWeight: 'bold', color: `#${theme.textBlack}` }}>{headerText}</div>
+                    <div style={{ backgroundColor: `#${theme.bgColor}`, border: `1px solid #${theme.cyan}`, padding: '5px 15px', fontSize: fs(10), fontWeight: 'bold', color: `#${theme.textWhite}`, marginLeft: '10px' }}>{(questionData?.tag || '').toUpperCase()}</div>
+                </div>
+                <div style={{ position: 'absolute', left: 0, top: 0, width: '100%', height: '100%', padding: '120px 60px 60px 60px', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', zIndex: 10 }}>
+                    {bodyContent}
+                </div>
+            </>
+        );
+    };
+
+    const renderAuroraDecorations = () => (
+        <>
+            <div style={{ position: 'absolute', left: '-100px', top: '-100px', width: '400px', height: '400px', backgroundColor: `#${theme.blueOrb}`, filter: 'blur(80px)', opacity: 0.3, borderRadius: '50%', zIndex: 0 }}></div>
+            <div style={{ position: 'absolute', right: '-100px', bottom: '-100px', width: '400px', height: '400px', backgroundColor: `#${theme.pinkOrb}`, filter: 'blur(80px)', opacity: 0.3, borderRadius: '50%', zIndex: 0 }}></div>
+        </>
+    );
+
+    const renderAuroraTitle = () => (
+        <>
+            {renderAuroraDecorations()}
+            <div style={{ position: 'absolute', left: 0, top: 0, width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: 10 }}>
+                <div style={{ fontSize: fs(60), fontWeight: 'bold', color: `#${theme.textWhite}`, textAlign: 'center', marginBottom: '20px' }}>
+                    {config?.mainTitle1} <span style={{ color: `#${theme.pinkOrb}` }}>{config?.mainTitle2}</span>
+                </div>
+                <div style={{ display: 'flex', gap: '20px' }}>
+                    <div style={{ background: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(12px)', border: '1px solid rgba(255,255,255,0.2)', padding: '10px 30px', borderRadius: '50px', fontSize: fs(16), fontWeight: 'bold', color: `#${theme.textWhite}` }}>{config?.pill1}</div>
+                    <div style={{ background: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(12px)', border: '1px solid rgba(255,255,255,0.2)', padding: '10px 30px', borderRadius: '50px', fontSize: fs(16), fontWeight: 'bold', color: `#${theme.textWhite}` }}>{config?.pill2}</div>
+                </div>
+                <div style={{ marginTop: '40px', fontSize: fs(18), color: `#${theme.textWhite}`, letterSpacing: '0.2cqw' }}>{config?.footer}</div>
+            </div>
+        </>
+    );
+
+    const renderAuroraQuestion = () => {
+        const isWorkspace = questionData?.isWorkspace || false;
+        const headerText = isWorkspace ? 'WORK SPACE' : questionData?.badge || 'Q';
+        let bodyContent;
+        if (isWorkspace) {
+            bodyContent = <div style={{ width: '100%', height: '100%', background: `radial-gradient(#${theme.dot} 2px, transparent 2px)`, backgroundSize: '40px 40px' }}></div>;
+        } else {
+            bodyContent = (
+                <>
+                    <div style={{ color: `#${theme.textWhite}`, fontSize: fs(11), lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>
+                        <EditableBlock value={questionData?.qText} theme={theme} onChange={(newVal) => updateSlideQuestion(questionData?.index, newVal)} />
+                    </div>
+                    {renderOptionsGrid(questionData?.options, theme.textWhite, questionData?.index)}
+                </>
+            );
+        }
+        return (
+            <>
+                {renderAuroraDecorations()}
+                <div style={{ position: 'absolute', left: x(0.5), top: y(0.5), display: 'flex', alignItems: 'center', zIndex: 10, width: w(9.0) }}>
+                    <div style={{ background: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(12px)', border: '1px solid rgba(255,255,255,0.2)', padding: '5px 20px', fontSize: fs(14), fontWeight: 'bold', color: `#${theme.textWhite}`, borderRadius: '50px' }}>{headerText}</div>
+                    <div style={{ background: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(12px)', border: '1px solid rgba(255,255,255,0.2)', padding: '5px 15px', fontSize: fs(10), fontWeight: 'bold', color: `#${theme.textWhite}`, marginLeft: '10px', borderRadius: '50px' }}>{(questionData?.tag || '').toUpperCase()}</div>
+                </div>
+                <div style={{ position: 'absolute', left: 0, top: 0, width: '100%', height: '100%', padding: '120px 60px 60px 60px', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', zIndex: 10 }}>
+                    {bodyContent}
+                </div>
+            </>
+        );
+    };
+
+    const renderNeoBrutalismDecorations = () => (
+        <div style={{ position: 'absolute', left: 0, bottom: 0, width: '100%', height: '10%', backgroundColor: `#${theme.pink}`, borderTop: `3px solid #${theme.black}`, zIndex: 1 }}></div>
+    );
+    const shadowStyle = `6px 6px 0 0 #${theme.black}`;
+
+    const renderNeoBrutalismTitle = () => (
+        <>
+            {renderNeoBrutalismDecorations()}
+            <div style={{ position: 'absolute', left: 0, top: 0, width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: 10 }}>
+                <div style={{ fontSize: fs(60), fontWeight: 'bold', color: `#${theme.textBlack}`, textAlign: 'center', marginBottom: '20px', textTransform: 'uppercase' }}>
+                    {config?.mainTitle1} <span style={{ backgroundColor: `#${theme.acidGreen}`, padding: '0 10px', border: `3px solid #${theme.black}`, boxShadow: shadowStyle }}>{config?.mainTitle2}</span>
+                </div>
+                <div style={{ display: 'flex', gap: '20px' }}>
+                    <div style={{ backgroundColor: `#${theme.acidGreen}`, border: `3px solid #${theme.black}`, boxShadow: shadowStyle, padding: '10px 30px', fontSize: fs(16), fontWeight: 'bold', color: `#${theme.textBlack}` }}>{config?.pill1}</div>
+                    <div style={{ backgroundColor: `#${theme.bgColor}`, border: `3px solid #${theme.black}`, boxShadow: shadowStyle, padding: '10px 30px', fontSize: fs(16), fontWeight: 'bold', color: `#${theme.textBlack}` }}>{config?.pill2}</div>
+                </div>
+                <div style={{ marginTop: '40px', fontSize: fs(18), color: `#${theme.textBlack}`, fontWeight: 'bold' }}>{config?.footer}</div>
+            </div>
+        </>
+    );
+
+    const renderNeoBrutalismQuestion = () => {
+        const isWorkspace = questionData?.isWorkspace || false;
+        const headerText = isWorkspace ? 'WORK SPACE' : questionData?.badge || 'Q';
+        let bodyContent;
+        if (isWorkspace) {
+            bodyContent = <div style={{ width: '100%', height: '100%', background: `repeating-linear-gradient(to bottom, transparent, transparent 59px, #${theme.black} 59px, #${theme.black} 60px)` }}></div>;
+        } else {
+            bodyContent = (
+                <>
+                    <div style={{ color: `#${theme.textBlack}`, fontSize: fs(11), lineHeight: 1.5, whiteSpace: 'pre-wrap', fontWeight: 'bold' }}>
+                        <EditableBlock value={questionData?.qText} theme={theme} onChange={(newVal) => updateSlideQuestion(questionData?.index, newVal)} />
+                    </div>
+                    {renderOptionsGrid(questionData?.options, theme.textBlack, questionData?.index)}
+                </>
+            );
+        }
+        return (
+            <>
+                {renderNeoBrutalismDecorations()}
+                <div style={{ position: 'absolute', left: 0, top: y(0.5), display: 'flex', alignItems: 'center', zIndex: 10, width: '100%', padding: '0 60px', boxSizing: 'border-box' }}>
+                    <div style={{ backgroundColor: `#${theme.acidGreen}`, border: `3px solid #${theme.black}`, boxShadow: shadowStyle, padding: '5px 20px', fontSize: fs(14), fontWeight: 'bold', color: `#${theme.textBlack}` }}>{headerText}</div>
+                    <div style={{ flexGrow: 1, height: '3px', backgroundColor: `#${theme.black}`, margin: '0 20px' }}></div>
+                    <div style={{ backgroundColor: `#${theme.bgColor}`, border: `3px solid #${theme.black}`, boxShadow: shadowStyle, padding: '5px 15px', fontSize: fs(10), fontWeight: 'bold', color: `#${theme.textBlack}` }}>{(questionData?.tag || '').toUpperCase()}</div>
+                </div>
+                <div style={{ position: 'absolute', left: 0, top: 0, width: '100%', height: '100%', padding: '120px 60px 10% 60px', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', zIndex: 10 }}>
+                    {bodyContent}
+                </div>
+            </>
+        );
+    };
+
+    if (theme.name === 'Blueprint Architect') {
+        return (
+            <div style={baseStyle} className="shadow-md rounded-lg border border-outline-variant/30 flex-shrink-0">
+                {type === 'title' ? renderBlueprintTitle() : renderBlueprintQuestion()}
+            </div>
+        );
+    }
+
+    if (theme.name === 'Aurora Glassmorphism') {
+        return (
+            <div style={baseStyle} className="shadow-md rounded-lg border border-outline-variant/30 flex-shrink-0">
+                {type === 'title' ? renderAuroraTitle() : renderAuroraQuestion()}
+            </div>
+        );
+    }
+
+    if (theme.name === 'Neo-Brutalism') {
+        return (
+            <div style={baseStyle} className="shadow-md rounded-lg border border-outline-variant/30 flex-shrink-0">
+                {type === 'title' ? renderNeoBrutalismTitle() : renderNeoBrutalismQuestion()}
+            </div>
+        );
+    }
+
     if (theme.name === 'Cyberpunk Neon') {
         return (
             <div style={baseStyle} className="shadow-md rounded-lg border border-outline-variant/30 flex-shrink-0">

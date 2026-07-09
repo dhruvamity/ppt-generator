@@ -4,6 +4,18 @@ export const THEMES = {
         gold: 'C4961A', magenta: 'CC00FF', watermark: '2B2043', tealDecor: '00C6D4', 
         bgCard: '110F1A', textWhite: 'FFFFFF', textBlack: '000000', decorPurple: '7E32C6'
     },
+    'blueprint': {
+        name: 'Blueprint Architect', bgColor: '0B192C', cyan: '00FFCC', orange: 'FF6B00',
+        textWhite: 'FFFFFF', textBlack: '000000', bgCard: '0B192C'
+    },
+    'aurora': {
+        name: 'Aurora Glassmorphism', bgColor: '09090B', blueOrb: '3B82F6', pinkOrb: 'EC4899', 
+        dot: '27272A', textWhite: 'FFFFFF', textBlack: '000000', bgCard: '09090B'
+    },
+    'neobrutalism': {
+        name: 'Neo-Brutalism', bgColor: 'FAFAFA', acidGreen: 'BAFF29', pink: 'FF3366', 
+        black: '000000', textWhite: 'FAFAFA', textBlack: '000000', bgCard: 'FAFAFA'
+    },
     'dark-neon': {
         name: 'Dark Neon', bgColor: '05050F', cyan: '00E5FF', purple: '7C3AED',
         gold: 'FFD700', tealDecor: '008080', bgCard: '0A0A1F', textWhite: 'FFFFFF',
