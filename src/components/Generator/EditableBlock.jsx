@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import 'katex/dist/katex.min.css';
-import { InlineMath } from 'react-katex';
+import MathRenderer from './MathRenderer';
 
 export default function EditableBlock({ value, onChange, className, style, theme }) {
     const [isEditing, setIsEditing] = useState(false);
@@ -31,7 +31,7 @@ export default function EditableBlock({ value, onChange, className, style, theme
                 return (
                     <span key={index} className="inline-flex items-center px-1" style={{ verticalAlign: 'middle' }}>
                         {/* \displaystyle forces fractions to be tall like on real paper */}
-                        <InlineMath math={`\\displaystyle ${part}`} />
+                        <MathRenderer math={`\\displaystyle ${part}`} />
                     </span>
                 );
             }
