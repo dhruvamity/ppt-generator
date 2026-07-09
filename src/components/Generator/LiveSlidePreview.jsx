@@ -50,7 +50,7 @@ export default function LiveSlidePreview({ theme, type = 'title', config, questi
         return (
             <div style={{ marginTop: '2em', display: 'flex', flexWrap: 'wrap', width: '100%', justifyContent: 'space-between', gap: '1rem' }}>
                 {options.map((opt, i) => (
-                    <div key={i} style={{ width: cols === 4 ? '23%' : '48%', marginBottom: '0.25rem', color: `#${color}`, fontSize: fs(14), lineHeight: 1.5 }}>
+                    <div key={i} style={{ width: cols === 4 ? '23%' : '48%', marginBottom: '0.25rem', color: `#${color}`, fontSize: fs(9), lineHeight: 1.5 }}>
                         <strong>({opt.label})</strong> 
                         <EditableBlock 
                             value={opt.text} 
@@ -94,8 +94,8 @@ export default function LiveSlidePreview({ theme, type = 'title', config, questi
             {/* Tag repositioned to bottom right */}
             <div style={{ position: 'absolute', left: x(7.5), top: y(5.1), width: w(2.0), height: h(0.25), backgroundColor: `#${theme.bgCard}`, border: `0.1cqw solid #${theme.purple}`, borderRadius: '0.5cqw', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: fs(10), color: `#${theme.purple}`, boxSizing: 'border-box', fontWeight: 'bold' }}>{questionData?.tag?.toUpperCase()}</div>
 
-            <div style={{ textAlign: 'left', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', height: '100%', padding: '40px', paddingTop: '80px', boxSizing: 'border-box' }}>
-                <div style={{ color: `#${theme.textWhite}`, fontSize: fs(14), lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>
+            <div style={{ textAlign: 'left', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', height: '100%', padding: '40px', paddingTop: '40px', boxSizing: 'border-box' }}>
+                <div style={{ color: `#${theme.textWhite}`, fontSize: fs(9), lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>
                     <EditableBlock 
                         value={questionData?.qText} 
                         theme={theme}
@@ -133,8 +133,8 @@ export default function LiveSlidePreview({ theme, type = 'title', config, questi
             <div style={{ position: 'absolute', left: x(0.4), top: y(0.2), width: w(0.6), height: h(0.25), backgroundColor: `#${theme.cyan}`, borderRadius: '0.5cqw', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: fs(12), fontWeight: 'bold', color: `#${theme.textBlack}` }}>{questionData?.badge}</div>
             <div style={{ position: 'absolute', left: x(7.5), top: y(5.1), width: w(2.0), height: h(0.25), backgroundColor: `#${theme.bgColor}`, border: `0.1cqw solid #${theme.purple}`, borderRadius: '0.5cqw', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: fs(10), color: `#${theme.purple}`, fontWeight: 'bold' }}>{questionData?.tag?.toUpperCase()}</div>
 
-            <div style={{ textAlign: 'left', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', height: '100%', padding: '40px', paddingTop: '80px', boxSizing: 'border-box' }}>
-                <div style={{ color: `#${theme.textWhite}`, fontSize: fs(14), lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>
+            <div style={{ textAlign: 'left', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', height: '100%', padding: '40px', paddingTop: '40px', boxSizing: 'border-box' }}>
+                <div style={{ color: `#${theme.textWhite}`, fontSize: fs(9), lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>
                     <EditableBlock 
                         value={questionData?.qText} 
                         theme={theme}
@@ -172,8 +172,8 @@ export default function LiveSlidePreview({ theme, type = 'title', config, questi
             <div style={{ position: 'absolute', left: x(0.4), top: y(0.2), width: w(0.6), height: h(0.25), backgroundColor: `#${theme.cyan}`, borderRadius: '0.5cqw', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: fs(12), fontWeight: 'bold', color: `#${theme.textBlack}` }}>{questionData?.badge}</div>
             <div style={{ position: 'absolute', left: x(7.5), top: y(5.1), width: w(2.0), height: h(0.25), backgroundColor: `#${theme.bgColor}`, border: `0.1cqw solid #${theme.purple}`, borderRadius: '0.5cqw', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: fs(10), color: `#${theme.purple}`, fontWeight: 'bold' }}>{questionData?.tag?.toUpperCase()}</div>
 
-            <div style={{ textAlign: 'left', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', height: '100%', padding: '40px', paddingTop: '80px', boxSizing: 'border-box' }}>
-                <div style={{ color: `#${theme.textWhite}`, fontSize: fs(14), lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>
+            <div style={{ textAlign: 'left', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', height: '100%', padding: '40px', paddingTop: '40px', boxSizing: 'border-box' }}>
+                <div style={{ color: `#${theme.textWhite}`, fontSize: fs(9), lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>
                     <EditableBlock 
                         value={questionData?.qText} 
                         theme={theme}
