@@ -84,11 +84,10 @@ export const exportToRevealJS = (config, activeSlides, theme, layoutId = 'modern
         return optsHtml;
     };
 
-    activeSlides.forEach(slide => {
-        const isTitle = slide.type === 'title';
+    const generateSlideHtml = (isTitle, slide, layoutType) => {
         let slideHtml = '';
 
-        if (isTitle && layoutId === 'modern-sidebar') {
+        if (isTitle && layoutType === 'modern-sidebar') {
             slideHtml = `
                 ${renderGlobalDecorations()}
                 <div style="position: absolute; left: ${x(0)}; top: ${y(0)}; width: ${w(0.05)}; height: ${h(5.625)}; background-color: #${theme.cyan}"></div>
@@ -105,7 +104,7 @@ export const exportToRevealJS = (config, activeSlides, theme, layoutId = 'modern
                 <div style="position: absolute; left: ${x(4.4)}; top: ${y(3.4)}; width: ${w(2.8)}; height: ${h(0.5)}; background-color: #${theme.bgColor}; border: 3px solid #${theme.purple}; border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: ${fs(16)}; font-weight: bold; color: #${theme.purple}; box-sizing: border-box;">${config?.pill2}</div>
                 <div style="position: absolute; left: ${x(1.2)}; top: ${y(4.2)}; width: ${w(8)}; height: ${h(0.5)}; font-size: ${fs(16)}; color: #${theme.textWhite}; letter-spacing: 4px; display: flex; align-items: center;">${config?.footer}</div>
             `;
-        } else if (!isTitle && layoutId === 'modern-sidebar') {
+        } else if (!isTitle && layoutType === 'modern-sidebar') {
             slideHtml = `
                 ${renderGlobalDecorations()}
                 <div style="position: absolute; left: ${x(0)}; top: ${y(0)}; width: ${w(0.05)}; height: ${h(5.625)}; background-color: #${theme.cyan}"></div>
@@ -120,7 +119,7 @@ export const exportToRevealJS = (config, activeSlides, theme, layoutId = 'modern
                     ${renderOptionsGrid(slide.options, theme.cyan)}
                 </div>
             `;
-        } else if (isTitle && layoutId === 'classic-header') {
+        } else if (isTitle && layoutType === 'classic-header') {
             slideHtml = `
                 ${renderGlobalDecorations()}
                 <div style="position: absolute; left: ${x(0)}; top: ${y(0)}; width: ${w(10)}; height: ${h(2)}; background-color: #${theme.purple}"></div>
@@ -135,7 +134,7 @@ export const exportToRevealJS = (config, activeSlides, theme, layoutId = 'modern
                 <div style="position: absolute; left: ${x(5.2)}; top: ${y(2.8)}; width: ${w(2.8)}; height: ${h(0.5)}; background-color: #${theme.purple}; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: ${fs(16)}; font-weight: bold; color: #${theme.textBlack}">${config?.pill2}</div>
                 <div style="position: absolute; left: ${x(0.5)}; top: ${y(4.5)}; width: ${w(9)}; height: ${h(0.5)}; font-size: ${fs(16)}; color: #${theme.textWhite}; letter-spacing: 2px; display: flex; align-items: center; justify-content: center;">${config?.footer}</div>
             `;
-        } else if (!isTitle && layoutId === 'classic-header') {
+        } else if (!isTitle && layoutType === 'classic-header') {
             slideHtml = `
                 ${renderGlobalDecorations()}
                 <div style="position: absolute; left: ${x(0)}; top: ${y(0)}; width: ${w(10)}; height: ${h(0.05)}; background-color: #${theme.purple}"></div>
@@ -149,7 +148,7 @@ export const exportToRevealJS = (config, activeSlides, theme, layoutId = 'modern
                     ${renderOptionsGrid(slide.options, theme.cyan)}
                 </div>
             `;
-        } else if (isTitle && layoutId === 'split-focus') {
+        } else if (isTitle && layoutType === 'split-focus') {
             slideHtml = `
                 ${renderGlobalDecorations()}
                 <div style="position: absolute; left: ${x(0)}; top: ${y(0)}; width: ${w(4.5)}; height: ${h(5.625)}; background-color: #${theme.purple}"></div>
@@ -165,7 +164,7 @@ export const exportToRevealJS = (config, activeSlides, theme, layoutId = 'modern
 
                 <div style="position: absolute; left: ${x(5)}; top: ${y(4.5)}; width: ${w(4.5)}; height: ${h(0.5)}; font-size: ${fs(14)}; color: #${theme.textWhite}; letter-spacing: 2px; display: flex; align-items: center;">${config?.footer}</div>
             `;
-        } else if (!isTitle && layoutId === 'split-focus') {
+        } else if (!isTitle && layoutType === 'split-focus') {
             slideHtml = `
                 ${renderGlobalDecorations()}
                 <div style="position: absolute; left: ${x(0)}; top: ${y(0)}; width: ${w(0.1)}; height: ${h(5.625)}; background-color: #${theme.purple}"></div>
@@ -179,13 +178,21 @@ export const exportToRevealJS = (config, activeSlides, theme, layoutId = 'modern
                 </div>
             `;
         }
-
-        htmlContent += `
+        
+        return `
             <section>
                 <div class="slide-container">
                     ${slideHtml}
                 </div>
             </section>`;
+    };
+
+    // GENERATE TITLE SLIDE FIRST
+    htmlContent += generateSlideHtml(true, null, layoutId);
+
+    // GENERATE QUESTION SLIDES
+    activeSlides.forEach(slide => {
+        htmlContent += generateSlideHtml(false, slide, layoutId);
     });
 
     htmlContent += `
@@ -198,7 +205,7 @@ export const exportToRevealJS = (config, activeSlides, theme, layoutId = 'modern
             width: 1280,
             height: 720,
             margin: 0.04,
-            controls: true, progress: true, center: false, hash: true, transition: 'slide',
+            controls: true, progress: true, center: true, hash: true, transition: 'slide',
             math: {
                 mathjax: 'https://cdn.jsdelivr.net/gh/mathjax/mathjax@2.7.8/MathJax.js',
                 config: 'TeX-AMS_HTML-full',
