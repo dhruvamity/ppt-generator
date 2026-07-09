@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { generateSlideData } from '../services/gemini';
+import toast from 'react-hot-toast';
 
 const LATEX_COMMANDS = 'frac|sqrt|triangle|angle|circ|pi|theta|alpha|beta|gamma|delta|sum|prod|int|lim|infty|pm|times|div|cdot|leq|geq|neq|approx|equiv|subset|supset|cap|cup|in|notin|forall|exists|nabla|partial|rightarrow|leftarrow|Rightarrow|Leftarrow|text';
 
@@ -211,7 +212,19 @@ export const useStore = create(
                 } catch (error) {
                     console.error("AI Generation failed:", error);
                     set({ isParsing: false });
-                    alert(`Failed to generate slides: ${error.message}`);
+                    
+                    let errorMessage = error.message || "Unknown error occurred";
+                    if (errorMessage.includes("429") || errorMessage.includes("Quota exceeded") || errorMessage.includes("rate limit")) {
+                        toast.error("API Quota Exceeded 🚦\n\nYou have reached the free tier limit. Please wait a minute and try again.", {
+                            duration: 6000,
+                            style: { background: '#333', color: '#fff', fontSize: '14px', borderRadius: '8px' }
+                        });
+                    } else {
+                        toast.error(`Generation Failed:\n${errorMessage}`, { 
+                            duration: 5000,
+                            style: { background: '#333', color: '#fff', fontSize: '14px', borderRadius: '8px' }
+                        });
+                    }
                 }
             },
 
