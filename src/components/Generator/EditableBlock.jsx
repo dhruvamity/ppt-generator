@@ -23,7 +23,8 @@ export default function EditableBlock({ value, onChange, className, style, theme
         const parts = text.split('$');
         
         return parts.map((part, index) => {
-            if (part === '') return null; // Ignore empty splits
+            // Keep empty spans for stable React rendering keys
+            if (part === '') return <span key={index}></span>; 
             
             // If it's an odd index, it was wrapped in $, so it's math
             if (index % 2 !== 0) {

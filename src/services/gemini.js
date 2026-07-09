@@ -1,15 +1,33 @@
 import { GoogleGenerativeAI, SchemaType } from '@google/generative-ai';
 
-// Fault-Tolerant Cleanup: Removes nested $ signs inside fractions or roots if the AI disobeys
-const cleanMangledMath = (text) => {
-    if (!text) return text;
-    let cleanText = text;
-    // Remove $ signs that are immediately followed by \sqrt or inside \frac
-    cleanText = cleanText.replace(/{\$/g, '{').replace(/\$}/g, '}');
-    cleanText = cleanText.replace(/\$\\sqrt/g, '\\sqrt');
-    // Combine adjacent math blocks separated by spaces e.g., $4$ $x$ -> $4 x$
-    cleanText = cleanText.replace(/\$\s+\$/g, ' ');
-    return cleanText;
+// INDESTRUCTIBLE MATH SANITIZER
+const sanitizeMath = (str) => {
+    if (!str || typeof str !== 'string') return str;
+    let s = str;
+
+    // 1. ERADICATE NESTING: Remove $ signs inside fractions or roots
+    s = s.replace(/{\$/g, '{').replace(/\$}/g, '}');
+    s = s.replace(/\$\\sqrt/g, '\\sqrt');
+
+    // 2. NORMALIZE BLOCK MATH: Convert $$ to $ so text.split('$') doesn't break on empty strings
+    s = s.replace(/\$\$/g, '$');
+
+    // 3. COMBINE ADJACENT MATH: $4$ $x$ -> $4 x$
+    s = s.replace(/\$\s+\$/g, ' ');
+
+    // 4. WRAP NAKED LATEX: Catch fractions/symbols the AI forgot to wrap
+    s = s.replace(/(?<!\$)(\\frac{[^{}]+}{[^{}]+})(?!\$)/g, '$$$1$$');
+    s = s.replace(/(?<!\$)(\\sqrt{[^{}]+})(?!\$)/g, '$$$1$$');
+    s = s.replace(/(?<!\$)(\\triangle\s*[A-Z]*)(?!\$)/g, '$$$1$$');
+    s = s.replace(/(?<!\$)(\\angle\s*[A-Z]*)(?!\$)/g, '$$$1$$');
+
+    // 5. BALANCE DOLLAR SIGNS: Prevent text.split('$') from flipping text/math indexes
+    const dollarCount = (s.match(/\$/g) || []).length;
+    if (dollarCount % 2 !== 0) {
+        s += '$'; // Append a closing $ to the end to stabilize the parser
+    }
+
+    return s;
 };
 
 export const generateSlideData = async (rawText) => {
@@ -67,10 +85,10 @@ ${rawText}`;
     return rawData.map((slide, i) => ({
         ...slide,
         badge: `Q.${i + 1}`, // Ensure standard numbering
-        qText: cleanMangledMath(slide.qText),
+        qText: sanitizeMath(slide.qText),
         options: (slide.options || []).map(opt => ({
             label: String(opt.label).replace(/[()]/g, ''),
-            text: cleanMangledMath(opt.text)
+            text: sanitizeMath(opt.text)
         }))
     }));
 };
