@@ -56,7 +56,7 @@ export default function LiveSlidePreview({ theme, type = 'title', config, questi
                             value={opt.text} 
                             theme={theme}
                             onChange={(newVal) => updateSlideOption(slideIndex, i, newVal)} 
-                            style={{ display: 'inline' }}
+                            style={{ display: 'inline-block', width: '80%', verticalAlign: 'top' }}
                         />
                     </div>
                 ))}

@@ -41,10 +41,13 @@ export const generateSlideData = async (rawText) => {
 
 CRITICAL RULES:
 1. OPTIONS EXTRACTION: Extract choices (A, B, 1, 2) into the options array.
-2. THE DOLLAR SIGN RULE: ALL math, numbers, symbols, and fractions MUST be formatted in standard LaTeX AND wrapped in dollar signs ($). 
-   - GOOD: In $\\triangle ABC$, area is $\\frac{1}{2}$
-   - GOOD: $\\angle P = 30^\\circ$
-3. NO DOUBLE ESCAPING: Use standard JSON string escaping (the SDK handles this).
+2. THE DOLLAR SIGN RULE: ALL math, numbers, symbols, and fractions MUST be formatted in standard LaTeX AND wrapped in dollar signs ($).
+3. STRICT FRACTION RULE: ABSOLUTELY NO SLASHES for fractions. You MUST use \\frac{numerator}{denominator}. 
+   - BAD: $625/36$
+   - GOOD: $\\frac{625}{36}$
+   - BAD: $1/2$
+   - GOOD: $\\frac{1}{2}$
+4. NO DOUBLE ESCAPING: Use standard JSON string escaping (the SDK handles this).
 
 Raw text:
 ${rawText}`;
