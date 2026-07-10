@@ -10,6 +10,8 @@ from google import genai
 from google.genai import types
 from jose import jwt, JWTError
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+import razorpay
+import httpx
 
 app = FastAPI()
 
@@ -140,6 +142,78 @@ class SlideSchema(BaseModel):
 class BeamerRequest(BaseModel):
     slides: List[dict]
 
+
+# Initialize Razorpay Client
+razorpay_client = razorpay.Client(
+    auth=(os.environ.get("RAZORPAY_KEY_ID", ""), os.environ.get("RAZORPAY_KEY_SECRET", ""))
+)
+
+@app.post("/api/create-razorpay-order")
+async def create_order(user=Depends(verify_token)):
+    user_id = user.get("sub") # Clerk User ID
+    
+    # Razorpay expects amounts in paise (multiply by 100)
+    data = {
+        "amount": 799 * 100, 
+        "currency": "INR",
+        "receipt": f"receipt_{user_id}",
+        "notes": {
+            "clerk_user_id": user_id # We need this for the webhook later!
+        }
+    }
+    
+    try:
+        order = razorpay_client.order.create(data=data)
+        return {"order_id": order["id"], "amount": order["amount"], "currency": "INR"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/webhooks/razorpay")
+async def razorpay_webhook(request: Request):
+    # Razorpay Webhook Secret (Set this up in Razorpay Dashboard)
+    webhook_secret = os.environ.get("RAZORPAY_WEBHOOK_SECRET", "") 
+    
+    payload = await request.body()
+    signature = request.headers.get("x-razorpay-signature")
+
+    # 1. Verify the signature is authentic (Security Check)
+    try:
+        razorpay_client.utility.verify_webhook_signature(
+            payload.decode('utf-8'), signature, webhook_secret
+        )
+    except razorpay.errors.SignatureVerificationError:
+        raise HTTPException(status_code=400, detail="Invalid signature")
+
+    # 2. Parse the payload
+    event_data = json.loads(payload)
+    
+    # 3. Handle successful payments
+    if event_data.get('event') in ['payment.captured', 'order.paid']:
+        payment_entity = event_data['payload']['payment']['entity']
+        
+        # Extract the Clerk User ID we passed in the notes earlier
+        clerk_user_id = payment_entity.get('notes', {}).get('clerk_user_id')
+        
+        if clerk_user_id:
+            # 4. Update Clerk User Metadata via Clerk REST API
+            clerk_secret = os.environ.get("CLERK_SECRET_KEY")
+            clerk_url = f"https://api.clerk.com/v1/users/{clerk_user_id}/metadata"
+            
+            async with httpx.AsyncClient() as client:
+                await client.patch(
+                    clerk_url,
+                    headers={
+                        "Authorization": f"Bearer {clerk_secret}",
+                        "Content-Type": "application/json"
+                    },
+                    json={
+                        "public_metadata": {
+                            "plan": "pro"
+                        }
+                    }
+                )
+    
+    return {"status": "success"}
 
 @app.post("/api/generate")
 async def generate_slides(request: GenerateRequest, user=Depends(verify_token)):
