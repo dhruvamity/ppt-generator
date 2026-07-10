@@ -143,7 +143,7 @@ class BeamerRequest(BaseModel):
 
 @app.post("/api/generate")
 async def generate_slides(request: GenerateRequest, user=Depends(verify_token)):
-    api_key = os.environ.get("VITE_GEMINI_API_KEY") or os.environ.get("GEMINI_API_KEY")
+    api_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GEMINI_API_KEY")
     if not api_key:
         raise HTTPException(status_code=500, detail="Gemini API Key missing on backend")
 
