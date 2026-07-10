@@ -143,6 +143,12 @@ class BeamerRequest(BaseModel):
 
 @app.post("/api/generate")
 async def generate_slides(request: GenerateRequest, user=Depends(verify_token)):
+    user_metadata = user.get("public_metadata", {})
+    is_pro = user_metadata.get("plan") == "pro"
+
+    if not is_pro:
+        raise HTTPException(status_code=403, detail="Payment required. Please upgrade to Pro to generate AI slides.")
+
     api_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GEMINI_API_KEY")
     if not api_key:
         raise HTTPException(status_code=500, detail="Gemini API Key missing on backend")
