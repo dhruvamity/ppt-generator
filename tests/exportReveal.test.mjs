@@ -55,3 +55,13 @@ test('exports omit question type and topic labels from every slide corner', () =
         }
     }
 });
+
+test('question number and divider share a header row, with content moved up', () => {
+    for (const layout of ['modern-sidebar', 'classic-header', 'split-focus']) {
+        const html = buildRevealHtml(deckConfig(false), sampleSlides, THEMES['dark-neon'], layout);
+
+        assert.match(html, /left: 51\.2px; top: 25\.6px; right: 25\.6px; height: 32px; display: flex; align-items: center;/);
+        assert.match(html, /padding: 64px 40px 40px 80px/);
+        assert.doesNotMatch(html, /top: 89\.6px; width: 1100\.8px; height: 2\.56px/);
+    }
+});

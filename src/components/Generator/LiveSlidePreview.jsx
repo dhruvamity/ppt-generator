@@ -123,11 +123,12 @@ export default function LiveSlidePreview({ theme, type = 'title', config, questi
             <div style={{ position: 'absolute', left: x(0), top: y(0), width: w(0.05), height: h(5.625), backgroundColor: `#${theme.cyan}` }}></div>
             <div style={{ position: 'absolute', left: x(0.05), top: y(0), width: w(0.05), height: h(5.625), backgroundColor: `#${theme.purple}` }}></div>
             
-            <div style={{ position: 'absolute', left: x(0.4), top: y(0.2), width: w(0.6), height: h(0.25), backgroundColor: `#${theme.cyan}`, borderRadius: '0.5cqw', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: fs(12), fontWeight: 'bold', color: `#${theme.textBlack}` }}>{questionData?.badge}</div>
-            
-            <div style={{ position: 'absolute', left: x(1.2), top: y(0.7), width: w(8.6), height: h(0.02), backgroundColor: `#${theme.cyan}`, opacity: 0.5 }}></div>
+            <div style={{ position: 'absolute', left: x(0.4), top: y(0.2), right: x(0.2), height: h(0.25), display: 'flex', alignItems: 'center' }}>
+                <div style={{ width: w(0.6), height: '100%', backgroundColor: `#${theme.cyan}`, borderRadius: '0.5cqw', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: fs(12), fontWeight: 'bold', color: `#${theme.textBlack}` }}>{questionData?.badge}</div>
+                <div style={{ flex: 1, height: h(0.02), marginLeft: x(0.2), backgroundColor: `#${theme.cyan}`, opacity: 0.5 }}></div>
+            </div>
 
-            <div style={{ textAlign: 'left', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', height: '100%', padding: '3.125cqw', paddingTop: '7.8125cqw', boxSizing: 'border-box' }}>
+            <div style={{ textAlign: 'left', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', height: '100%', padding: '3.125cqw', paddingTop: '5cqw', boxSizing: 'border-box' }}>
                 {renderQuestionBody(theme.cyan)}
             </div>
         </>
@@ -156,11 +157,12 @@ export default function LiveSlidePreview({ theme, type = 'title', config, questi
             <div style={{ position: 'absolute', left: x(0), top: y(0), width: w(10), height: h(0.05), backgroundColor: `#${theme.purple}` }}></div>
             <div style={{ position: 'absolute', left: x(0), top: y(0.05), width: w(10), height: h(0.02), backgroundColor: `#${theme.gold}` }}></div>
 
-            <div style={{ position: 'absolute', left: x(0.4), top: y(0.2), width: w(0.6), height: h(0.25), backgroundColor: `#${theme.cyan}`, borderRadius: '0.5cqw', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: fs(12), fontWeight: 'bold', color: `#${theme.textBlack}` }}>{questionData?.badge}</div>
-            
-            <div style={{ position: 'absolute', left: x(1.2), top: y(0.7), width: w(8.6), height: h(0.02), backgroundColor: `#${theme.cyan}`, opacity: 0.5 }}></div>
+            <div style={{ position: 'absolute', left: x(0.4), top: y(0.2), right: x(0.2), height: h(0.25), display: 'flex', alignItems: 'center' }}>
+                <div style={{ width: w(0.6), height: '100%', backgroundColor: `#${theme.cyan}`, borderRadius: '0.5cqw', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: fs(12), fontWeight: 'bold', color: `#${theme.textBlack}` }}>{questionData?.badge}</div>
+                <div style={{ flex: 1, height: h(0.02), marginLeft: x(0.2), backgroundColor: `#${theme.cyan}`, opacity: 0.5 }}></div>
+            </div>
 
-            <div style={{ textAlign: 'left', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', height: '100%', padding: '3.125cqw', paddingTop: '7.8125cqw', boxSizing: 'border-box' }}>
+            <div style={{ textAlign: 'left', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', height: '100%', padding: '3.125cqw', paddingTop: '5cqw', boxSizing: 'border-box' }}>
                 {renderQuestionBody(theme.cyan)}
             </div>
         </>
@@ -189,11 +191,12 @@ export default function LiveSlidePreview({ theme, type = 'title', config, questi
             {renderGlobalDecorations()}
             <div style={{ position: 'absolute', left: x(0), top: y(0), width: w(0.1), height: h(5.625), backgroundColor: `#${theme.purple}` }}></div>
             
-            <div style={{ position: 'absolute', left: x(0.4), top: y(0.2), width: w(0.6), height: h(0.25), backgroundColor: `#${theme.cyan}`, borderRadius: '0.5cqw', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: fs(12), fontWeight: 'bold', color: `#${theme.textBlack}` }}>{questionData?.badge}</div>
-            
-            <div style={{ position: 'absolute', left: x(1.2), top: y(0.7), width: w(8.6), height: h(0.02), backgroundColor: `#${theme.cyan}`, opacity: 0.5 }}></div>
+            <div style={{ position: 'absolute', left: x(0.4), top: y(0.2), right: x(0.2), height: h(0.25), display: 'flex', alignItems: 'center' }}>
+                <div style={{ width: w(0.6), height: '100%', backgroundColor: `#${theme.cyan}`, borderRadius: '0.5cqw', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: fs(12), fontWeight: 'bold', color: `#${theme.textBlack}` }}>{questionData?.badge}</div>
+                <div style={{ flex: 1, height: h(0.02), marginLeft: x(0.2), backgroundColor: `#${theme.cyan}`, opacity: 0.5 }}></div>
+            </div>
 
-            <div style={{ textAlign: 'left', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', height: '100%', padding: '3.125cqw', paddingTop: '7.8125cqw', boxSizing: 'border-box' }}>
+            <div style={{ textAlign: 'left', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', height: '100%', padding: '3.125cqw', paddingTop: '5cqw', boxSizing: 'border-box' }}>
                 {renderQuestionBody(theme.gold)}
             </div>
         </>

@@ -399,11 +399,12 @@ export const buildRevealHtml = (config, activeSlides, theme, layoutId = 'modern-
                 <div style="position: absolute; left: ${x(0)}; top: ${y(0)}; width: ${w(0.05)}; height: ${h(5.625)}; background-color: #${theme.cyan}"></div>
                 <div style="position: absolute; left: ${x(0.05)}; top: ${y(0)}; width: ${w(0.05)}; height: ${h(5.625)}; background-color: #${theme.purple}"></div>
                 
-                <div style="position: absolute; left: ${x(0.4)}; top: ${y(0.2)}; width: ${w(0.6)}; height: ${h(0.25)}; background-color: #${theme.cyan}; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: ${fs(12)}; font-weight: bold; color: #${theme.textBlack}">${escapeHtml(slide.badge)}</div>
-                
-                <div style="position: absolute; left: ${x(1.2)}; top: ${y(0.7)}; width: ${w(8.6)}; height: ${h(0.02)}; background-color: #${theme.cyan}; opacity: 0.5;"></div>
+                <div style="position: absolute; left: ${x(0.4)}; top: ${y(0.2)}; right: ${x(0.2)}; height: ${h(0.25)}; display: flex; align-items: center;">
+                    <div style="width: ${w(0.6)}; height: 100%; background-color: #${theme.cyan}; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: ${fs(12)}; font-weight: bold; color: #${theme.textBlack}">${escapeHtml(slide.badge)}</div>
+                    <div style="flex: 1; height: ${h(0.02)}; margin-left: ${x(0.2)}; background-color: #${theme.cyan}; opacity: 0.5;"></div>
+                </div>
 
-                <div style="position: absolute; left: 0; top: 0; width: 100%; height: 100%; padding: 100px 40px 40px 80px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: flex-start;">
+                <div style="position: absolute; left: 0; top: 0; width: 100%; height: 100%; padding: 64px 40px 40px 80px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: flex-start;">
                     ${renderQuestionContent(slide, theme.cyan)}
                 </div>
             `;
@@ -428,11 +429,12 @@ export const buildRevealHtml = (config, activeSlides, theme, layoutId = 'modern-
                 <div style="position: absolute; left: ${x(0)}; top: ${y(0)}; width: ${w(10)}; height: ${h(0.05)}; background-color: #${theme.purple}"></div>
                 <div style="position: absolute; left: ${x(0)}; top: ${y(0.05)}; width: ${w(10)}; height: ${h(0.02)}; background-color: #${theme.gold}"></div>
 
-                <div style="position: absolute; left: ${x(0.4)}; top: ${y(0.2)}; width: ${w(0.6)}; height: ${h(0.25)}; background-color: #${theme.cyan}; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: ${fs(12)}; font-weight: bold; color: #${theme.textBlack}">${escapeHtml(slide.badge)}</div>
-                
-                <div style="position: absolute; left: ${x(1.2)}; top: ${y(0.7)}; width: ${w(8.6)}; height: ${h(0.02)}; background-color: #${theme.cyan}; opacity: 0.5;"></div>
+                <div style="position: absolute; left: ${x(0.4)}; top: ${y(0.2)}; right: ${x(0.2)}; height: ${h(0.25)}; display: flex; align-items: center;">
+                    <div style="width: ${w(0.6)}; height: 100%; background-color: #${theme.cyan}; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: ${fs(12)}; font-weight: bold; color: #${theme.textBlack}">${escapeHtml(slide.badge)}</div>
+                    <div style="flex: 1; height: ${h(0.02)}; margin-left: ${x(0.2)}; background-color: #${theme.cyan}; opacity: 0.5;"></div>
+                </div>
 
-                <div style="position: absolute; left: 0; top: 0; width: 100%; height: 100%; padding: 100px 40px 40px 80px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: flex-start;">
+                <div style="position: absolute; left: 0; top: 0; width: 100%; height: 100%; padding: 64px 40px 40px 80px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: flex-start;">
                     ${renderQuestionContent(slide, theme.cyan)}
                 </div>
             `;
@@ -457,11 +459,12 @@ export const buildRevealHtml = (config, activeSlides, theme, layoutId = 'modern-
                 ${renderGlobalDecorations()}
                 <div style="position: absolute; left: ${x(0)}; top: ${y(0)}; width: ${w(0.1)}; height: ${h(5.625)}; background-color: #${theme.purple}"></div>
                 
-                <div style="position: absolute; left: ${x(0.4)}; top: ${y(0.2)}; width: ${w(0.6)}; height: ${h(0.25)}; background-color: #${theme.cyan}; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: ${fs(12)}; font-weight: bold; color: #${theme.textBlack}">${escapeHtml(slide.badge)}</div>
-                
-                <div style="position: absolute; left: ${x(1.2)}; top: ${y(0.7)}; width: ${w(8.6)}; height: ${h(0.02)}; background-color: #${theme.cyan}; opacity: 0.5;"></div>
+                <div style="position: absolute; left: ${x(0.4)}; top: ${y(0.2)}; right: ${x(0.2)}; height: ${h(0.25)}; display: flex; align-items: center;">
+                    <div style="width: ${w(0.6)}; height: 100%; background-color: #${theme.cyan}; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: ${fs(12)}; font-weight: bold; color: #${theme.textBlack}">${escapeHtml(slide.badge)}</div>
+                    <div style="flex: 1; height: ${h(0.02)}; margin-left: ${x(0.2)}; background-color: #${theme.cyan}; opacity: 0.5;"></div>
+                </div>
 
-                <div style="position: absolute; left: 0; top: 0; width: 100%; height: 100%; padding: 100px 40px 40px 80px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: flex-start;">
+                <div style="position: absolute; left: 0; top: 0; width: 100%; height: 100%; padding: 64px 40px 40px 80px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: flex-start;">
                     ${renderQuestionContent(slide, theme.gold)}
                 </div>
             `;
