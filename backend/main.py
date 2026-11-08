@@ -74,54 +74,40 @@ def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security)):
 
 
 def sanitize_math(text: str) -> str:
+    """Normalize transport damage without rewriting correctly delimited LaTeX."""
     if not text or not isinstance(text, str):
         return text
-    
-    s = text
 
-    # 1. ERADICATE NESTING
-    s = s.replace('{$', '{').replace('$}', '}')
-    s = s.replace('$\\sqrt', '\\sqrt')
-
-    # 2. NORMALIZE BLOCK MATH
+    s = text.replace("\x0crac", r"\frac")
+    s = re.sub(r'\\\(([\s\S]*?)\\\)', lambda m: '$' + m.group(1) + '$', s)
+    s = re.sub(r'\\\[([\s\S]*?)\\\]', lambda m: '$' + m.group(1) + '$', s)
     s = s.replace('$$', '$')
 
-    # 2.5 FIX AI HALLUCINATIONS
-    s = re.sub(r'\\angle([A-Za-z])', r'\\angle \1', s)
-    s = re.sub(r'\\triangle([A-Za-z])', r'\\triangle \1', s)
-    s = re.sub(r'(?:\^)?(?:\{)?(?:\\)?(?:c?irc)(?:\})?(?!\w)', r'^{\\circ}', s)
-    s = re.sub(r'\\text\{\^([^}]+)\}', r'^{\1}', s)
+    # Work only outside existing math. Removing an opening $ before a root or
+    # altering matrix row separators changes valid source expressions.
+    def wrap_naked_commands(source, pattern):
+        parts = re.split(r'(?<!\\)(\$[\s\S]*?(?<!\\)\$)', source)
+        for index in range(0, len(parts), 2):
+            parts[index] = re.sub(pattern, lambda m: '$' + m.group(0) + '$', parts[index])
+        return ''.join(parts)
 
-    # 3. COMBINE ADJACENT MATH
-    s = re.sub(r'\$\s+\$', ' ', s)
+    # A stray trailing delimiter after a complete expression is commonly pasted
+    # as "$sqrt{2}$ units$". Drop that extra delimiter instead of swallowing units.
+    dollars = list(re.finditer(r'(?<!\\)\$', s))
+    if len(dollars) % 2 and len(dollars) >= 3 and s[dollars[-1].end():].strip() == '':
+        s = s[:dollars[-1].start()] + s[dollars[-1].end():]
 
-    # 4. WRAP NAKED LATEX & FIX MATRIX ROW BREAKS
-    def fix_matrix(match):
-        return re.sub(r'\\\s', r'\\cr ', match.group(1))
-    
-    s = re.sub(r'(\\begin{[^}]+}[\s\S]*?\\end{[^}]+})', fix_matrix, s)
-
-    def apply_outside_math(text_val, regex):
-        parts = text_val.split('$')
-        for i in range(len(parts)):
-            if i % 2 == 0: # outside math block
-                parts[i] = re.sub(regex, r'$\1$', parts[i])
-        return '$'.join(parts)
-
-    s = apply_outside_math(s, r'(\\frac{(?:[^{}]|{[^{}]*})*}{(?:[^{}]|{[^{}]*})*})')
-    s = apply_outside_math(s, r'(\\sqrt{(?:[^{}]|{[^{}]*})*})')
-    s = apply_outside_math(s, r'(\\triangle\s*[A-Z]*)')
-    s = apply_outside_math(s, r'(\\angle\s*[A-Z]*)')
-    s = apply_outside_math(s, r'(\\begin{[^}]+}[\s\S]*?\\end{[^}]+})')
-
-    # 5. BALANCE DOLLAR SIGNS
-    dollar_count = s.count('$')
-    if dollar_count % 2 != 0:
-        s += '$'
-
-    s = s.replace('$$', '$')
-    s = re.sub(r'\$\s+\$', ' ', s)
-
+    patterns = (
+        r'\\(?:d?frac){(?:[^{}]|{[^{}]*})*}{(?:[^{}]|{[^{}]*})*}',
+        r'\\sqrt(?:\[[^\]]+\])?{(?:[^{}]|{[^{}]*})*}',
+        r'\\(?:triangle|angle)\s*[A-Z]+',
+        r'\\begin{[^}]+}[\s\S]*?\\end{[^}]+}',
+    )
+    # An unclosed expression is left for the formatter to repair; do not wrap
+    # nested commands inside it and thereby introduce new mismatched delimiters.
+    if len(re.findall(r'(?<!\\)\$', s)) % 2 == 0:
+        for pattern in patterns:
+            s = wrap_naked_commands(s, pattern)
     return s
 
 
@@ -136,6 +122,7 @@ class SlideSchema(BaseModel):
     badge: Optional[str] = None
     tag: Optional[str] = None
     qText: Optional[str] = None
+    context: Optional[str] = None
     options: Optional[List[OptionSchema]] = None
     topic: Optional[str] = None
 
@@ -228,14 +215,26 @@ async def generate_slides(request: GenerateRequest, user=Depends(verify_token)):
         http_options=types.HttpOptions(api_version="v1beta"),
     )
     
-    prompt = f"""You are an elite educational data formatter. Parse the text into a JSON array.
+    # Some clipboard paths turn the two-character LaTeX sequence "\\f" into a
+    # form-feed control character. Restore the common \frac corruption before
+    # sending the source to the model so the numerator and denominator survive.
+    source_text = request.rawText.replace("\x0crac", r"\frac")
+
+    prompt = f"""You are an educational question formatter. Parse the source into a JSON array with one object per question.
+
+CONTENT PRESERVATION:
+1. Preserve every question in its original order, every answer choice, shared passage, chart description, table, and stated value from the source. Never drop or invent source material.
+2. Put only the specific question prompt in `qText`; put material shared by related questions in `context` and repeat that context on every question that depends on it.
+3. If a chart is transcribed as a table, retain its title, labels, units, and every value in a compact readable form. Preserve lists and numbered statements with line breaks.
+4. If the source does not contain the context needed to answer a question, leave `context` empty. Do not guess missing data.
+5. Do not include question numbers or labels such as "Q.1" or "MCQ" in `qText`; the application adds question numbers itself.
 
 CRITICAL MATH RULES:
 1. USE ONLY ONE PAIR OF DOLLAR SIGNS per equation/expression. Combine adjacent numbers and math!
    - BAD: 4($\\sqrt{{2}}$ - 1) cm
    - GOOD: $4(\\sqrt{{2}} - 1)$ cm
 2. NEVER NEST DOLLAR SIGNS. DO NOT put $ inside fractions or roots!
-   - BAD: $\\frac{{500}}{{\$\\sqrt{{3}}\\$}}$
+   - BAD: $\\frac{{500}}{{$\\sqrt{{3}}$}}$
    - GOOD: $\\frac{{500}}{{\\sqrt{{3}}}}$
    - BAD: Area ($\\triangle$ADE)
    - GOOD: Area $(\\triangle ADE)$
@@ -248,12 +247,11 @@ CRITICAL MATH RULES:
    - GOOD: $A = \\begin{{bmatrix}} 2 & -1 \\cr 3 & 4 \\end{{bmatrix}}$
 5. ADVANCED MATH: Use proper LaTeX for integrals (\\int), derivatives (\\frac{{d}}{{dx}}), sums (\\sum), and limits (\\lim).
 
-For each question, identify the specific mathematical or subject topic (e.g., 'Trigonometry', 'Algebra', 'HCF & LCM'). Keep it concise (1-4 words). Add this to the `topic` key in the JSON.
-Additionally, assign a short tag (e.g., 'MCQ', 'Concept', 'Hard', 'Easy') to the `tag` key.
+For each question, identify a concise subject topic (1-4 words) in `topic`, and a short question type such as "MCQ" in `tag`.
 
 Extract all choices (1, 2, 3, 4) or (A, B, C, D) into the "options" array.
 Raw text:
-{request.rawText}"""
+{source_text}"""
 
     try:
         response = client.models.generate_content(
@@ -282,6 +280,13 @@ Raw text:
             slide["badge"] = f"Q.{i + 1}"
             slide["tag"] = slide.get("tag") or "PRACTICE"
             slide["qText"] = sanitize_math(slide.get("qText") or "")
+            slide["qText"] = re.sub(
+                r'^\s*(?:Q(?:uestion)?\.?\s*\d+|Question\s+\d+)\s*[:.)-]?\s*(?:MCQ\b\s*)?',
+                '',
+                slide["qText"],
+                flags=re.IGNORECASE,
+            )
+            slide["context"] = sanitize_math(slide.get("context") or "")
             slide["topic"] = slide.get("topic") or "General Practice"
             
             options = []

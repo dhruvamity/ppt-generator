@@ -16,11 +16,14 @@ export default function RawTextInput() {
                 setActiveSlides([]);
                 return;
             }
+            // Reconcile a Markdown title from persisted text on load as well as
+            // after a paste; setRawText leaves the source unchanged when equal.
+            setRawText(rawText);
             const parsed = parseLocalText(rawText);
             setActiveSlides(parsed);
         }, 500);
         return () => clearTimeout(timer);
-    }, [rawText, setActiveSlides, aiQuestions]);
+    }, [rawText, setRawText, setActiveSlides, aiQuestions]);
 
     const handleAutoFormat = async () => {
         if (!rawText.trim()) return;
