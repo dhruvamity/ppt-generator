@@ -370,7 +370,17 @@ export const buildRevealHtml = (config, activeSlides, theme, layoutId = 'modern-
                 </section>`;
         }
 
-        if (isTitle && layoutType === 'modern-sidebar') {
+        if (!isTitle && slide?.isWorkspace) {
+            const workspaceColor = theme.cyan || theme.gold || theme.textWhite;
+            slideHtml = `
+                ${renderGlobalDecorations()}
+                <div style="position: absolute; left: ${x(0.5)}; top: ${y(0.35)}; right: ${x(0.5)}; display: flex; align-items: center; gap: 18px; z-index: 2;">
+                    <div style="padding: 8px 18px; border: 2px solid #${workspaceColor}; border-radius: 8px; color: #${workspaceColor}; font-size: ${fs(14)}; font-weight: bold; letter-spacing: 1px;">WORK SPACE</div>
+                    <div style="height: 2px; flex: 1; background: #${workspaceColor}; opacity: 0.7;"></div>
+                </div>
+                <div style="position: absolute; left: ${x(0.5)}; right: ${x(0.5)}; top: ${y(1.05)}; bottom: ${y(0.55)}; background: repeating-linear-gradient(to bottom, transparent 0, transparent 55px, #${workspaceColor} 56px, transparent 57px); opacity: 0.38;"></div>
+            `;
+        } else if (isTitle && layoutType === 'modern-sidebar') {
             slideHtml = `
                 ${renderGlobalDecorations()}
                 <div style="position: absolute; left: ${x(0)}; top: ${y(0)}; width: ${w(0.05)}; height: ${h(5.625)}; background-color: #${theme.cyan}"></div>
@@ -546,7 +556,7 @@ export const buildRevealHtml = (config, activeSlides, theme, layoutId = 'modern-
             pages.id = 'print-slides';
             pages.className = 'reveal';
             document.querySelectorAll('.slides .slide-container').forEach(slide => {
-                if (slide.dataset.workspace !== 'true') pages.appendChild(slide.cloneNode(true));
+                pages.appendChild(slide.cloneNode(true));
             });
             document.body.appendChild(pages);
         });
