@@ -189,6 +189,8 @@ export const exportToRevealJS = (config, activeSlides, theme, layoutId = 'modern
                         ${slideHtml}
                     </div>
                 </section>`;
+        }
+
         if (theme.name === 'Blueprint Architect') {
             const isWorkspace = slide?.isWorkspace || false;
             const headerText = isWorkspace ? 'WORK SPACE' : slide?.badge || 'Q';

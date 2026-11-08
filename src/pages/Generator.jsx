@@ -4,7 +4,6 @@ import ThemeSelector from '../components/Generator/ThemeSelector';
 import SlideConfigPanel from '../components/Generator/SlideConfigPanel';
 import RawTextInput from '../components/Generator/RawTextInput';
 import SlidePreview from '../components/Generator/SlidePreview';
-import UpgradeButton from '../components/Generator/UpgradeButton';
 import { useStore, parseLocalText } from '../store/useStore';
 import toast from 'react-hot-toast';
 import { exportToRevealJS } from '../utils/exportRevealJS';
@@ -65,7 +64,6 @@ export default function Generator() {
                         <Download size={18} />
                         Download HTML Presentation
                     </button>
-                    <UpgradeButton />
                 </div>
             </aside>
             
