@@ -1,115 +1,196 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { Sparkles, ArrowRight, ArrowDown } from 'lucide-react';
+import React, { useState } from 'react';
 import { SignInButton } from '@clerk/clerk-react';
+import './Landing.css';
+import {
+    ArrowDown,
+    ArrowLeft,
+    ArrowRight,
+    Check,
+    ChevronDown,
+    FileText,
+    Layers3,
+    Play,
+    Sparkles,
+    WandSparkles,
+} from 'lucide-react';
+
+const examples = [
+    {
+        label: 'Question',
+        source: 'Q.1: In a group of 60 students, 35 study Mathematics, 30 study Physics, and 25 study Chemistry. Also, 15 study Mathematics and Physics, 12 study Physics and Chemistry, and 10 study Mathematics and Chemistry. These pairwise counts include the 5 students who study all three subjects. How many students study exactly one subject?\n\nA) 26  B) 31  C) 36  D) 41',
+        question: 'In a group of 60 students, 35 study Mathematics, 30 study Physics, and 25 study Chemistry. Also, 15 study Mathematics and Physics, 12 study Physics and Chemistry, and 10 study Mathematics and Chemistry. These pairwise counts include the 5 students who study all three subjects. How many study exactly one subject?',
+        answers: ['26', '31', '36', '41'],
+        eyebrow: 'Q.1',
+    },
+    {
+        label: 'Shared passage',
+        source: 'Study the chart below. Annual income and expenditure (in lakh rupees):\n\n2021: 80 / 64\n2022: 100 / 80\n2023: 120 / 90\n2024: 150 / 120\n2025: 180 / 144\n\nQ: In which year was profit as a percentage of expenditure highest?',
+        context: 'Income and expenditure · ₹ lakh',
+        question: 'In which year was profit as a percentage of expenditure highest?',
+        answers: ['2022', '2023', '2024', '2025'],
+        eyebrow: 'Q.24',
+    },
+    {
+        label: 'With notation',
+        source: 'Q.4: The value of (1 + i)², where i² = −1, is:\n\nA) 2  B) −2  C) 2i  D) 1 + 2i',
+        question: 'The value of (1 + i)², where i² = −1, is:',
+        answers: ['2', '−2', '2i', '1 + 2i'],
+        eyebrow: 'Q.4',
+    },
+];
+
+const faqs = [
+    {
+        question: 'What can I turn into slides?',
+        answer: 'Paste question banks, quizzes, or lesson material. The generator organizes questions and answer choices into a consistent slide deck, including questions that share a passage or data set.',
+    },
+    {
+        question: 'Can I review and edit the slides?',
+        answer: 'Yes. Review the generated questions in the editor, make changes, and choose a visual theme before exporting.',
+    },
+    {
+        question: 'How do I get started?',
+        answer: 'Sign in, paste your content into the generator, review the formatted questions, and export when the deck is ready.',
+    },
+];
 
 export default function Landing() {
+    const [activeExample, setActiveExample] = useState(0);
+    const example = examples[activeExample];
+    const changeExample = (offset) => {
+        setActiveExample((current) => (current + offset + examples.length) % examples.length);
+    };
+
     return (
-        <>
-            <main className="flex-grow pt-24 pb-32 px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto w-full">
-                {/* Hero Section */}
-                <section className="flex flex-col items-center text-center mt-12 md:mt-24 mb-32 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
-                    <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-surface-container border border-outline-variant/30 mb-8 font-label-md text-label-md text-primary">
-                        <Sparkles size={16} />
-                        <span>AI-Powered Slide Generation for Educators</span>
-                    </div>
-                    <h1 className="font-display-lg text-display-lg text-on-surface max-w-4xl mb-6 tracking-tight">
-                        Turn Messy Question Banks into <span className="text-primary relative inline-block">Polished Slides<svg className="absolute -bottom-2 left-0 w-full text-secondary-fixed-dim/50 z-[-1]" preserveAspectRatio="none" viewBox="0 0 100 20"><path d="M0 10 Q 50 20 100 10 L 100 20 L 0 20 Z" fill="currentColor"></path></svg></span> Instantly.
-                    </h1>
-                    <p className="font-body-lg text-body-lg text-on-surface-variant max-w-2xl mb-12">
-                        Built for educators. Paste your disorganized text, let AI parse the questions, and export to PowerPoint in one click. Stop formatting and start teaching.
-                    </p>
-                    <div className="flex flex-col sm:flex-row items-center gap-4 text-on-surface-variant font-label-md text-label-md mb-8">
-                        <div className="flex -space-x-2">
-                            <img className="w-8 h-8 rounded-full border-2 border-surface object-cover" alt="Teacher" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA-nhTYZjw--qryCBiTvc7ne1jskiYkYLZYV4DprH9R-sTjY3tPIXblEJgHdU3Shn3iEl-gOLJaB6Z7Ae4_KnTr6Cnh3ZjB-wONYotQYPpfRi6KlAGMPoczbQud3ERLTAHbGt2rgEyRpPNn6_4anY1o98-d9s4r6YLuOe2USiSkP70LFxVqfL54uHpBoQTro9Zi4_H9Q925TDu1ZZZHhP2HnJ4xq-TTcHCfkrzEJVyThiQwgnxYCaPUag" />
-                            <img className="w-8 h-8 rounded-full border-2 border-surface object-cover" alt="Professor" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA1GwXmqemlzIxEoGUGn5Ijf6xhdBxSij6IxCT4GHxoCA7COopsQVDz3rtXhKF6mTvbTueu53TUvq4Vm6ZXEp33wG6Wy6YjvTQunzylhEgJNFErpyL2wL7NBxJYF1MiT9XRTZCG7x6Fk5YmHnWiktE6-OXN8w8AcAhHWKk3JyyFomw6TbeEkdHujhBVIEomyxVhxI97MIpxIv1x3_YRTZy09OthWeGNFJ5x7vMK0-dPJvo6hDsLCgnNuw" />
-                            <img className="w-8 h-8 rounded-full border-2 border-surface object-cover" alt="Tutor" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDCgSw_8rf51gUBskNtJwLqcmI1WOwTcp_RfOHJMNKLwlmMoRXIJjIcIsHgbhCQKadw5YyviFAwMr0mYTxXashUXX_LPkN4OViyGnmvsB4Zmct-iicWfC5li5mgx_WNR9rZati4L45dikdZIkTLhkKpCV8FPNyPdUDScRNrGa5IAOwLFhjvKL7koBY8xsR2LIl4NK0EZBxV-PZ0mfAwhD9GndYtVo6Cu38fFwRgNUNbTN8Dlr8HGtCgqg" />
-                        </div>
-                        <span>Used by <strong>10,000+</strong> tutors and teachers.</span>
-                    </div>
-                </section>
-                
-                {/* Interactive Demo Section */}
-                <section className="mb-32 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
-                    <div className="bg-white/70 backdrop-blur-md rounded-[24px] p-2 md:p-8 relative max-w-4xl mx-auto shadow-[0_20px_40px_-15px_rgba(0,0,0,0.05)] border border-surface-variant">
-                        <div className="absolute -top-4 -right-4 w-24 h-24 bg-tertiary-fixed-dim/20 rounded-full blur-xl z-[-1]"></div>
-                        <div className="bg-surface rounded-xl overflow-hidden border border-outline-variant shadow-sm flex flex-col md:flex-row">
-                            <div className="flex-1 p-6 border-b md:border-b-0 md:border-r border-outline-variant bg-surface">
-                                <div className="flex justify-between items-center mb-4">
-                                    <label className="font-label-md text-label-md text-on-surface font-semibold flex items-center gap-2">
-                                        <span className="material-symbols-outlined text-outline">description</span>
-                                        Paste Raw Content
-                                    </label>
-                                    <SignInButton mode="modal">
-                                        <button className="text-primary text-label-sm font-label-sm hover:underline bg-transparent border-0 cursor-pointer p-0">Start Generating</button>
-                                    </SignInButton>
-                                </div>
-                                <textarea readOnly className="w-full h-64 md:h-80 resize-none border-0 focus:ring-0 bg-transparent text-body-md font-body-md text-on-surface-variant placeholder:text-outline-variant p-0" placeholder="Paste your messy quiz questions, reading notes, or lesson outlines here..." value={"Q1: what is photosynthesis??? a) breathing b) making food c) sleeping d) running. ans is b.\n\n2. true/false... mitochondria is powerhouse of cell. (true)"}></textarea>
+        <div className="landing-page">
+            <main>
+                <section className="lp-hero">
+                    <div className="lp-wrap lp-hero-grid">
+                        <div className="lp-copy">
+                            <div className="lp-kicker"><Sparkles size={14} aria-hidden="true" /> Question banks, beautifully organized</div>
+                            <h1 className="lp-title">From raw questions to <em>classroom-ready</em> slides.</h1>
+                            <p className="lp-lede">Turn a pasted question bank into a clear, consistent slide deck. Review the formatting, make edits, and export when it’s ready to teach.</p>
+                            <div className="lp-actions">
+                                <SignInButton mode="modal">
+                                    <button className="lp-btn lp-btn-primary" type="button">Create your first deck <ArrowRight size={17} aria-hidden="true" /></button>
+                                </SignInButton>
+                                <a className="lp-btn lp-btn-quiet" href="#how-it-works"><Play size={15} aria-hidden="true" /> See how it works</a>
                             </div>
-                            <div className="flex-1 p-6 bg-surface-container-low flex flex-col justify-center items-center relative overflow-hidden group">
-                                <div className="absolute inset-0 bg-gradient-to-br from-surface-container to-surface-variant opacity-50 z-0"></div>
-                                <div className="relative z-10 text-center flex flex-col items-center">
-                                    <div className="w-16 h-16 rounded-full bg-primary-container flex items-center justify-center mb-4 shadow-md group-hover:scale-110 transition-transform duration-300">
-                                        <Sparkles className="text-primary" size={32} />
+                            <div className="lp-note"><Check size={14} aria-hidden="true" /> Free to use after signing in</div>
+                            <div className="lp-trustline" aria-label="Supported content types">
+                                <span><Check size={14} aria-hidden="true" /> Multiple choice</span>
+                                <span><Check size={14} aria-hidden="true" /> Shared passages</span>
+                                <span><Check size={14} aria-hidden="true" /> Math notation</span>
+                            </div>
+                        </div>
+
+                        <div className="lp-demo" aria-label="Interactive slide formatting preview">
+                            <div className="lp-windowbar" aria-hidden="true">
+                                <i className="lp-dot" /><i className="lp-dot" /><i className="lp-dot" />
+                                <span className="lp-windowlabel">Your content → a clean slide</span>
+                            </div>
+                            <div className="lp-demo-grid">
+                                <div className="lp-source">
+                                    <div className="lp-source-head"><FileText size={14} aria-hidden="true" /> Pasted content</div>
+                                    <div className="lp-source-text" aria-live="polite">{example.source}</div>
+                                </div>
+                                <div className="lp-slide" aria-live="polite">
+                                    <div className="lp-slide-top"><span>{example.eyebrow}</span><i className="lp-slide-rule" /></div>
+                                    {example.context && <div className="lp-context">{example.context}<br />2021&nbsp;&nbsp; 80 / 64 &nbsp; · &nbsp; 2022&nbsp;&nbsp; 100 / 80 &nbsp; · &nbsp; 2023&nbsp;&nbsp; 120 / 90 &nbsp; · &nbsp; 2024&nbsp;&nbsp; 150 / 120 &nbsp; · &nbsp; 2025&nbsp;&nbsp; 180 / 144</div>}
+                                    <h2 className="lp-question">{example.question}</h2>
+                                    <div className="lp-answers">
+                                        {example.answers.map((answer, index) => (
+                                            <div className="lp-answer" key={`${answer}-${index}`}>
+                                                <span className="lp-answer-letter">{String.fromCharCode(65 + index)}</span>{answer}
+                                            </div>
+                                        ))}
                                     </div>
-                                    <h3 className="font-headline-md text-headline-md text-on-surface mb-2">Ready to Transform?</h3>
-                                    <p className="font-body-md text-body-md text-on-surface-variant mb-6 max-w-[250px]">Click below to see the magic happen instantly.</p>
-                                    <SignInButton mode="modal">
-                                        <button className="bg-primary text-on-primary font-label-md text-label-md px-6 py-3 rounded-full hover:bg-primary/90 transition-all shadow-lg hover:shadow-xl flex items-center gap-2 border-0 cursor-pointer">
-                                            Try it out
-                                            <ArrowRight size={18} />
-                                        </button>
-                                    </SignInButton>
+                                </div>
+                            </div>
+                            <div className="lp-demo-controls">
+                                <div className="lp-tabs" role="group" aria-label="Choose a question preview">
+                                    {examples.map((item, index) => (
+                                        <button className="lp-tab" type="button" key={item.label} aria-pressed={activeExample === index} onClick={() => setActiveExample(index)}>{item.label}</button>
+                                    ))}
+                                </div>
+                                <div className="lp-arrows">
+                                    <button className="lp-icon-btn" type="button" aria-label="Previous example" onClick={() => changeExample(-1)}><ArrowLeft size={15} /></button>
+                                    <button className="lp-icon-btn" type="button" aria-label="Next example" onClick={() => changeExample(1)}><ArrowRight size={15} /></button>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </section>
-                
-                {/* Showcase Section */}
-                <section className="animate-fade-in-up mb-32" style={{ animationDelay: '0.3s' }}>
-                    <div className="text-center mb-16">
-                        <h2 className="font-headline-lg text-headline-lg text-on-surface mb-4">See the Difference</h2>
-                        <p className="font-body-md text-body-md text-on-surface-variant max-w-2xl mx-auto">From unstructured chaos to classroom-ready clarity in seconds.</p>
+
+                <section className="lp-section" id="how-it-works">
+                    <div className="lp-wrap">
+                        <div className="lp-section-head">
+                            <div className="lp-eyebrow">A simpler way to build a deck</div>
+                            <h2 className="lp-h2">Spend less time formatting.</h2>
+                            <p className="lp-section-copy">Keep your attention on the material. SlideGen takes care of turning the raw text into a presentation you can review.</p>
+                        </div>
+                        <div className="lp-steps">
+                            <article className="lp-step"><div className="lp-step-num">01</div><h3>Paste your material</h3><p>Bring a question list, a quiz, or a longer set with shared instructions and reference information.</p></article>
+                            <article className="lp-step"><div className="lp-step-num">02</div><h3>Review the slides</h3><p>Questions and answer choices are organized into individual slides. Check the result and adjust the content in the editor.</p></article>
+                            <article className="lp-step"><div className="lp-step-num">03</div><h3>Choose a theme and export</h3><p>Pick a visual style and export your deck for presenting or sharing with learners.</p></article>
+                        </div>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center max-w-5xl mx-auto">
-                        <div className="bg-white rounded-2xl p-6 border border-outline-variant shadow-sm relative overflow-hidden">
-                            <div className="absolute top-0 right-0 bg-error-container text-on-error-container font-label-sm text-label-sm px-3 py-1 rounded-bl-lg">Raw Text</div>
-                            <div className="font-mono text-sm text-outline leading-relaxed mt-4 opacity-70">
-                                Q1: what is photosynthesis??? a) breathing b) making food c) sleeping d) running. ans is b.<br/><br/>
-                                2. true/false... mitochondria is powerhouse of cell. (true)<br/><br/>
-                                3) list 3 types of rocks. igneous, sedimentary, metamorphic.
-                            </div>
+                </section>
+
+                <section className="lp-section lp-section-soft" id="features">
+                    <div className="lp-wrap">
+                        <div className="lp-section-head">
+                            <div className="lp-eyebrow">Made for real question sets</div>
+                            <h2 className="lp-h2">Details stay readable.</h2>
+                            <p className="lp-section-copy">From a short quiz to questions that depend on the same passage, the deck is laid out to be easy to present.</p>
                         </div>
-                        <div className="hidden md:flex justify-center -mx-4 z-10 relative">
-                            <ArrowRight size={40} className="text-outline-variant bg-background rounded-full p-2 absolute top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 shadow-sm border border-outline-variant" />
+                        <div className="lp-features">
+                            <article className="lp-feature"><div className="lp-feature-icon"><Layers3 size={18} /></div><h3>Consistent layout</h3><p>Keep question numbers, prompts, and choices aligned from slide to slide.</p></article>
+                            <article className="lp-feature"><div className="lp-feature-icon"><FileText size={18} /></div><h3>Shared context</h3><p>Keep a common passage or data reference with the questions that use it.</p></article>
+                            <article className="lp-feature"><div className="lp-feature-icon"><WandSparkles size={18} /></div><h3>Editable output</h3><p>Review and refine generated content before you export the final deck.</p></article>
+                            <article className="lp-feature"><div className="lp-feature-icon"><Sparkles size={18} /></div><h3>Math-friendly text</h3><p>Preserve familiar symbols and notation in questions and answer choices.</p></article>
                         </div>
-                        <div className="md:hidden flex justify-center py-2">
-                            <ArrowDown size={32} className="text-outline-variant" />
+                        <div className="lp-export-band">
+                            <div className="lp-export-copy"><div className="lp-feature-icon"><ArrowDown size={18} /></div><div><strong>Ready for your next lesson</strong><span>Generate, review, and export your presentation from one workspace.</span></div></div>
+                            <SignInButton mode="modal"><button className="lp-btn lp-btn-primary" type="button">Start creating <ArrowRight size={16} /></button></SignInButton>
                         </div>
-                        <div className="bg-surface rounded-2xl p-2 border border-primary/20 shadow-lg relative aspect-video flex flex-col overflow-hidden group">
-                            <div className="absolute top-0 right-0 bg-primary-container text-primary font-label-sm text-label-sm px-3 py-1 rounded-bl-lg z-20">Polished Slide</div>
-                            <div className="flex-1 bg-white rounded-xl border border-surface-variant m-2 p-6 flex flex-col justify-center relative overflow-hidden shadow-sm">
-                                <div className="absolute top-0 left-0 w-2 h-full bg-primary"></div>
-                                <div className="absolute -right-8 -bottom-8 w-32 h-32 bg-surface-variant rounded-full opacity-50"></div>
-                                <h4 className="font-headline-md text-[20px] text-on-surface mb-4 relative z-10">1. What is Photosynthesis?</h4>
-                                <ul className="space-y-3 relative z-10">
-                                    <li className="flex items-center gap-3 p-3 rounded-lg border border-outline-variant/30 text-on-surface-variant font-body-md text-body-md"><div className="w-6 h-6 rounded-full bg-surface-container flex items-center justify-center text-xs font-bold text-outline">A</div> Breathing</li>
-                                    <li className="flex items-center gap-3 p-3 rounded-lg border-2 border-secondary/50 bg-secondary-container/20 text-on-secondary-container font-body-md text-body-md font-medium"><div className="w-6 h-6 rounded-full bg-secondary text-white flex items-center justify-center text-xs font-bold">B</div> Making Food</li>
-                                </ul>
-                            </div>
+                    </div>
+                </section>
+
+                <section className="lp-section" id="faq">
+                    <div className="lp-wrap">
+                        <div className="lp-section-head">
+                            <div className="lp-eyebrow">Questions, answered</div>
+                            <h2 className="lp-h2">Good to know.</h2>
+                        </div>
+                        <div className="lp-faq">
+                            {faqs.map((faq) => (
+                                <details key={faq.question}>
+                                    <summary>{faq.question}<ChevronDown size={18} aria-hidden="true" /></summary>
+                                    <p>{faq.answer}</p>
+                                </details>
+                            ))}
+                        </div>
+                    </div>
+                </section>
+
+                <section className="lp-wrap" style={{ paddingBottom: 34 }}>
+                    <div className="lp-cta">
+                        <div className="lp-cta-inner">
+                            <div className="lp-eyebrow">Your next deck starts here</div>
+                            <h2 className="lp-h2">Bring your questions. We’ll help with the slides.</h2>
+                            <p>Sign in to turn your raw material into a clear, editable presentation, ready for a final review.</p>
+                            <SignInButton mode="modal"><button className="lp-btn lp-btn-primary" type="button">Create a presentation <ArrowRight size={16} /></button></SignInButton>
                         </div>
                     </div>
                 </section>
             </main>
-            <footer className="bg-surface dark:bg-on-background border-t border-outline-variant dark:border-outline w-full py-8 px-margin-desktop flex flex-col md:flex-row justify-between items-center gap-stack-md mt-auto">
-                <div className="font-headline-sm text-headline-sm text-on-surface flex items-center gap-2 font-bold">
-                    SlideGen Pro
-                </div>
-                <div className="font-label-sm text-label-sm text-on-surface-variant">
-                    © 2026 SlideGen Pro. Empowering educators worldwide.
+            <footer className="lp-footer">
+                <div className="lp-wrap lp-footer-inner">
+                    <div className="lp-brand"><Sparkles size={17} aria-hidden="true" /> SlideGen Pro</div>
+                    <span>Make more room for teaching.</span>
                 </div>
             </footer>
-        </>
+        </div>
     );
 }
