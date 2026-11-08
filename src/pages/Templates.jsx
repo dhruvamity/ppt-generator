@@ -20,8 +20,8 @@ export default function Templates() {
     };
 
     const mockConfig = {
-        mainTitle1: 'SlideGen',
-        mainTitle2: 'PRO',
+        mainTitle1: 'Your Next',
+        mainTitle2: 'Lesson',
         pill1: 'TEMPLATE',
         pill2: '2026 EDITION',
         footer: 'BEAUTIFUL PRESENTATIONS',

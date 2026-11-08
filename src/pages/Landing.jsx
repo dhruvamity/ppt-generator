@@ -127,7 +127,7 @@ export default function Landing() {
                         <div className="lp-section-head">
                             <div className="lp-eyebrow">A simpler way to build a deck</div>
                             <h2 className="lp-h2">Spend less time formatting.</h2>
-                            <p className="lp-section-copy">Keep your attention on the material. SlideGen takes care of turning the raw text into a presentation you can review.</p>
+                            <p className="lp-section-copy">Keep your attention on the material. Deckful turns raw text into a presentation you can review.</p>
                         </div>
                         <div className="lp-steps">
                             <article className="lp-step"><div className="lp-step-num">01</div><h3>Paste your material</h3><p>Bring a question list, a quiz, or a longer set with shared instructions and reference information.</p></article>
@@ -187,7 +187,7 @@ export default function Landing() {
             </main>
             <footer className="lp-footer">
                 <div className="lp-wrap lp-footer-inner">
-                    <div className="lp-brand"><Sparkles size={17} aria-hidden="true" /> SlideGen Pro</div>
+                    <div className="lp-brand"><Sparkles size={17} aria-hidden="true" /> Deckful</div>
                     <span>Make more room for teaching.</span>
                 </div>
             </footer>
