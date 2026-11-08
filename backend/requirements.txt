@@ -1,6 +1,8 @@
 fastapi
 uvicorn
 google-genai
+httpx
+razorpay
 python-jose[cryptography]
 python-multipart
 pydantic
