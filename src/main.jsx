@@ -12,7 +12,17 @@ if (!PUBLISHABLE_KEY) {
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <ClerkProvider publishableKey={PUBLISHABLE_KEY} afterSignOutUrl="/">
+    <ClerkProvider
+      publishableKey={PUBLISHABLE_KEY}
+      afterSignOutUrl="/"
+      signInFallbackRedirectUrl="/dashboard"
+      signUpFallbackRedirectUrl="/dashboard"
+      taskUrls={{
+        'choose-organization': '/session-tasks',
+        'reset-password': '/session-tasks',
+        'setup-mfa': '/session-tasks',
+      }}
+    >
       <App />
     </ClerkProvider>
   </StrictMode>,
