@@ -34,10 +34,6 @@ export default function LiveSlidePreview({ theme, type = 'title', config, questi
             {/* Bottom Ribbon */}
             <div style={{ position: 'absolute', left: x(0), top: y(5.5), width: w(10), height: h(0.125), backgroundColor: `#${theme.gold}`, opacity: 0.8 }}></div>
             
-            {/* Logo Placeholder */}
-            <div style={{ position: 'absolute', left: x(0.3), top: y(5.2), width: w(3.0), height: h(0.25), fontSize: fs(10), color: `#${theme.textWhite}`, opacity: 0.6, display: 'flex', alignItems: 'center', letterSpacing: '0.1cqw' }}>
-                <strong style={{ color: `#${theme.cyan}` }}>SLIDEGEN</strong>&nbsp;PRO
-            </div>
         </>
     );
 

@@ -96,9 +96,6 @@ export const buildRevealHtml = (config, activeSlides, theme, layoutId = 'modern-
         <div style="position: absolute; left: ${x(-0.5)}; top: ${y(-0.5)}; width: ${w(2.0)}; height: ${h(2.0)}; background-color: #${theme.tealDecor}; opacity: 0.2; border-radius: 50%; pointer-events: none;"></div>
         <div style="position: absolute; left: ${x(8.5)}; top: ${y(4.125)}; width: ${w(2.0)}; height: ${h(2.0)}; background-color: #${theme.decorPurple}; opacity: 0.2; border-radius: 50%; pointer-events: none;"></div>
         <div style="position: absolute; left: ${x(0)}; top: ${y(5.5)}; width: ${w(10)}; height: ${h(0.125)}; background-color: #${theme.gold}; opacity: 0.8;"></div>
-        <div style="position: absolute; left: ${x(0.3)}; top: ${y(5.2)}; width: ${w(3.0)}; height: ${h(0.25)}; font-size: ${fs(10)}; color: #${theme.textWhite}; opacity: 0.6; display: flex; align-items: center; letter-spacing: 1.5px;">
-            <strong style="color: #${theme.cyan}">SLIDEGEN</strong>&nbsp;PRO
-        </div>
     `;
 
     const renderOptionsGrid = (options, color, hasContext = false) => {

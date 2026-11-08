@@ -1,11 +1,11 @@
-Landing Page - Slide Generator Pro
+Landing Page - Deckful
 
 <!DOCTYPE html>
 
 <html class="light" lang="en"><head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>SlideGen Pro - Instant Slide Generator for Educators</title>
+<title>Deckful - Instant Slide Generator for Educators</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
@@ -134,7 +134,7 @@ Landing Page - Slide Generator Pro
 <!-- TopNavBar -->
 <nav class="bg-surface dark:bg-on-background border-b border-outline-variant dark:border-outline fixed top-0 left-0 w-full z-50 flex justify-between items-center px-margin-desktop h-16 mx-auto">
 <div class="flex items-center gap-gutter">
-<span class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed-dim">SlideGen Pro</span>
+<span class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed-dim">Deckful</span>
 <div class="hidden md:flex gap-stack-md font-body-md text-body-md">
 <a class="text-primary dark:text-primary-fixed font-bold border-b-2 border-primary dark:border-primary-fixed pb-1 hover:text-primary dark:hover:text-primary-fixed transition-colors" href="#">Dashboard</a>
 <a class="text-on-surface-variant dark:text-surface-variant hover:text-primary dark:hover:text-primary-fixed transition-colors" href="#">Templates</a>
@@ -251,7 +251,7 @@ Landing Page - Slide Generator Pro
 <footer class="bg-surface dark:bg-on-background border-t border-outline-variant dark:border-outline w-full py-8 px-margin-desktop flex flex-col md:flex-row justify-between items-center gap-stack-md mt-auto">
 <div class="font-headline-sm text-headline-sm text-on-surface flex items-center gap-2">
 <span class="material-symbols-outlined text-primary">school</span>
-            SlideGen Pro
+            Deckful
         </div>
 <div class="flex flex-wrap justify-center gap-stack-lg font-label-sm text-label-sm">
 <a class="text-on-surface-variant dark:text-surface-variant hover:text-primary dark:hover:text-primary-fixed underline transition-opacity duration-200" href="#">Privacy Policy</a>
@@ -260,7 +260,7 @@ Landing Page - Slide Generator Pro
 <a class="text-on-surface-variant dark:text-surface-variant hover:text-primary dark:hover:text-primary-fixed underline transition-opacity duration-200" href="#">API Status</a>
 </div>
 <div class="font-label-sm text-label-sm text-on-surface-variant dark:text-surface-variant">
-            © 2024 SlideGen Pro. Empowering educators worldwide.
+            © 2024 Deckful. Empowering educators worldwide.
         </div>
 </footer>
 </body></html>
@@ -273,7 +273,7 @@ Dashboard - My Projects
 <html lang="en"><head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>SlideGen Pro - Dashboard</title>
+<title>Deckful - Dashboard</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
@@ -380,7 +380,7 @@ Dashboard - My Projects
 <!-- Brand Logo -->
 <a class="font-headline-md text-headline-md font-bold text-primary flex items-center gap-2" href="#">
 <span class="material-symbols-outlined" data-icon="auto_awesome" data-weight="fill" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
-                SlideGen Pro
+                Deckful
             </a>
 <!-- Navigation Links -->
 <div class="hidden md:flex items-center gap-stack-lg ml-8 font-body-md text-body-md h-full">
@@ -400,7 +400,7 @@ Dashboard - My Projects
 <button class="font-label-md text-label-md bg-primary text-on-primary hover:opacity-90 px-4 py-2 rounded-lg transition-opacity">Create Slide</button>
 <!-- Profile -->
 <button class="w-8 h-8 rounded-full overflow-hidden border border-outline-variant hover:border-primary transition-colors ml-2">
-<img alt="Educator Profile Settings" class="w-full h-full object-cover" data-alt="A professional headshot of an educator used as a profile picture. The image is brightly lit, crisp, and clean, fitting the SlideGen Pro minimal corporate aesthetic. The subject is smiling slightly against a neutral light grey background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDQaikCn_LmHISBsAIBCAy7hy6Tt7eDWtvSjQbsvGnF8Fcsutw6lcsjUsk2sGY1KRg7KXJZ_vb7axHfNp9LJn9Phy2aQDKJ1Ftx-vkiyzrG1evBXz-udP5g8Sr2KFP14TlPb60lak5EE2XCENVzgTCyG8z0B6mJSYebdro3kXNnTXRna_BMYj43PMvgWrj27nYTBJCE2XtVHWluBlk2bmlj233rblGsy-EVvy-uxk24FivD8YGc1I-_sQ"/>
+<img alt="Educator Profile Settings" class="w-full h-full object-cover" data-alt="A professional headshot of an educator used as a profile picture. The image is brightly lit, crisp, and clean, fitting the Deckful minimal corporate aesthetic. The subject is smiling slightly against a neutral light grey background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDQaikCn_LmHISBsAIBCAy7hy6Tt7eDWtvSjQbsvGnF8Fcsutw6lcsjUsk2sGY1KRg7KXJZ_vb7axHfNp9LJn9Phy2aQDKJ1Ftx-vkiyzrG1evBXz-udP5g8Sr2KFP14TlPb60lak5EE2XCENVzgTCyG8z0B6mJSYebdro3kXNnTXRna_BMYj43PMvgWrj27nYTBJCE2XtVHWluBlk2bmlj233rblGsy-EVvy-uxk24FivD8YGc1I-_sQ"/>
 </button>
 </div>
 </nav>
@@ -477,7 +477,7 @@ Dashboard - My Projects
 <!-- Card 1 -->
 <div class="group bg-surface border border-outline-variant rounded-xl overflow-hidden hover:border-primary hover:shadow-[0_4px_20px_rgba(0,0,0,0.05)] transition-all duration-150 cursor-pointer flex flex-col">
 <div class="w-full aspect-video relative overflow-hidden bg-surface-container-low">
-<div class="w-full h-full bg-cover bg-center group-hover:scale-105 transition-transform duration-300" data-alt="A clean, modern title slide for a biology presentation featuring microscopic cellular structures in a minimalist vector style. The design uses a crisp white background with accents of SlideGen Pro's primary blue and secondary teal. The overall aesthetic is highly professional, legible, and educational." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAL6p8vgqnvi5zkD2CPspNGzc2roxUnk_8D_n2RlWb87B08A92ZuUUJIdjoIVlys8ZJoHPyNjlvj2tLY5zvt67F2dOxGNLYsVQz0JP2mbNbo-ey3CY333_MZjFVV5oDLPHZZnuoBf-GbB5B-NX5W75KgGhbnwusjiOPGb-t4vh1_G2diJo3Uh3ZBg5Ot-ACZVY-6BU491YhoFk7Xr1Xe2t2Jw7XNBqu6j_RIKT-8xWefYXKYnppCC1tWA')"></div>
+<div class="w-full h-full bg-cover bg-center group-hover:scale-105 transition-transform duration-300" data-alt="A clean, modern title slide for a biology presentation featuring microscopic cellular structures in a minimalist vector style. The design uses a crisp white background with accents of Deckful's primary blue and secondary teal. The overall aesthetic is highly professional, legible, and educational." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAL6p8vgqnvi5zkD2CPspNGzc2roxUnk_8D_n2RlWb87B08A92ZuUUJIdjoIVlys8ZJoHPyNjlvj2tLY5zvt67F2dOxGNLYsVQz0JP2mbNbo-ey3CY333_MZjFVV5oDLPHZZnuoBf-GbB5B-NX5W75KgGhbnwusjiOPGb-t4vh1_G2diJo3Uh3ZBg5Ot-ACZVY-6BU491YhoFk7Xr1Xe2t2Jw7XNBqu6j_RIKT-8xWefYXKYnppCC1tWA')"></div>
 <div class="absolute top-2 right-2 bg-surface/90 backdrop-blur-sm px-2 py-1 rounded font-label-sm text-label-sm text-on-surface border border-outline-variant/50">12 Slides</div>
 </div>
 <div class="p-4 flex flex-col gap-1 border-t border-outline-variant">
@@ -493,7 +493,7 @@ Dashboard - My Projects
 <!-- Card 2 -->
 <div class="group bg-surface border border-outline-variant rounded-xl overflow-hidden hover:border-primary hover:shadow-[0_4px_20px_rgba(0,0,0,0.05)] transition-all duration-150 cursor-pointer flex flex-col">
 <div class="w-full aspect-video relative overflow-hidden bg-surface-container-low">
-<div class="w-full h-full bg-cover bg-center group-hover:scale-105 transition-transform duration-300" data-alt="A highly organized presentation slide displaying geometric shapes and algebraic formulas. The layout is structured on a strict grid with generous whitespace, characteristic of the SlideGen Pro corporate modern style. The color palette relies on high-contrast black text on pristine white, with subtle blue tonal layers for depth." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCmidf84A2eGzeAMSHro63dqmM5TuX6ljfQEzF5tvmFXS4RGYINdulAXYQ2T3EWhEYGqNiegF4wRSvpWO-YIBAmsfSGyaqvKYALho93NGVkm7zqH3UWgZ3rL3F5pCr_AE4THWROH4ychDZEIJotXHEBF29aoXpe-EyOSy0IHcYkebKRzqMauXd7ghDzzs4DM_91B2M61iXowuoJzh0fh5N7cnayb2YOqIJkS0LIlYZpY7woxGiZfbwYBA')"></div>
+<div class="w-full h-full bg-cover bg-center group-hover:scale-105 transition-transform duration-300" data-alt="A highly organized presentation slide displaying geometric shapes and algebraic formulas. The layout is structured on a strict grid with generous whitespace, characteristic of the Deckful corporate modern style. The color palette relies on high-contrast black text on pristine white, with subtle blue tonal layers for depth." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCmidf84A2eGzeAMSHro63dqmM5TuX6ljfQEzF5tvmFXS4RGYINdulAXYQ2T3EWhEYGqNiegF4wRSvpWO-YIBAmsfSGyaqvKYALho93NGVkm7zqH3UWgZ3rL3F5pCr_AE4THWROH4ychDZEIJotXHEBF29aoXpe-EyOSy0IHcYkebKRzqMauXd7ghDzzs4DM_91B2M61iXowuoJzh0fh5N7cnayb2YOqIJkS0LIlYZpY7woxGiZfbwYBA')"></div>
 <div class="absolute top-2 right-2 bg-surface/90 backdrop-blur-sm px-2 py-1 rounded font-label-sm text-label-sm text-on-surface border border-outline-variant/50">45 Slides</div>
 </div>
 <div class="p-4 flex flex-col gap-1 border-t border-outline-variant">
@@ -509,7 +509,7 @@ Dashboard - My Projects
 <!-- Card 3 -->
 <div class="group bg-surface border border-outline-variant rounded-xl overflow-hidden hover:border-primary hover:shadow-[0_4px_20px_rgba(0,0,0,0.05)] transition-all duration-150 cursor-pointer flex flex-col">
 <div class="w-full aspect-video relative overflow-hidden bg-surface-container-low">
-<div class="w-full h-full bg-cover bg-center group-hover:scale-105 transition-transform duration-300" data-alt="A minimalist educational slide design featuring a stylized, abstract map of the world. The aesthetic is clean and uncluttered, suitable for a fast-paced lecture. The visual utilizes the SlideGen Pro design system with flat surface layers and ambient shadows, emphasizing clarity and efficiency over ornamentation." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAZ4vidg35wbvGrIWSREq0GMaXReuwE4g8dvcdgKLohvoGFkDHCZcQ7B9i2tasifqmY90Ug0QJEzOe_2Fk7pMfeKyV9TGrEFdlP8p0gdpLPuFIy2ZhrojEo8tPXNxTLDelY3feYqwHP-p_Z1S9U7BnbgSK3ul-FJ6WmOW_MY2X2fcGALtqoSb4LcYOamzQOz5gaGc6UeTlvPppZSXDXCOnRaC72FrKaGljm4_pbDQo-4ZAaZy7C6jbiFQ')"></div>
+<div class="w-full h-full bg-cover bg-center group-hover:scale-105 transition-transform duration-300" data-alt="A minimalist educational slide design featuring a stylized, abstract map of the world. The aesthetic is clean and uncluttered, suitable for a fast-paced lecture. The visual utilizes the Deckful design system with flat surface layers and ambient shadows, emphasizing clarity and efficiency over ornamentation." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAZ4vidg35wbvGrIWSREq0GMaXReuwE4g8dvcdgKLohvoGFkDHCZcQ7B9i2tasifqmY90Ug0QJEzOe_2Fk7pMfeKyV9TGrEFdlP8p0gdpLPuFIy2ZhrojEo8tPXNxTLDelY3feYqwHP-p_Z1S9U7BnbgSK3ul-FJ6WmOW_MY2X2fcGALtqoSb4LcYOamzQOz5gaGc6UeTlvPppZSXDXCOnRaC72FrKaGljm4_pbDQo-4ZAaZy7C6jbiFQ')"></div>
 <div class="absolute top-2 right-2 bg-surface/90 backdrop-blur-sm px-2 py-1 rounded font-label-sm text-label-sm text-on-surface border border-outline-variant/50">28 Slides</div>
 </div>
 <div class="p-4 flex flex-col gap-1 border-t border-outline-variant">
@@ -564,7 +564,7 @@ AI Generator - Paste Content
 <html class="h-full" lang="en"><head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>SlideGen Pro - Generator</title>
+<title>Deckful - Generator</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <script id="tailwind-config">
         tailwind.config = {
@@ -756,7 +756,7 @@ AI Generator - Paste Content
 <!-- TopNavBar -->
 <header class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-margin-desktop h-16 max-w-container-max mx-auto bg-surface dark:bg-on-background border-b border-outline-variant dark:border-outline">
 <div class="flex items-center gap-stack-lg">
-<h1 class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed-dim">SlideGen Pro</h1>
+<h1 class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed-dim">Deckful</h1>
 <nav class="hidden md:flex gap-stack-md font-body-md text-body-md">
 <a class="text-on-surface-variant dark:text-surface-variant hover:text-primary dark:hover:text-primary-fixed transition-colors" href="#">Dashboard</a>
 <a class="text-on-surface-variant dark:text-surface-variant hover:text-primary dark:hover:text-primary-fixed transition-colors" href="#">Templates</a>
@@ -897,7 +897,7 @@ Review & Export Slides
 <html class="light" lang="en"><head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>SlideGen Pro - Generator Workspace</title>
+<title>Deckful - Generator Workspace</title>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
@@ -1067,7 +1067,7 @@ Review & Export Slides
 <!-- TopNavBar -->
 <nav class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-margin-mobile md:px-margin-desktop h-16 max-w-container-max mx-auto bg-surface dark:bg-on-background border-b border-outline-variant dark:border-outline">
 <div class="flex items-center gap-gutter">
-<span class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed-dim">SlideGen Pro</span>
+<span class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed-dim">Deckful</span>
 <div class="hidden md:flex gap-stack-md ml-gutter">
 <a class="font-label-md text-label-md text-primary dark:text-primary-fixed font-bold border-b-2 border-primary dark:border-primary-fixed pb-1 hover:text-primary dark:hover:text-primary-fixed transition-colors opacity-80 duration-150" href="#">Dashboard</a>
 <a class="font-label-md text-label-md text-on-surface-variant dark:text-surface-variant hover:text-primary dark:hover:text-primary-fixed transition-colors" href="#">Templates</a>

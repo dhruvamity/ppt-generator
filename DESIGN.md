@@ -1,5 +1,5 @@
 ---
-name: Slide Generator Pro
+name: Deckful
 colors:
   surface: '#f8f9ff'
   surface-dim: '#cbdbf5'
@@ -111,7 +111,7 @@ spacing:
 ---
 
 ## Brand & Style
-The design system is engineered for **Slide Generator Pro**, a productivity-focused SaaS platform for educators. The brand personality is rooted in **Reliability, Efficiency, and Clarity**. It aims to evoke a sense of professional competence and calm, reducing the "decision fatigue" often experienced by time-poor teachers.
+The design system is engineered for **Deckful**, a productivity-focused SaaS platform for educators. The brand personality is rooted in **Reliability, Efficiency, and Clarity**. It aims to evoke a sense of professional competence and calm, reducing the "decision fatigue" often experienced by time-poor teachers.
 
 The design style follows a **Corporate Modern** aesthetic with a heavy emphasis on **Minimalism**. It utilizes generous whitespace to separate complex educational content, high-fidelity iconography for quick scanning, and a systematic approach to density that allows for high information throughput without overwhelming the user. The interface is purposefully "quiet" to let the educator's content remain the focal point.
 

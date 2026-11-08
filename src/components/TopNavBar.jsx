@@ -16,7 +16,7 @@ export default function TopNavBar() {
                 {/* Brand Logo */}
                 <Link to="/" className="font-headline-md text-[24px] font-bold text-primary flex items-center gap-2">
                     <Sparkles size={24} />
-                    SlideGen Pro
+                    Deckful
                 </Link>
                 
                 {/* Navigation Links - Only show when Signed In */}
