@@ -1,6 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, Navigate } from 'react-router-dom';
-import { SignedIn, SignedOut } from '@clerk/clerk-react';
+import { useAuth } from '@clerk/clerk-react';
 import TopNavBar from './components/TopNavBar';
 import Landing from './pages/Landing';
 import Dashboard from './pages/Dashboard';
@@ -22,13 +22,32 @@ function NotFound() {
     );
 }
 
-function ProtectedRoute({ children }) {
+function AuthLoading() {
     return (
-        <>
-            <SignedIn>{children}</SignedIn>
-            <SignedOut><Navigate to="/" replace /></SignedOut>
-        </>
+        <main
+            role="status"
+            aria-live="polite"
+            className="flex flex-1 items-center justify-center px-6 pt-16 text-on-surface-variant"
+        >
+            Restoring your session…
+        </main>
     );
+}
+
+function ProtectedRoute({ children }) {
+    const { isLoaded, isSignedIn } = useAuth({ treatPendingAsSignedOut: false });
+
+    if (!isLoaded) return <AuthLoading />;
+    if (!isSignedIn) return <Navigate to="/" replace />;
+
+    return children;
+}
+
+function HomeRoute() {
+    const { isLoaded, isSignedIn } = useAuth({ treatPendingAsSignedOut: false });
+
+    if (!isLoaded) return <AuthLoading />;
+    return isSignedIn ? <Navigate to="/dashboard" replace /> : <Landing />;
 }
 
 export default function App() {
@@ -39,12 +58,7 @@ export default function App() {
                     <TopNavBar />
                     
                     <Routes>
-                        <Route path="/" element={
-                            <>
-                                <SignedIn><Navigate to="/dashboard" replace /></SignedIn>
-                                <SignedOut><Landing /></SignedOut>
-                            </>
-                        } />
+                        <Route path="/" element={<HomeRoute />} />
                         <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
                         <Route path="/generator" element={<ProtectedRoute><Generator /></ProtectedRoute>} />
                         <Route path="/templates" element={<ProtectedRoute><Templates /></ProtectedRoute>} />
