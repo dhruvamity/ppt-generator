@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import 'katex/dist/katex.min.css';
 import MathRenderer from './MathRenderer';
 
-export default function EditableBlock({ value, onChange, className, style, theme }) {
+export default function EditableBlock({ value, onChange, className, style, renderTables = false }) {
     const [isEditing, setIsEditing] = useState(false);
     const [tempValue, setTempValue] = useState(value || '');
 
@@ -29,15 +29,52 @@ export default function EditableBlock({ value, onChange, className, style, theme
             // If it's an odd index, it was wrapped in $, so it's math
             if (index % 2 !== 0) {
                 return (
-                    <span key={index} className="inline-flex items-center px-1" style={{ verticalAlign: 'middle' }}>
+                    <span key={index} style={{ display: 'inline-block', verticalAlign: 'middle', padding: '0 0.12em' }}>
                         {/* \displaystyle forces fractions to be tall like on real paper */}
-                        <MathRenderer math={`\\displaystyle ${part}`} />
+                        <MathRenderer math={part.trimStart().startsWith('\\displaystyle') ? part : `\\displaystyle ${part}`} />
                     </span>
                 );
             }
             // Even index is standard text
             return <span key={index} style={{ whiteSpace: 'pre-wrap' }}>{part}</span>;
         });
+    };
+
+    const renderContent = (text) => {
+        if (!renderTables || !text) return renderTextWithMath(text);
+        const lines = text.split('\n');
+        const blocks = [];
+        const cells = (line) => line.trim().replace(/^\||\|$/g, '').split(/(?<!\\)\|/).map(cell => cell.trim());
+        let paragraph = [];
+        const flushParagraph = () => {
+            if (paragraph.length) blocks.push(<div key={`text-${blocks.length}`} style={{ marginBottom: '0.7em' }}>{renderTextWithMath(paragraph.join('\n'))}</div>);
+            paragraph = [];
+        };
+        for (let i = 0; i < lines.length; i++) {
+            const isTable = lines[i].trim().startsWith('|') && lines[i + 1]?.includes('|') && cells(lines[i + 1]).every(cell => /^:?-{2,}:?$/.test(cell));
+            if (!isTable) {
+                paragraph.push(lines[i]);
+                continue;
+            }
+            flushParagraph();
+            const headings = cells(lines[i]);
+            const rows = [];
+            i += 2;
+            while (i < lines.length && lines[i].trim().startsWith('|')) {
+                rows.push(cells(lines[i]));
+                i++;
+            }
+            i--;
+            const cellStyle = { borderBottom: '0.06em solid currentColor', padding: '0.35em 0.45em', textAlign: 'left', overflowWrap: 'anywhere' };
+            blocks.push(
+                <table key={`table-${blocks.length}`} style={{ width: '100%', tableLayout: 'fixed', borderCollapse: 'collapse', margin: '0.7em 0', whiteSpace: 'normal', fontSize: '0.95em' }}>
+                    <thead><tr>{headings.map((heading, j) => <th key={j} style={cellStyle}>{renderTextWithMath(heading)}</th>)}</tr></thead>
+                    <tbody>{rows.map((row, j) => <tr key={j}>{headings.map((_, k) => <td key={k} style={cellStyle}>{renderTextWithMath(row[k] || '')}</td>)}</tr>)}</tbody>
+                </table>
+            );
+        }
+        flushParagraph();
+        return blocks;
     };
 
     if (isEditing) {
@@ -58,9 +95,9 @@ export default function EditableBlock({ value, onChange, className, style, theme
             onClick={() => setIsEditing(true)} 
             className={`cursor-pointer hover:outline hover:outline-1 hover:outline-dashed hover:outline-white/50 rounded transition-all duration-200 ${className || ''}`}
             title="Click to edit text"
-            style={{ ...style, lineHeight: '1.8' }}
+            style={{ lineHeight: 'inherit', ...style }}
         >
-            {renderTextWithMath(value)}
+            {renderContent(value)}
         </div>
     );
 }

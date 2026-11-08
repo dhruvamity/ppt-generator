@@ -3,149 +3,14 @@ import { persist } from 'zustand/middleware';
 import { generateSlideData } from '../services/gemini';
 import toast from 'react-hot-toast';
 
-const LATEX_COMMANDS = 'frac|sqrt|triangle|angle|circ|pi|theta|alpha|beta|gamma|delta|sum|prod|int|lim|infty|pm|times|div|cdot|leq|geq|neq|approx|equiv|subset|supset|cap|cup|in|notin|forall|exists|nabla|partial|rightarrow|leftarrow|Rightarrow|Leftarrow|text';
+import { extractDocumentTitle, parseLocalText, serializeQuestions } from '../utils/questionParser.js';
+export { normalizeMathText, convertFractions, extractDocumentTitle, parseLocalText } from '../utils/questionParser.js';
 
-const applyOutsideMath = (text, fn) => {
-    return text.split(/(\$\$[\s\S]*?\$\$|\$[\s\S]*?\$)/).map(part => {
-        if (part.startsWith('$')) return part;
-        return fn(part);
-    }).join('');
-};
-
-export const normalizeMathText = (text) => {
-    if (!text) return text;
-
-    let normalized = text.replace(/I(\d+)/g, '√$1');
-
-    normalized = applyOutsideMath(normalized, (part) => {
-        let processed = part;
-
-        processed = processed.replace(
-            new RegExp(`\\\\\\\\(${LATEX_COMMANDS})\\b`, 'g'),
-            '\\$1'
-        );
-
-        processed = processed.replace(/\\(triangle|angle|circ)([A-Za-z])/g, '\\$1 $2');
-        processed = processed.replace(/(\\(?:triangle|angle)\s*[A-Za-z]{1,4})(?:\s*)\1/g, '$1');
-        processed = processed.replace(/\b([A-Z]{1,3}\s*=\s*-?\d+(?:\.\d+)?)(?:\s*)\1\b/g, '$1');
-
-        return processed;
-    });
-
-    const wrapOutsideMath = (source, regex) => applyOutsideMath(source, (part) => (
-        part.replace(regex, (match) => `$${match.trim()}$`)
-    ));
-
-    normalized = wrapOutsideMath(
-        normalized,
-        /\\(?:triangle|angle)\s*[A-Za-z]{1,4}(?:\s*=\s*-?\d+(?:\.\d+)?\s*\^\\circ)?/g
-    );
-    normalized = wrapOutsideMath(normalized, /\b-?\d+(?:\.\d+)?\s*\^\\circ\b/g);
-    normalized = wrapOutsideMath(normalized, /\b[A-Z]{1,3}\s*=\s*-?\d+(?:\.\d+)?\b/g);
-
-    return normalized;
-};
-
-export const convertFractions = (text) => {
-    if (!text) return text;
-    text = normalizeMathText(text);
-    text = text.replace(/([a-zA-Z0-9])\/√(\d+)/g, '$\\frac{$1}{\\sqrt{$2}}$');
-    
-    let parts = text.split(/(\$\$[\s\S]*?\$\$|\$[\s\S]*?\$)/);
-    return parts.map(part => {
-        if (part.startsWith('$')) return part;
-        // Fix fractions
-        let processed = part.replace(/\b(\d+)\/(\d+)\b/g, '$\\frac{$1}{$2}$');
-        // Fix stray square roots if they are standalone
-        processed = processed.replace(/√(\d+)/g, '$\\sqrt{$1}$');
-        // Wrap exponents/powers as LaTeX superscripts
-        processed = processed.replace(/\b([a-zA-Z0-9]+)\^(-?\d+|\([^)]+\)|\{[^}]+\})/g, (m, base, exp) => {
-            const e = exp.replace(/^[({]|[)}]$/g, '');
-            return `$${base}^{${e}}$`;
-        });
-        return processed;
-    }).join('');
-};
-
-// Helper function for local parsing
-export const parseLocalText = (rawText) => {
-    if (!rawText || !rawText.trim()) return [];
-
-    // Strip markdown formatting (bold/italics)
-    let cleanText = rawText.replace(/(\*\*|\*|__|_)/g, '');
-    const lines = cleanText.split('\n');
-    let questions = [];
-    let currentQ = null;
-    let currentCategory = "Practice Question";
-    
-    for (let i = 0; i < lines.length; i++) {
-        let line = lines[i].trim();
-        if (!line) continue;
-        
-        // Category heading
-        if (/^\d+\.\s+[a-zA-Z\s()0-9]+$/.test(line) && !line.includes(':') && !line.startsWith('Q')) {
-            currentCategory = line.replace(/^\d+\.\s*/, '').trim();
-            continue;
-        }
-        
-        // Question start
-        const qMatch = line.match(/^\s*(Case\s*\d+|Exp\.\s*\d+|Question\s*\d*|Q\.?\d+)[:.-]?\s*(.*)/i);
-        if (qMatch) {
-            if (currentQ) {
-                questions.push(currentQ);
-            }
-            
-            currentQ = {
-                badge: 'Q', // Temporary, overridden in map
-                tag: currentCategory,
-                text: [qMatch[2].trim()],
-                options: []
-            };
-        } else if (currentQ) {
-            if (/^(\([a-dA-D]\)|[a-dA-D]\)|[a-dA-D]\.)/.test(line)) {
-                currentQ.options.push(line);
-            } else if (/^Part \d+:/.test(line)) {
-                currentQ.text.push(line);
-            } else {
-                if (/^\(\d+\)/.test(line)) {
-                    currentQ.options.push(line);
-                } else {
-                    currentQ.text.push(line);
-                }
-            }
-        }
-    }
-    if (currentQ) {
-        questions.push(currentQ);
-    }
-    
-    return questions.map((q, index) => {
-        let qText = q.text.join('\n');
-        
-        let parsedOptions = [];
-        if (q.options && q.options.length > 0) {
-            parsedOptions = q.options.map(optStr => {
-                let match = optStr.match(/^(\([a-dA-D]\)|[a-dA-D]\)|[a-dA-D]\.|\(\d+\))\s*(.*)/);
-                if (match) {
-                    let label = match[1].replace(/[().]/g, '').toLowerCase();
-                    if (!isNaN(label)) {
-                        const numMap = { '1': 'a', '2': 'b', '3': 'c', '4': 'd', '5': 'e' };
-                        label = numMap[label] || label;
-                    }
-                    return { label: label, text: convertFractions(match[2].trim()) };
-                }
-                return { label: '', text: convertFractions(optStr.trim()) };
-            });
-        }
-        
-        return {
-            badge: `Q.${index + 1}`,
-            tag: q.tag,
-            qText: convertFractions(qText),
-            options: parsedOptions
-        };
-    });
-};
+const editedSlidesState = (slides) => ({
+    activeSlides: slides,
+    aiQuestions: slides,
+    rawText: serializeQuestions(slides),
+});
 
 const defaultRawText = `Case 1: Find the greatest possible number with which when we divide 37 and 58, it leaves the respective remainder of 2 and 3.
 Case 2: Find the largest possible number with which when 60 and 98 are divided it leaves the remainders 3 in each case.
@@ -179,7 +44,19 @@ export const useStore = create(
 
             // Raw Text & Parsing
             rawText: defaultRawText,
-            setRawText: (text) => set({ rawText: text }),
+            setRawText: (text) => set((state) => {
+                const title = extractDocumentTitle(text);
+                const previousTitle = extractDocumentTitle(state.rawText);
+                const hasDefaultTitle = state.config.mainTitle1 === initialConfig.mainTitle1
+                    && state.config.mainTitle2 === initialConfig.mainTitle2;
+                if (!title || (title === previousTitle && !hasDefaultTitle)) return { rawText: text };
+                const words = title.split(/\s+/);
+                const mainTitle2 = words.length > 1 ? words.pop() : '';
+                return {
+                    rawText: text,
+                    config: { ...state.config, mainTitle1: words.join(' '), mainTitle2 },
+                };
+            }),
             
             aiQuestions: null,
             setAiQuestions: (questions) => set({ 
@@ -195,19 +72,25 @@ export const useStore = create(
                 set({ isParsing: true });
                 try {
                     const data = await generateSlideData(rawText, token);
+                    const sourceQuestions = parseLocalText(rawText);
+                    if (!Array.isArray(data) || data.length === 0) {
+                        throw new Error('Formatting returned no questions. Please retry.');
+                    }
+                    if (sourceQuestions.length > data.length) {
+                        throw new Error(`Formatting returned ${data.length} of ${sourceQuestions.length} detected questions. Please retry; your original text is preserved.`);
+                    }
                     
                     const indexedData = data.map((slide, i) => ({
                         ...slide,
+                        // Explicit shared ranges are authoritative. Preserve all
+                        // table values even if the AI compresses the passage.
+                        context: sourceQuestions.length === data.length && sourceQuestions[i].context
+                            ? sourceQuestions[i].context
+                            : (slide.context || ''),
                         badge: `Q.${i + 1}`
                     }));
                     
-                    const cleanText = indexedData.map((q, i) => {
-                        let str = `${q.badge}: ${q.qText}`;
-                        if (q.options && q.options.length > 0) {
-                            str += '\n' + q.options.map(o => `(${o.label}) ${o.text}`).join('\n');
-                        }
-                        return str;
-                    }).join('\n\n');
+                    const cleanText = serializeQuestions(indexedData);
                     
                     set({ aiQuestions: indexedData, activeSlides: indexedData, rawText: cleanText, isParsing: false });
                 } catch (error) {
@@ -232,9 +115,12 @@ export const useStore = create(
             activeSlides: [],
             setActiveSlides: (slides) => set({ activeSlides: slides }),
             updateSlideQuestion: (slideIndex, newText) => set((state) => {
-                const newSlides = [...state.activeSlides];
-                newSlides[slideIndex].qText = newText;
-                return { activeSlides: newSlides, aiQuestions: newSlides };
+                const newSlides = state.activeSlides.map((slide, index) => index === slideIndex ? { ...slide, qText: newText } : slide);
+                return editedSlidesState(newSlides);
+            }),
+            updateSlideContext: (slideIndex, newText) => set((state) => {
+                const newSlides = state.activeSlides.map((slide, index) => index === slideIndex ? { ...slide, context: newText } : slide);
+                return editedSlidesState(newSlides);
             }),
             updateSlideTopic: (slideIndex, newTopic) => set((state) => {
                 const newSlides = [...state.activeSlides];
@@ -242,9 +128,11 @@ export const useStore = create(
                 return { activeSlides: newSlides, aiQuestions: newSlides };
             }),
             updateSlideOption: (slideIndex, optIndex, newText) => set((state) => {
-                const newSlides = [...state.activeSlides];
-                newSlides[slideIndex].options[optIndex].text = newText;
-                return { activeSlides: newSlides, aiQuestions: newSlides };
+                const newSlides = state.activeSlides.map((slide, index) => index === slideIndex ? {
+                    ...slide,
+                    options: slide.options.map((option, optionIndex) => optionIndex === optIndex ? { ...option, text: newText } : option),
+                } : slide);
+                return editedSlidesState(newSlides);
             }),
             removeSlide: (index) => set((state) => {
                 const filtered = state.activeSlides.filter((_, i) => i !== index);
@@ -252,7 +140,7 @@ export const useStore = create(
                     ...slide,
                     badge: `Q.${i + 1}`
                 }));
-                return { activeSlides: renumbered };
+                return editedSlidesState(renumbered);
             }),
             reorderSlides: (startIndex, endIndex) => set((state) => {
                 const result = Array.from(state.activeSlides);
@@ -262,7 +150,7 @@ export const useStore = create(
                     ...slide,
                     badge: `Q.${i + 1}`
                 }));
-                return { activeSlides: renumbered };
+                return editedSlidesState(renumbered);
             }),
 
             // Themes
