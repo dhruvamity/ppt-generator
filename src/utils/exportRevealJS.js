@@ -188,7 +188,6 @@ export const buildRevealHtml = (config, activeSlides, theme, layoutId = 'modern-
                             : `<div style="background-color: #${theme.cyan}; padding: 5px 20px; font-size: ${fs(14)}; font-weight: bold; color: #${theme.textBlack}; border-radius: 8px 0 0 8px;">${escapeHtml(headerText)}</div>`
                         }
                         <div style="flex-grow: 1; height: 2px; background-color: #${accentColor};"></div>
-                        <div style="background-color: #${theme.bgColor}; border: 1px solid #${theme.cyan}; padding: 5px 15px; font-size: ${fs(10)}; font-weight: bold; color: #${theme.textWhite}; margin-left: 10px;">${(slide?.tag || '').toUpperCase()}</div>
                     </div>
 
                     <div style="position: absolute; left: 0; top: 0; width: 100%; height: 100%; padding: 120px 60px 60px 60px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: flex-start; z-index: 10;">
@@ -244,7 +243,6 @@ export const buildRevealHtml = (config, activeSlides, theme, layoutId = 'modern-
                     
                     <div style="position: absolute; left: ${x(0.5)}; top: ${y(0.5)}; display: flex; align-items: center; z-index: 10; width: ${w(9.0)};">
                         <div style="background-color: #${theme.orange}; padding: 5px 20px; font-size: ${fs(14)}; font-weight: bold; color: #${theme.textBlack};">${escapeHtml(headerText)}</div>
-                        <div style="background-color: #${theme.bgColor}; border: 1px solid #${theme.cyan}; padding: 5px 15px; font-size: ${fs(10)}; font-weight: bold; color: #${theme.textWhite}; margin-left: 10px;">${(slide?.tag || '').toUpperCase()}</div>
                     </div>
 
                     <div style="position: absolute; left: 0; top: 0; width: 100%; height: 100%; padding: 120px 60px 60px 60px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: flex-start; z-index: 10;">
@@ -298,7 +296,6 @@ export const buildRevealHtml = (config, activeSlides, theme, layoutId = 'modern-
                     
                     <div style="position: absolute; left: ${x(0.5)}; top: ${y(0.5)}; display: flex; align-items: center; z-index: 10; width: ${w(9.0)};">
                         <div style="background: rgba(255,255,255,0.1); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.2); padding: 5px 20px; font-size: ${fs(14)}; font-weight: bold; color: #${theme.textWhite}; border-radius: 50px;">${escapeHtml(headerText)}</div>
-                        <div style="background: rgba(255,255,255,0.1); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.2); padding: 5px 15px; font-size: ${fs(10)}; font-weight: bold; color: #${theme.textWhite}; margin-left: 10px; border-radius: 50px;">${(slide?.tag || '').toUpperCase()}</div>
                     </div>
 
                     <div style="position: absolute; left: 0; top: 0; width: 100%; height: 100%; padding: 120px 60px 60px 60px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: flex-start; z-index: 10;">
@@ -354,7 +351,6 @@ export const buildRevealHtml = (config, activeSlides, theme, layoutId = 'modern-
                     <div style="position: absolute; left: 0; top: ${y(0.5)}; display: flex; align-items: center; z-index: 10; width: 100%; padding: 0 60px; box-sizing: border-box;">
                         <div style="background-color: #${theme.acidGreen}; border: 3px solid #${theme.black}; ${shadowStyle} padding: 5px 20px; font-size: ${fs(14)}; font-weight: bold; color: #${theme.textBlack};">${escapeHtml(headerText)}</div>
                         <div style="flex-grow: 1; height: 3px; background-color: #${theme.black}; margin: 0 20px;"></div>
-                        <div style="background-color: #${theme.bgColor}; border: 3px solid #${theme.black}; ${shadowStyle} padding: 5px 15px; font-size: ${fs(10)}; font-weight: bold; color: #${theme.textBlack};">${(slide?.tag || '').toUpperCase()}</div>
                     </div>
 
                     <div style="position: absolute; left: 0; top: 0; width: 100%; height: 100%; padding: 120px 60px 10% 60px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: flex-start; z-index: 10;">
@@ -370,7 +366,17 @@ export const buildRevealHtml = (config, activeSlides, theme, layoutId = 'modern-
                 </section>`;
         }
 
-        if (isTitle && layoutType === 'modern-sidebar') {
+        if (!isTitle && slide?.isWorkspace) {
+            const workspaceColor = theme.cyan || theme.gold || theme.textWhite;
+            slideHtml = `
+                ${renderGlobalDecorations()}
+                <div style="position: absolute; left: ${x(0.5)}; top: ${y(0.35)}; right: ${x(0.5)}; display: flex; align-items: center; gap: 18px; z-index: 2;">
+                    <div style="padding: 8px 18px; border: 2px solid #${workspaceColor}; border-radius: 8px; color: #${workspaceColor}; font-size: ${fs(14)}; font-weight: bold; letter-spacing: 1px;">WORK SPACE</div>
+                    <div style="height: 2px; flex: 1; background: #${workspaceColor}; opacity: 0.7;"></div>
+                </div>
+                <div style="position: absolute; left: ${x(0.5)}; right: ${x(0.5)}; top: ${y(1.05)}; bottom: ${y(0.55)}; background: repeating-linear-gradient(to bottom, transparent 0, transparent 55px, #${workspaceColor} 56px, transparent 57px); opacity: 0.38;"></div>
+            `;
+        } else if (isTitle && layoutType === 'modern-sidebar') {
             slideHtml = `
                 ${renderGlobalDecorations()}
                 <div style="position: absolute; left: ${x(0)}; top: ${y(0)}; width: ${w(0.05)}; height: ${h(5.625)}; background-color: #${theme.cyan}"></div>
@@ -396,8 +402,6 @@ export const buildRevealHtml = (config, activeSlides, theme, layoutId = 'modern-
                 <div style="position: absolute; left: ${x(0.4)}; top: ${y(0.2)}; width: ${w(0.6)}; height: ${h(0.25)}; background-color: #${theme.cyan}; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: ${fs(12)}; font-weight: bold; color: #${theme.textBlack}">${escapeHtml(slide.badge)}</div>
                 
                 <div style="position: absolute; left: ${x(1.2)}; top: ${y(0.7)}; width: ${w(8.6)}; height: ${h(0.02)}; background-color: #${theme.cyan}; opacity: 0.5;"></div>
-
-                <div style="position: absolute; left: ${x(7.5)}; top: ${y(5.1)}; width: ${w(2.0)}; height: ${h(0.25)}; background-color: #${theme.bgCard}; border: 1.5px solid #${theme.purple}; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: ${fs(10)}; color: #${theme.purple}; box-sizing: border-box; font-weight: bold;">${(slide.tag || '').toUpperCase()}</div>
 
                 <div style="position: absolute; left: 0; top: 0; width: 100%; height: 100%; padding: 100px 40px 40px 80px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: flex-start;">
                     ${renderQuestionContent(slide, theme.cyan)}
@@ -428,8 +432,6 @@ export const buildRevealHtml = (config, activeSlides, theme, layoutId = 'modern-
                 
                 <div style="position: absolute; left: ${x(1.2)}; top: ${y(0.7)}; width: ${w(8.6)}; height: ${h(0.02)}; background-color: #${theme.cyan}; opacity: 0.5;"></div>
 
-                <div style="position: absolute; left: ${x(7.5)}; top: ${y(5.1)}; width: ${w(2.0)}; height: ${h(0.25)}; background-color: #${theme.bgColor}; border: 1.5px solid #${theme.purple}; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: ${fs(10)}; color: #${theme.purple}; font-weight: bold;">${(slide.tag || '').toUpperCase()}</div>
-
                 <div style="position: absolute; left: 0; top: 0; width: 100%; height: 100%; padding: 100px 40px 40px 80px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: flex-start;">
                     ${renderQuestionContent(slide, theme.cyan)}
                 </div>
@@ -459,25 +461,11 @@ export const buildRevealHtml = (config, activeSlides, theme, layoutId = 'modern-
                 
                 <div style="position: absolute; left: ${x(1.2)}; top: ${y(0.7)}; width: ${w(8.6)}; height: ${h(0.02)}; background-color: #${theme.cyan}; opacity: 0.5;"></div>
 
-                <div style="position: absolute; left: ${x(7.5)}; top: ${y(5.1)}; width: ${w(2.0)}; height: ${h(0.25)}; background-color: #${theme.bgColor}; border: 1.5px solid #${theme.purple}; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: ${fs(10)}; color: #${theme.purple}; font-weight: bold;">${(slide.tag || '').toUpperCase()}</div>
-
                 <div style="position: absolute; left: 0; top: 0; width: 100%; height: 100%; padding: 100px 40px 40px 80px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: flex-start;">
                     ${renderQuestionContent(slide, theme.gold)}
                 </div>
             `;
         }
-        if (!isTitle && !slide?.isWorkspace) {
-            const slideTopic = slide?.topic || "General Practice";
-            let topicColor = theme.cyan || theme.gold || theme.blueOrb || theme.acidGreen || theme.textWhite;
-            if (theme.name === 'Neo-Brutalism') topicColor = theme.textBlack;
-
-            slideHtml += `
-                <div style="position: absolute; right: 30px; bottom: 15px; font-size: ${fs(10)}; font-weight: bold; color: #${topicColor}; opacity: 0.8; z-index: 20;">
-                    ${escapeHtml(slideTopic)}
-                </div>
-            `;
-        }
-
         return `
             <section>
                 <div class="slide-container" data-workspace="${Boolean(slide?.isWorkspace)}">
@@ -546,7 +534,7 @@ export const buildRevealHtml = (config, activeSlides, theme, layoutId = 'modern-
             pages.id = 'print-slides';
             pages.className = 'reveal';
             document.querySelectorAll('.slides .slide-container').forEach(slide => {
-                if (slide.dataset.workspace !== 'true') pages.appendChild(slide.cloneNode(true));
+                pages.appendChild(slide.cloneNode(true));
             });
             document.body.appendChild(pages);
         });

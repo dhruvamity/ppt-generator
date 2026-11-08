@@ -10,7 +10,7 @@ const h = (val) => `${(val / 5.625) * 100}%`;
 const fs = (pt) => `${pt * 0.1388}cqw`;
 
 export default function LiveSlidePreview({ theme, type = 'title', config, questionData, layoutId }) {
-    const { updateSlideQuestion, updateSlideContext, updateSlideOption, updateSlideTopic } = useStore();
+    const { updateSlideQuestion, updateSlideContext, updateSlideOption } = useStore();
     if (!theme) return null;
 
     const layoutType = layoutId || 'modern-sidebar';
@@ -127,9 +127,6 @@ export default function LiveSlidePreview({ theme, type = 'title', config, questi
             
             <div style={{ position: 'absolute', left: x(1.2), top: y(0.7), width: w(8.6), height: h(0.02), backgroundColor: `#${theme.cyan}`, opacity: 0.5 }}></div>
 
-            {/* Tag repositioned to bottom right */}
-            <div style={{ position: 'absolute', left: x(7.5), top: y(5.1), width: w(2.0), height: h(0.25), backgroundColor: `#${theme.bgCard}`, border: `0.1cqw solid #${theme.purple}`, borderRadius: '0.5cqw', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: fs(10), color: `#${theme.purple}`, boxSizing: 'border-box', fontWeight: 'bold' }}>{questionData?.tag?.toUpperCase()}</div>
-
             <div style={{ textAlign: 'left', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', height: '100%', padding: '3.125cqw', paddingTop: '7.8125cqw', boxSizing: 'border-box' }}>
                 {renderQuestionBody(theme.cyan)}
             </div>
@@ -163,8 +160,6 @@ export default function LiveSlidePreview({ theme, type = 'title', config, questi
             
             <div style={{ position: 'absolute', left: x(1.2), top: y(0.7), width: w(8.6), height: h(0.02), backgroundColor: `#${theme.cyan}`, opacity: 0.5 }}></div>
 
-            <div style={{ position: 'absolute', left: x(7.5), top: y(5.1), width: w(2.0), height: h(0.25), backgroundColor: `#${theme.bgColor}`, border: `0.1cqw solid #${theme.purple}`, borderRadius: '0.5cqw', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: fs(10), color: `#${theme.purple}`, fontWeight: 'bold' }}>{questionData?.tag?.toUpperCase()}</div>
-
             <div style={{ textAlign: 'left', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', height: '100%', padding: '3.125cqw', paddingTop: '7.8125cqw', boxSizing: 'border-box' }}>
                 {renderQuestionBody(theme.cyan)}
             </div>
@@ -197,8 +192,6 @@ export default function LiveSlidePreview({ theme, type = 'title', config, questi
             <div style={{ position: 'absolute', left: x(0.4), top: y(0.2), width: w(0.6), height: h(0.25), backgroundColor: `#${theme.cyan}`, borderRadius: '0.5cqw', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: fs(12), fontWeight: 'bold', color: `#${theme.textBlack}` }}>{questionData?.badge}</div>
             
             <div style={{ position: 'absolute', left: x(1.2), top: y(0.7), width: w(8.6), height: h(0.02), backgroundColor: `#${theme.cyan}`, opacity: 0.5 }}></div>
-
-            <div style={{ position: 'absolute', left: x(7.5), top: y(5.1), width: w(2.0), height: h(0.25), backgroundColor: `#${theme.bgColor}`, border: `0.1cqw solid #${theme.purple}`, borderRadius: '0.5cqw', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: fs(10), color: `#${theme.purple}`, fontWeight: 'bold' }}>{questionData?.tag?.toUpperCase()}</div>
 
             <div style={{ textAlign: 'left', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', height: '100%', padding: '3.125cqw', paddingTop: '7.8125cqw', boxSizing: 'border-box' }}>
                 {renderQuestionBody(theme.gold)}
@@ -256,7 +249,6 @@ export default function LiveSlidePreview({ theme, type = 'title', config, questi
                         : <div style={{ backgroundColor: `#${theme.cyan}`, padding: '0.390625cqw 1.5625cqw', fontSize: fs(14), fontWeight: 'bold', color: `#${theme.textBlack}`, borderRadius: '0.625cqw 0 0 0.625cqw' }}>{headerText}</div>
                     }
                     <div style={{ flexGrow: 1, height: '0.15625cqw', backgroundColor: `#${accentColor}` }}></div>
-                    <div style={{ backgroundColor: `#${theme.bgColor}`, border: `0.078125cqw solid #${theme.cyan}`, padding: '0.390625cqw 1.17188cqw', fontSize: fs(10), fontWeight: 'bold', color: `#${theme.textWhite}`, marginLeft: '0.78125cqw' }}>{(questionData?.tag || '').toUpperCase()}</div>
                 </div>
                 <div style={{ position: 'absolute', left: 0, top: 0, width: '100%', height: '100%', padding: '9.375cqw 4.6875cqw 4.6875cqw 4.6875cqw', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', zIndex: 10 }}>
                     {bodyContent}
@@ -303,7 +295,6 @@ export default function LiveSlidePreview({ theme, type = 'title', config, questi
                 {renderBlueprintDecorations()}
                 <div style={{ position: 'absolute', left: x(0.5), top: y(0.5), display: 'flex', alignItems: 'center', zIndex: 10, width: w(9.0) }}>
                     <div style={{ backgroundColor: `#${theme.orange}`, padding: '0.390625cqw 1.5625cqw', fontSize: fs(14), fontWeight: 'bold', color: `#${theme.textBlack}` }}>{headerText}</div>
-                    <div style={{ backgroundColor: `#${theme.bgColor}`, border: `0.078125cqw solid #${theme.cyan}`, padding: '0.390625cqw 1.17188cqw', fontSize: fs(10), fontWeight: 'bold', color: `#${theme.textWhite}`, marginLeft: '0.78125cqw' }}>{(questionData?.tag || '').toUpperCase()}</div>
                 </div>
                 <div style={{ position: 'absolute', left: 0, top: 0, width: '100%', height: '100%', padding: '9.375cqw 4.6875cqw 4.6875cqw 4.6875cqw', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', zIndex: 10 }}>
                     {bodyContent}
@@ -349,7 +340,6 @@ export default function LiveSlidePreview({ theme, type = 'title', config, questi
                 {renderAuroraDecorations()}
                 <div style={{ position: 'absolute', left: x(0.5), top: y(0.5), display: 'flex', alignItems: 'center', zIndex: 10, width: w(9.0) }}>
                     <div style={{ background: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(0.9375cqw)', border: '0.078125cqw solid rgba(255,255,255,0.2)', padding: '0.390625cqw 1.5625cqw', fontSize: fs(14), fontWeight: 'bold', color: `#${theme.textWhite}`, borderRadius: '3.90625cqw' }}>{headerText}</div>
-                    <div style={{ background: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(0.9375cqw)', border: '0.078125cqw solid rgba(255,255,255,0.2)', padding: '0.390625cqw 1.17188cqw', fontSize: fs(10), fontWeight: 'bold', color: `#${theme.textWhite}`, marginLeft: '0.78125cqw', borderRadius: '3.90625cqw' }}>{(questionData?.tag || '').toUpperCase()}</div>
                 </div>
                 <div style={{ position: 'absolute', left: 0, top: 0, width: '100%', height: '100%', padding: '9.375cqw 4.6875cqw 4.6875cqw 4.6875cqw', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', zIndex: 10 }}>
                     {bodyContent}
@@ -394,7 +384,6 @@ export default function LiveSlidePreview({ theme, type = 'title', config, questi
                 <div style={{ position: 'absolute', left: 0, top: y(0.5), display: 'flex', alignItems: 'center', zIndex: 10, width: '100%', padding: '0 4.6875cqw', boxSizing: 'border-box' }}>
                     <div style={{ backgroundColor: `#${theme.acidGreen}`, border: `0.234375cqw solid #${theme.black}`, boxShadow: shadowStyle, padding: '0.390625cqw 1.5625cqw', fontSize: fs(14), fontWeight: 'bold', color: `#${theme.textBlack}` }}>{headerText}</div>
                     <div style={{ flexGrow: 1, height: '0.234375cqw', backgroundColor: `#${theme.black}`, margin: '0 1.5625cqw' }}></div>
-                    <div style={{ backgroundColor: `#${theme.bgColor}`, border: `0.234375cqw solid #${theme.black}`, boxShadow: shadowStyle, padding: '0.390625cqw 1.17188cqw', fontSize: fs(10), fontWeight: 'bold', color: `#${theme.textBlack}` }}>{(questionData?.tag || '').toUpperCase()}</div>
                 </div>
                 <div style={{ position: 'absolute', left: 0, top: 0, width: '100%', height: '100%', padding: '9.375cqw 4.6875cqw 10% 4.6875cqw', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', zIndex: 10 }}>
                     {bodyContent}
@@ -403,27 +392,10 @@ export default function LiveSlidePreview({ theme, type = 'title', config, questi
         );
     };
 
-    const renderTopicTag = () => {
-        if (type === 'title' || questionData?.isWorkspace) return null;
-        let color = theme.cyan || theme.gold || theme.blueOrb || theme.acidGreen || theme.textWhite;
-        if (theme.name === 'Neo-Brutalism') color = theme.textBlack;
-        
-        return (
-            <div style={{ position: 'absolute', bottom: '1.17188cqw', right: '2.34375cqw', zIndex: 20, fontSize: fs(10), fontWeight: 'bold', color: `#${color}`, opacity: 0.8, backgroundColor: 'transparent' }}>
-                <EditableBlock 
-                    value={questionData?.topic || "General Practice"} 
-                    theme={theme}
-                    onChange={(newVal) => updateSlideTopic(questionData?.index, newVal)} 
-                />
-            </div>
-        );
-    };
-
     if (theme.name === 'Blueprint Architect') {
         return (
             <div style={baseStyle} className="shadow-md rounded-lg border border-outline-variant/30 flex-shrink-0">
                 {type === 'title' ? renderBlueprintTitle() : renderBlueprintQuestion()}
-                {renderTopicTag()}
             </div>
         );
     }
@@ -432,7 +404,6 @@ export default function LiveSlidePreview({ theme, type = 'title', config, questi
         return (
             <div style={baseStyle} className="shadow-md rounded-lg border border-outline-variant/30 flex-shrink-0">
                 {type === 'title' ? renderAuroraTitle() : renderAuroraQuestion()}
-                {renderTopicTag()}
             </div>
         );
     }
@@ -441,7 +412,6 @@ export default function LiveSlidePreview({ theme, type = 'title', config, questi
         return (
             <div style={baseStyle} className="shadow-md rounded-lg border border-outline-variant/30 flex-shrink-0">
                 {type === 'title' ? renderNeoBrutalismTitle() : renderNeoBrutalismQuestion()}
-                {renderTopicTag()}
             </div>
         );
     }
@@ -450,7 +420,6 @@ export default function LiveSlidePreview({ theme, type = 'title', config, questi
         return (
             <div style={baseStyle} className="shadow-md rounded-lg border border-outline-variant/30 flex-shrink-0">
                 {type === 'title' ? renderModernNeonTitle() : renderModernNeonQuestion()}
-                {renderTopicTag()}
             </div>
         );
     }
@@ -466,7 +435,6 @@ export default function LiveSlidePreview({ theme, type = 'title', config, questi
             {type === 'title' && layoutType === 'split-focus' && renderSplitFocusTitle()}
             {type === 'question' && layoutType === 'split-focus' && renderSplitFocusQuestion()}
             
-            {renderTopicTag()}
         </div>
     );
 }

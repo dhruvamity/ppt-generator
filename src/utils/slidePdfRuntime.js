@@ -20,8 +20,9 @@ export function installSlidePdfExport() {
             if (!window.html2canvas) await loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');
             if (!window.jspdf) await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
 
-            const slides = [...document.querySelectorAll('.slide-container')]
-                .filter(slide => slide.dataset.workspace !== 'true');
+            // Workspace slides are intentional solution pages when enabled in
+            // the generator. Keep them alongside question and title slides.
+            const slides = [...document.querySelectorAll('.slides .slide-container')];
             if (!slides.length) throw new Error('No slides to export.');
             const pdf = new window.jspdf.jsPDF({ orientation: 'landscape', unit: 'pt', format: [960, 540], compress: true });
             // Render outside Reveal so its viewport scaling and hidden slides
