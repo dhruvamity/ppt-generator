@@ -1,11 +1,14 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Sparkles, Search } from 'lucide-react';
-import { useAuth, UserButton, SignInButton } from '@clerk/clerk-react';
+import { useAuth, useSession, UserButton, SignInButton } from '@clerk/clerk-react';
 
 export default function TopNavBar() {
     const location = useLocation();
-    const { isLoaded, isSignedIn } = useAuth({ treatPendingAsSignedOut: false });
+    const { isLoaded, isSignedIn } = useAuth();
+    const { isLoaded: isSessionLoaded, session } = useSession();
+    const authLoaded = isLoaded && isSessionLoaded;
+    const isPending = session?.status === 'pending';
 
     return (
         <nav className="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-margin-desktop h-16 bg-surface border-b border-outline-variant">
@@ -17,7 +20,7 @@ export default function TopNavBar() {
                 </Link>
                 
                 {/* Navigation Links - Only show when Signed In */}
-                {isLoaded && isSignedIn && (
+                {authLoaded && isSignedIn && (
                     <>
                         <div className="hidden md:flex items-center gap-stack-lg ml-8 font-body-md h-full">
                             <Link
@@ -60,7 +63,7 @@ export default function TopNavBar() {
                     </>
                 )}
 
-                {isLoaded && !isSignedIn && (
+                {authLoaded && !isSignedIn && !isPending && (
                     <div className="ml-auto flex items-center">
                         <SignInButton mode="modal">
                             <button className="font-label-md text-[14px] bg-primary text-on-primary hover:opacity-90 px-4 py-2 rounded-lg transition-opacity border-0 cursor-pointer">

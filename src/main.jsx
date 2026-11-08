@@ -17,6 +17,11 @@ createRoot(document.getElementById('root')).render(
       afterSignOutUrl="/"
       signInFallbackRedirectUrl="/dashboard"
       signUpFallbackRedirectUrl="/dashboard"
+      taskUrls={{
+        'choose-organization': '/session-tasks',
+        'reset-password': '/session-tasks',
+        'setup-mfa': '/session-tasks',
+      }}
     >
       <App />
     </ClerkProvider>
