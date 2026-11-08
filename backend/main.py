@@ -217,11 +217,16 @@ async def razorpay_webhook(request: Request):
 
 @app.post("/api/generate")
 async def generate_slides(request: GenerateRequest, user=Depends(verify_token)):
-    api_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GEMINI_API_KEY")
+    api_key = os.environ.get("GEMINI_API_KEY")
     if not api_key:
         raise HTTPException(status_code=500, detail="Gemini API Key missing on backend")
 
-    client = genai.Client(api_key=api_key)
+    # JSON response schemas are only available on the Gemini Developer API's
+    # v1beta endpoint; the SDK otherwise defaults to the stable v1 endpoint.
+    client = genai.Client(
+        api_key=api_key,
+        http_options=types.HttpOptions(api_version="v1beta"),
+    )
     
     prompt = f"""You are an elite educational data formatter. Parse the text into a JSON array.
 
