@@ -42,3 +42,16 @@ test('workspace slides have a writing area in the default layout', () => {
     assert.match(html, /background: repeating-linear-gradient\(to bottom/);
     assert.match(html, /WORK SPACE/);
 });
+
+test('exports omit question type and topic labels from every slide corner', () => {
+    const labeledSlides = sampleSlides.map(slide => ({ ...slide, tag: 'MCQ', topic: 'Set Theory' }));
+    const layouts = ['modern-sidebar', 'classic-header', 'split-focus'];
+
+    for (const theme of Object.values(THEMES)) {
+        for (const layout of layouts) {
+            const html = buildRevealHtml(deckConfig(false), labeledSlides, theme, layout);
+            assert.ok(!html.includes('MCQ'), `${theme.name} / ${layout} still exports a question type`);
+            assert.ok(!html.includes('Set Theory'), `${theme.name} / ${layout} still exports a topic`);
+        }
+    }
+});
