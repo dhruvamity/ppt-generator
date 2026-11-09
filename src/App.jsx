@@ -96,7 +96,11 @@ export default function App() {
                         <Route path="/session-tasks" element={<SessionTasksRoute />} />
                         <Route path="*" element={<NotFound />} />
                     </Routes>
-                    
+
+                    <footer className="mt-auto w-full px-6 py-3 text-right text-xs text-on-surface-variant/70">
+                        Made With Love From Dhruv sir
+                    </footer>
+
                     <Toaster position="bottom-right" />
                 </div>
             </Router>
