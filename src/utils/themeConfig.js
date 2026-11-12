@@ -64,6 +64,50 @@ export const THEMES = {
         bgColor: '0F2A2C', textWhite: 'ECF7F5', textBlack: '0F2A2C', cyan: '7FE3C8',
         purple: '7FE3C8', gold: 'F7C873', bgCard: '0F2A2C', rule: '2C4A4B'
     },
+    'chalkboard-frame': {
+        name: 'Chalkboard Frame', teaching: true, design: 'chalkboard', description: 'A green board inside a wooden frame with a chalk tray. Questions sit in the clear centre.',
+        bgColor: '2F5D50', textWhite: 'F7F3E8', textBlack: '2F5D50', cyan: 'FFE08A', purple: 'FFE08A', gold: 'FFE08A', bgCard: '2F5D50', rule: '4C7A6C'
+    },
+    'spiral-notebook': {
+        name: 'Spiral Notebook', teaching: true, design: 'spiral', description: 'Spiral binding and a red margin on the left. Clean white page for the working.',
+        bgColor: 'FFFFFF', textWhite: '1F2933', textBlack: 'FFFFFF', cyan: '2B6CB0', purple: '2B6CB0', gold: '2B6CB0', bgCard: 'FFFFFF', rule: 'DCE3EC'
+    },
+    'index-card': {
+        name: 'Index Card', teaching: true, design: 'indexcard', description: 'A tabbed revision card with a paper clip on a slate desk. Great for formula recall.',
+        bgColor: '3E5C76', textWhite: '1D1D1D', textBlack: 'FFFFFF', cyan: 'C0392B', purple: 'C0392B', gold: 'C0392B', bgCard: 'FFFDF7', rule: 'E6DFD0'
+    },
+    'omr-sheet': {
+        name: 'OMR Sheet', teaching: true, design: 'omr', description: 'Answer-sheet bubbles down the right edge and a barcode header. Built for exam-style MCQs.',
+        bgColor: 'FBFBF8', textWhite: '1A1A1A', textBlack: 'FFFFFF', cyan: 'D32F2F', purple: 'D32F2F', gold: 'D32F2F', bgCard: 'FBFBF8', rule: 'C7CED8'
+    },
+    'quant-clock': {
+        name: 'Quant Clock', teaching: true, design: 'quantclock', description: 'The question number sits inside a stopwatch dial with a progress bar. Made for timed CAT drills.',
+        bgColor: '14213D', textWhite: 'F4F6FB', textBlack: '14213D', cyan: 'FCA311', purple: 'FCA311', gold: 'FCA311', bgCard: '14213D', rule: '2C3E66'
+    },
+    'data-deck': {
+        name: 'Data Deck', teaching: true, design: 'datadeck', description: 'Bar chart base and a doughnut corner for data interpretation sets.',
+        bgColor: 'FFFFFF', textWhite: '1B2A41', textBlack: 'FFFFFF', cyan: '0F766E', purple: '0F766E', gold: 'F59E0B', bgCard: 'FFFFFF', rule: 'D9E2EC'
+    },
+    'abacus-rail': {
+        name: 'Abacus Rail', teaching: true, design: 'abacus', description: 'A terracotta band of abacus beads across the top. Warm paper below for arithmetic.',
+        bgColor: 'FDF6E3', textWhite: '3B2F2F', textBlack: 'FFF4E6', cyan: 'C8553D', purple: 'C8553D', gold: 'C8553D', bgCard: 'FDF6E3', rule: 'E8D9BF'
+    },
+    'tangram-corner': {
+        name: 'Tangram Corner', teaching: true, design: 'tangram', description: 'Seven bright tangram pieces tucked in the corner of a dark slide.',
+        bgColor: '101418', textWhite: 'F5F7FA', textBlack: '101418', cyan: 'F4A261', purple: 'F4A261', gold: 'F4A261', bgCard: '101418', rule: '2A3038'
+    },
+    'ticket-stub': {
+        name: 'Ticket Stub', teaching: true, design: 'ticket', description: 'A perforated red stub holds the question number sideways, like an exam entry pass.',
+        bgColor: 'FFF8E7', textWhite: '1D1D1D', textBlack: 'FFF8E7', cyan: 'E63946', purple: 'E63946', gold: 'E63946', bgCard: 'FFF8E7', rule: 'E8DCC5'
+    },
+    'night-drill': {
+        name: 'Night Drill', teaching: true, design: 'nightdrill', description: 'Black with an acid-yellow band and a huge sideways question number. For speed rounds.',
+        bgColor: '0B0B0F', textWhite: 'F2F2F2', textBlack: '0B0B0F', cyan: 'D7FF3F', purple: 'D7FF3F', gold: 'D7FF3F', bgCard: '0B0B0F', rule: '2A2A33'
+    },
+    'sudoku-grid': {
+        name: 'Sudoku Grid', teaching: true, design: 'sudoku', description: 'A part-filled sudoku in the corner for logic and reasoning sessions.',
+        bgColor: 'F6F7FB', textWhite: '1E1B2E', textBlack: 'FFFFFF', cyan: '5B21B6', purple: '5B21B6', gold: '5B21B6', bgCard: 'F6F7FB', rule: 'D9DCE6'
+    },
     'modern-neon': {
         name: 'Cyberpunk Neon', bgColor: '110F1A', cyan: '00C6D4', purple: '7E32C6',
         gold: 'C4961A', magenta: 'CC00FF', watermark: '2B2043', tealDecor: '00C6D4', 

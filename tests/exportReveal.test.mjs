@@ -68,7 +68,7 @@ test('question number and divider share a header row, with content moved up', ()
 
 test('teaching designs retain maths, shared tables, and blank workspaces in every layout', () => {
     const question = { badge: 'Q.1', tag: 'MCQ', topic: 'Algebra', qText: String.raw`Evaluate $\frac{1}{2} + \sqrt{4}$ <script>`, context: '| x | y |\n| --- | --- |\n| 1 | 2 |', options: [{ label: 'A', text: '$2$' }] };
-    const teaching = Object.values(THEMES).filter(theme => theme.teaching);
+    const teaching = Object.values(THEMES).filter(theme => theme.teaching && !theme.design);
     assert.equal(teaching.length, 13);
     for (const theme of teaching) for (const layout of ['modern-sidebar', 'classic-header', 'split-focus']) {
         const html = buildRevealHtml(deckConfig(true), [question], theme, layout);

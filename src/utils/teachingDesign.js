@@ -4,7 +4,7 @@ export const DESIGN_LAYOUTS = [
     { id: 'classic-header', name: 'Top rule' },
     { id: 'split-focus', name: 'Number rail' },
 ];
-export const hasSignatureLayout = theme => ['Cyberpunk Neon', 'Blueprint Architect', 'Aurora Glassmorphism', 'Neo-Brutalism'].includes(theme.name);
+export const hasSignatureLayout = theme => Boolean(theme.design) || ['Cyberpunk Neon', 'Blueprint Architect', 'Aurora Glassmorphism', 'Neo-Brutalism'].includes(theme.name);
 export const SAMPLE_CONFIG = { mainTitle1: 'Quadratic', mainTitle2: 'Equations', pill1: 'PRACTICE', pill2: 'CLASS 10', footer: 'Think. Solve. Discuss.' };
 export const SAMPLE_QUESTION = { badge: 'Q.1', qText: 'Find the roots of $x^2 - 5x + 6 = 0$.', options: [{ label: 'A', text: '$2, 3$' }, { label: 'B', text: '$-2, -3$' }, { label: 'C', text: '$1, 6$' }, { label: 'D', text: '$-1, -6$' }] };
 // Every illustration lives in a 160 × 720 strip on the right edge; `teachingStyles` keeps the

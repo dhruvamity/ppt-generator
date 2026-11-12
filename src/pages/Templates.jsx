@@ -15,7 +15,8 @@ export default function Templates() {
     const themes = Object.entries(THEMES).map(([id, theme]) => ({ ...theme, id }));
     const matches = theme => `${theme.name} ${theme.description || ''}`.toLowerCase().includes(query.trim().toLowerCase());
     const groups = [
-        ['Made for teaching', themes.filter(theme => theme.teaching)],
+        ['Maths, CAT & aptitude signatures', themes.filter(theme => theme.design)],
+        ['Made for teaching', themes.filter(theme => theme.teaching && !theme.design)],
         ['Original designs', themes.filter(theme => !theme.teaching)],
         ['Your custom themes', savedThemes],
     ];
