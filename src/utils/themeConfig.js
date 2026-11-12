@@ -69,6 +69,41 @@ export const THEMES = {
         bgColor: '0F2A2C', textWhite: 'ECF7F5', textBlack: '0F2A2C', cyan: '7FE3C8',
         purple: '7FE3C8', gold: 'F7C873', bgCard: '0F2A2C', rule: '2C4A4B'
     },
+    'venn-logic': {
+        name: 'Venn Logic', teaching: true, illustration: 'venn', description: 'Three-set Venn, a truth table and logic symbols in the margin. For LR and reasoning sets.',
+        bgColor: 'F5F3FF', textWhite: '1E1B4B', textBlack: 'F5F3FF', cyan: '6D28D9',
+        purple: '6D28D9', gold: 'F59E0B', bgCard: 'F5F3FF', rule: 'DDD6FE'
+    },
+    'di-charts': {
+        name: 'DI Charts', teaching: true, illustration: 'bars', description: 'Bar, line and pie charts with a small data table. Built for data interpretation caselets.',
+        bgColor: 'FFFFFF', textWhite: '0F2D36', textBlack: 'FFFFFF', cyan: '0E7490',
+        purple: '0E7490', gold: 'F97316', bgCard: 'FFFFFF', rule: 'CFE3E8'
+    },
+    'factor-tree': {
+        name: 'Factor Tree', teaching: true, illustration: 'factortree', description: 'A factor tree, division ladder and the first primes on dark slate. For number systems.',
+        bgColor: '0F172A', textWhite: 'F1F5F9', textBlack: '0F172A', cyan: '34D399',
+        purple: '34D399', gold: 'FBBF24', bgCard: '0F172A', rule: '2D3A52'
+    },
+    'probability-dice': {
+        name: 'Probability Dice', teaching: true, illustration: 'dice', description: 'Dice, a coin, a card, a spinner and a probability tree on warm paper.',
+        bgColor: 'FFF7ED', textWhite: '3B2515', textBlack: 'FFF7ED', cyan: 'C2410C',
+        purple: 'C2410C', gold: '1D4ED8', bgCard: 'FFF7ED', rule: 'F3DCC6'
+    },
+    'percent-profit': {
+        name: 'Percent & Profit', teaching: true, illustration: 'percent', description: 'A big percent sign, ratio bar, discount tag and growth curve. For arithmetic drills.',
+        bgColor: 'F0FDF4', textWhite: '14301F', textBlack: 'F0FDF4', cyan: '15803D',
+        purple: '15803D', gold: 'DC2626', bgCard: 'F0FDF4', rule: 'CDE9D6'
+    },
+    'mensuration-solids': {
+        name: 'Mensuration Solids', teaching: true, illustration: 'solids', description: 'Wireframe cuboid, cylinder, cone and sphere with their volume formulas.',
+        bgColor: '1E1B4B', textWhite: 'EEF2FF', textBlack: '1E1B4B', cyan: '93C5FD',
+        purple: '93C5FD', gold: 'FCD34D', bgCard: '1E1B4B', rule: '3B3A6E'
+    },
+    'speed-track': {
+        name: 'Speed Track', teaching: true, illustration: 'speed', description: 'Stopwatch, running track, speedometer and a train line for time, speed and distance.',
+        bgColor: 'FFFBEB', textWhite: '2A1F0A', textBlack: 'FFFBEB', cyan: 'B45309',
+        purple: 'B45309', gold: '1F2937', bgCard: 'FFFBEB', rule: 'F1E3BE'
+    },
     'chalkboard-frame': {
         name: 'Chalkboard Frame', teaching: true, design: 'chalkboard', description: 'A green board inside a wooden frame with a chalk tray. Questions sit in the clear centre.',
         bgColor: '2F5D50', textWhite: 'F7F3E8', textBlack: '2F5D50', cyan: 'FFE08A', purple: 'FFE08A', gold: 'FFE08A', bgCard: '2F5D50', rule: '4C7A6C'
