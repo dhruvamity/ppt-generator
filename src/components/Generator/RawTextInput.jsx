@@ -1,11 +1,10 @@
 import React, { useEffect } from 'react';
-import { useStore, parseLocalText, convertFractions } from '../../store/useStore';
-import { Sparkles, Loader2, FileText, CheckCircle } from 'lucide-react';
-import toast from 'react-hot-toast';
+import { useStore, parseLocalText } from '../../store/useStore';
+import { Sparkles, Loader2, FileText, CheckCircle, FlaskConical, Undo2 } from 'lucide-react';
 import { useAuth } from '@clerk/clerk-react';
 
 export default function RawTextInput() {
-    const { rawText, setRawText, isParsing, setIsParsing, setAiQuestions, setActiveSlides, aiQuestions } = useStore();
+    const { rawText, setRawText, isParsing, setAiQuestions, setActiveSlides, aiQuestions, loadExample, undoAiFormat, rawTextBeforeAI } = useStore();
     const { getToken } = useAuth();
 
     // Auto-sync text changes to preview (skip when AI formatted data is active)
@@ -47,7 +46,9 @@ export default function RawTextInput() {
                     Paste Questions & Options
                 </h2>
                 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
+                    {rawTextBeforeAI != null && <button type="button" onClick={undoAiFormat} className="flex items-center gap-2 px-3 py-2 rounded-lg font-label-md text-sm border border-outline-variant text-on-surface-variant hover:text-primary hover:border-primary"><Undo2 size={16} />Undo AI formatting</button>}
+                    {!rawText.trim() && <button type="button" onClick={loadExample} className="flex items-center gap-2 px-3 py-2 rounded-lg font-label-md text-sm border border-outline-variant text-on-surface-variant hover:text-primary hover:border-primary"><FlaskConical size={16} />Load example</button>}
                     <button
                         onClick={handleAutoFormat}
                         disabled={isParsing || !rawText.trim()}
@@ -64,7 +65,7 @@ export default function RawTextInput() {
                     value={rawText}
                     onChange={handleTextChange}
                     className="w-full h-80 bg-surface-container-lowest border border-outline-variant rounded-xl p-4 text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary font-mono text-sm leading-relaxed resize-none"
-                    placeholder="Paste your messy questions, quiz exports, or word documents here..."
+                    placeholder="Paste your questions here — one per line, options as (a) (b) (c) (d). Start blank or click Load example."
                     spellCheck="false"
                 ></textarea>
                 

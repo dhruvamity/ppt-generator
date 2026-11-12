@@ -11,7 +11,7 @@ export default function Templates() {
     const navigate = useNavigate();
     const [query, setQuery] = useState('');
     const [view, setView] = useState('question');
-    const [layout, setLayout] = useState('classic-header');
+    const [layout, setLayout] = useState(() => useStore.getState().layoutId || 'modern-sidebar');
     const themes = Object.entries(THEMES).map(([id, theme]) => ({ ...theme, id }));
     const matches = theme => `${theme.name} ${theme.description || ''}`.toLowerCase().includes(query.trim().toLowerCase());
     const groups = [

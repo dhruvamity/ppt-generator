@@ -33,4 +33,5 @@ test.pptx
 node_modules/
 
 # Mac OS specific files
-.DS_Store
+.DS_Store__pycache__/
+*.pyc

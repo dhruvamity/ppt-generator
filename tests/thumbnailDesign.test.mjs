@@ -9,20 +9,23 @@ const samples = [
     { ...DEFAULT_THUMBNAIL, chapter: 'Antidisestablishmentarianism', sub: '', lecture: '', subject: 'Aptitude', tagline: '', teacher: '' },
 ];
 
-test('every template lays out without text overlapping the photo slot, and nothing leaves the canvas', () => {
-    assert.ok(THUMBNAIL_TEMPLATES.length >= 8);
+test('every template lays out without text or stickers overlapping the photo slot, and nothing leaves the canvas', () => {
+    assert.ok(THUMBNAIL_TEMPLATES.length >= 10);
     assert.equal(new Set(THUMBNAIL_TEMPLATES.map(item => item.id)).size, THUMBNAIL_TEMPLATES.length);
     for (const template of THUMBNAIL_TEMPLATES) for (const data of samples) {
         const layout = layoutThumbnail(template, data);
         const photos = layout.boxes.filter(item => item.kind === 'photo');
         assert.equal(photos.length, 1, `${template.id} has one photo slot`);
         const texts = layout.boxes.filter(item => item.kind === 'text');
+        const stickers = layout.boxes.filter(item => item.kind === 'sticker' && !item.behind);
         assert.ok(texts.length >= 2, `${template.id} shows the main fields`);
-        for (const item of texts) {
+        assert.ok(stickers.length >= 3 || data === samples[2], `${template.id} carries illustrations`);
+        const solid = [...texts, ...stickers];
+        for (const item of solid) {
             assert.ok(!overlaps(item.box, photos[0].box), `${template.id}: ${item.field || 'chip'} box ${JSON.stringify(item.box)} clears the photo ${JSON.stringify(photos[0].box)}`);
             assert.ok(item.box.x >= 0 && item.box.y >= 0 && item.box.x + item.box.w <= THUMB_W && item.box.y + item.box.h <= THUMB_H, `${template.id}: ${item.field || 'chip'} stays on the canvas`);
         }
-        for (let i = 0; i < texts.length; i++) for (let j = i + 1; j < texts.length; j++) assert.ok(!overlaps(texts[i].box, texts[j].box), `${template.id}: ${texts[i].field} and ${texts[j].field} do not overlap`);
+        for (let i = 0; i < solid.length; i++) for (let j = i + 1; j < solid.length; j++) assert.ok(!overlaps(solid[i].box, solid[j].box), `${template.id}: ${solid[i].field} ${JSON.stringify(solid[i].box)} and ${solid[j].field} ${JSON.stringify(solid[j].box)} do not overlap`);
         for (const node of layout.nodes) assert.doesNotMatch(JSON.stringify(node), /undefined|NaN|\{\w+\}/, `${template.id} resolves every field`);
     }
 });
@@ -53,5 +56,5 @@ test('empty fields disappear and photo framing responds to zoom, pan and fit', (
     assert.equal(photo.image.preserve, 'xMidYMax meet');
     assert.ok(photo.image.x > photo.slot.x - photo.slot.w / 2 && photo.image.y < photo.slot.y);
     assert.equal(layoutThumbnail(template, DEFAULT_THUMBNAIL).nodes.find(node => node.type === 'photo').href, null);
-    assert.deepEqual(THUMBNAIL_FIELDS.map(field => field.key), ['chapter', 'sub', 'lecture', 'subject', 'tagline', 'teacher']);
+    assert.deepEqual(THUMBNAIL_FIELDS.map(field => field.key), ['chapter', 'sub', 'lecture', 'subject', 'exam', 'tagline', 'teacher']);
 });

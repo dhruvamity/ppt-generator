@@ -66,6 +66,26 @@ test('question number and divider share a header row, with content moved up', ()
     }
 });
 
+test('exports pre-render maths with KaTeX and embed every runtime when offline assets are supplied', () => {
+    const question = { badge: 'Q.1', qText: String.raw`Solve $\frac{x}{2} = 3$ and $\sqrt{16}$`, options: [{ label: 'A', text: '$x = 6$ <b>' }] };
+    const online = buildRevealHtml(deckConfig(false), [question], THEMES['modern-neon']);
+    assert.doesNotMatch(online, /MathJax/);
+    assert.match(online, /class="katex"/);
+    assert.match(online, /class="mfrac"[\s\S]*class="mord sqrt"/);
+    assert.match(online, /&lt;b&gt;/);
+    assert.match(online, /cdnjs\.cloudflare\.com\/ajax\/libs\/reveal\.js\/[\d.]+\/reveal\.min\.js/);
+    assert.match(online, /cdnjs\.cloudflare\.com\/ajax\/libs\/KaTeX\/[\d.]+\/katex\.min\.css/);
+    // Malformed TeX must not abort the export; KaTeX reports it inline instead.
+    assert.match(buildRevealHtml(deckConfig(false), [{ ...question, qText: 'Bad $\\frac{1$' }], THEMES['modern-neon']), /katex-error/);
+
+    const assets = { revealJs: 'window.Reveal={initialize(){return Promise.resolve()}}', revealCss: '.reveal{}', resetCss: 'html{}', katexCss: '.katex{src:url(data:font/woff2;base64,AAAA)}' };
+    const offline = buildRevealHtml(deckConfig(false), [question], THEMES['modern-neon'], 'modern-sidebar', assets);
+    assert.doesNotMatch(offline.split('<!-- Floating PDF Export Button -->')[0].replace(/xmlns="http:\/\/www\.w3\.org\/2000\/svg"/g, ''), /https?:\/\//, 'no network URLs before the optional PDF helper');
+    assert.match(offline, /<script>window\.Reveal=\{initialize/);
+    assert.match(offline, /<style>\.katex\{src:url\(data:font\/woff2;base64,AAAA\)\}<\/style>/);
+    assert.match(offline, /window\.print\(\)/, 'PDF falls back to the browser print dialog when the helper cannot load');
+});
+
 test('teaching designs retain maths, shared tables, and blank workspaces in every layout', () => {
     const question = { badge: 'Q.1', tag: 'MCQ', topic: 'Algebra', qText: String.raw`Evaluate $\frac{1}{2} + \sqrt{4}$ <script>`, context: '| x | y |\n| --- | --- |\n| 1 | 2 |', options: [{ label: 'A', text: '$2$' }] };
     const teaching = Object.values(THEMES).filter(theme => theme.teaching && !theme.design);
@@ -74,8 +94,8 @@ test('teaching designs retain maths, shared tables, and blank workspaces in ever
         const html = buildRevealHtml(deckConfig(true), [question], theme, layout);
         assert.equal((html.match(/class="slide-container"/g) || []).length, 3);
         assert.equal((html.match(/data-workspace="true"/g) || []).length, 1);
-        assert.match(html, /\\frac\{1\}\{2\}/);
-        assert.match(html, /\\sqrt\{4\}/);
+        assert.match(html, /class="mfrac"/);
+        assert.match(html, /class="mord sqrt"/);
         assert.match(html, /<table/);
         assert.match(html, /&lt;script&gt;/);
         assert.doesNotMatch(html, /MCQ|Algebra|SLIDEGEN|Dhruv|#undefined/);

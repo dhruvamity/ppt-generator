@@ -1,163 +1,218 @@
 // Thumbnail templates (1280 × 720, YouTube size) and a pure layout engine. Templates are lists of
 // layers; `layoutThumbnail` resolves them into primitive SVG nodes so the live preview and the PNG
 // export draw exactly the same thing. Text wraps and shrinks inside its box and never overflows it.
+// Stickers are the maths / CAT illustrations; those not marked `behind` must stay clear of text and photo.
+import { STICKERS } from './thumbnailStickers.js';
+
 export const THUMB_W = 1280;
 export const THUMB_H = 720;
 const HEAVY = "'Arial Black', 'Segoe UI Black', Impact, sans-serif";
 const SANS = 'Arial, Helvetica, sans-serif';
 const SERIF = "Georgia, 'Times New Roman', serif";
 const CHALK = "'Chalkboard SE', 'Segoe Print', 'Comic Sans MS', sans-serif";
+const YELLOW = '#FFD400', RED = '#E53935', BLACK = '#111111', WHITE = '#FFFFFF';
 
 export const THUMBNAIL_FIELDS = [
     { key: 'chapter', label: 'Chapter name', placeholder: 'Quadratic Equations' },
     { key: 'sub', label: 'Sub name / topic', placeholder: 'Nature of roots & the discriminant' },
     { key: 'lecture', label: 'Lecture no.', placeholder: '05' },
-    { key: 'subject', label: 'Subject', placeholder: 'Maths', suggestions: ['Maths', 'CAT Quant', 'CAT DILR', 'Aptitude', 'Reasoning'] },
-    { key: 'tagline', label: 'Tagline', placeholder: 'Class 10 · CBSE' },
+    { key: 'subject', label: 'Subject', placeholder: 'Maths', suggestions: ['Maths', 'Quant', 'DILR', 'Aptitude', 'Reasoning', 'Arithmetic'] },
+    { key: 'exam', label: 'Exam / badge', placeholder: 'CAT 2026', suggestions: ['CAT 2026', 'XAT 2026', 'CLASS 10', 'JEE 2026', 'SSC CGL', 'BANK PO', 'NMAT'] },
+    { key: 'tagline', label: 'Tagline', placeholder: 'Shortcuts · Tricks · PYQs' },
     { key: 'teacher', label: 'Teacher name', placeholder: 'Dhruv Sir' },
 ];
-export const DEFAULT_THUMBNAIL = { templateId: 'bold-split', chapter: 'Quadratic Equations', sub: 'Nature of roots & the discriminant', lecture: '05', subject: 'Maths', tagline: 'Class 10 · CBSE', teacher: 'Dhruv Sir', photo: { zoom: 1, x: 0, y: 0, fit: 'cover' } };
+export const DEFAULT_THUMBNAIL = { templateId: 'cat-blast', chapter: 'Quadratic Equations', sub: 'Nature of roots & the discriminant', lecture: '05', subject: 'Maths', exam: 'CAT 2026', tagline: 'Shortcuts · Tricks · PYQs', teacher: 'Dhruv Sir', photo: { zoom: 1, x: 0, y: 0, fit: 'cover' } };
 
 const text = (field, box, extra) => ({ type: 'text', text: field, ...box, ...extra });
 const chip = (field, x, y, extra) => ({ type: 'chip', text: field, x, y, size: 26, padX: 22, padY: 12, rx: 8, weight: 700, family: SANS, upper: true, spacing: 2, ...extra });
+const sticker = (kind, x, y, w, h, extra = {}) => ({ type: 'sticker', kind, x, y, w, h, ...extra });
+const behind = (kind, extra = {}) => sticker(kind, 0, 0, THUMB_W, THUMB_H, { behind: true, ...extra });
+const glow = (id, color) => ({ type: 'radial', id, color });
+const title = (box, extra) => text('{chapter}', box, { size: 88, min: 46, lines: 3, weight: 900, family: HEAVY, ...extra });
+const subline = (box, extra) => text('{sub}', box, { size: 32, min: 22, lines: 2, weight: 700, family: SANS, ...extra });
+const small = (field, box, extra) => text(field, box, { size: 24, min: 18, lines: 1, weight: 400, family: SANS, ...extra });
 
 export const THUMBNAIL_TEMPLATES = [
     {
-        id: 'bold-split', name: 'Bold Split', subject: 'any', description: 'Photo on a slanted right panel, chapter in heavy type on navy.',
-        bg: '#0F1B3D', layers: [
-            { type: 'photo', x: 760, y: 0, w: 520, h: 720, shape: 'slant', slant: 80 },
-            { type: 'polygon', points: '820,0 852,0 772,720 740,720', fill: '#FFC930' },
-            chip('{subject}', 64, 56, { fill: '#FFC930', color: '#0F1B3D' }),
-            text('{chapter}', { x: 64, y: 140, w: 620, h: 270 }, { size: 84, min: 44, lines: 3, weight: 900, family: HEAVY, fill: '#FFFFFF' }),
-            text('{sub}', { x: 64, y: 420, w: 620, h: 90 }, { size: 34, min: 22, lines: 2, weight: 400, family: SANS, fill: '#C9D3F0' }),
-            chip('LECTURE {lecture}', 64, 530, { fill: '#FFFFFF', color: '#0F1B3D', size: 30 }),
-            text('{tagline}', { x: 64, y: 612, w: 620, h: 32 }, { size: 24, min: 18, lines: 1, weight: 400, family: SANS, fill: '#8FA0D0' }),
-            text('{teacher}', { x: 64, y: 652, w: 620, h: 32 }, { size: 26, min: 18, lines: 1, weight: 700, family: SANS, fill: '#FFC930' }),
+        id: 'cat-blast', name: 'CAT Blast', subject: 'cat', description: 'Yellow with light rays, a starburst exam badge, outlined title and an arrow at the teacher cutout.',
+        bg: YELLOW, defs: [glow('blast', WHITE)], layers: [
+            behind('rays', { color: '#FF9F1C', opacity: 0.5 }),
+            behind('formulas', { color: BLACK, color2: RED, opacity: 0.08 }),
+            { type: 'circle', cx: 1030, cy: 420, r: 340, fill: 'gradient:blast' },
+            { type: 'photo', x: 800, y: 40, w: 460, h: 680, shape: 'rect' },
+            sticker('burst', 56, 24, 190, 190, { color: RED, color2: WHITE, text: '{exam}', rotate: -6 }),
+            chip('{subject}', 270, 60, { fill: BLACK, color: YELLOW }),
+            sticker('badge', 480, 44, 290, 86, { color: WHITE, color2: BLACK, text: 'LEC {lecture}' }),
+            title({ x: 56, y: 230, w: 700, h: 270 }, { fill: BLACK, outline: WHITE, outlineWidth: 10, shadow: '#B38600' }),
+            subline({ x: 56, y: 510, w: 700, h: 70 }, { fill: '#3A2A00' }),
+            text('{teacher}', { x: 56, y: 600, w: 420, h: 44 }, { size: 30, min: 20, lines: 1, weight: 900, family: HEAVY, fill: RED }),
+            small('{tagline}', { x: 56, y: 652, w: 420, h: 36 }, { fill: '#5B4300', weight: 700 }),
+            sticker('arrow', 520, 590, 240, 130, { color: RED, color2: BLACK }),
         ],
     },
     {
-        id: 'spotlight', name: 'Spotlight Circle', subject: 'any', description: 'Black stage, photo in an amber ring, outlined lecture number.',
-        bg: '#111111', layers: [
-            { type: 'circle', cx: 1000, cy: 360, r: 330, fill: '#1E1E24' },
-            { type: 'photo', x: 750, y: 110, w: 500, h: 500, shape: 'circle', ring: { color: '#F5B700', width: 10 } },
-            text('{subject}', { x: 64, y: 56, w: 640, h: 40 }, { size: 26, min: 20, lines: 1, weight: 700, family: SANS, fill: '#F5B700', upper: true, spacing: 6 }),
-            text('{chapter}', { x: 64, y: 120, w: 640, h: 330 }, { size: 90, min: 48, lines: 3, weight: 900, family: HEAVY, fill: '#FFFFFF' }),
-            text('{sub}', { x: 64, y: 462, w: 640, h: 90 }, { size: 34, min: 22, lines: 2, weight: 400, family: SANS, fill: '#BBBBBB' }),
-            text('LEC {lecture}', { x: 64, y: 570, w: 640, h: 90 }, { size: 72, min: 40, lines: 1, weight: 900, family: HEAVY, fill: 'none', stroke: '#F5B700', sw: 3, upper: true }),
-            text('{teacher}', { x: 750, y: 636, w: 500, h: 40 }, { size: 28, min: 20, lines: 1, weight: 700, family: SANS, fill: '#F5B700', align: 'middle' }),
-            text('{tagline}', { x: 64, y: 676, w: 640, h: 30 }, { size: 22, min: 18, lines: 1, weight: 400, family: SANS, fill: '#777777' }),
+        id: 'quant-tricks', name: 'Quant Tricks', subject: 'cat', description: 'Navy grid with calculator, stopwatch and number tiles. Photo cutout on the left.',
+        bg: '#0B1E3F', defs: [glow('orange', '#FF8C42')], layers: [
+            behind('grid', { color: WHITE, opacity: 0.06 }),
+            behind('formulas', { color: WHITE, color2: '#FFC857', opacity: 0.09 }),
+            { type: 'circle', cx: 250, cy: 420, r: 330, fill: 'gradient:orange' },
+            { type: 'photo', x: 30, y: 60, w: 440, h: 660, shape: 'rect' },
+            chip('{exam}', 520, 44, { fill: '#FF8C42', color: BLACK }),
+            sticker('badge', 980, 30, 280, 84, { color: YELLOW, color2: BLACK, text: 'SHORTCUT', rotate: 3 }),
+            title({ x: 520, y: 140, w: 720, h: 280 }, { fill: WHITE, shadow: '#000000' }),
+            subline({ x: 520, y: 430, w: 720, h: 76 }, { fill: '#FFC857' }),
+            chip('LEC {lecture}', 520, 530, { fill: WHITE, color: '#0B1E3F', size: 28 }),
+            text('{teacher}', { x: 760, y: 530, w: 330, h: 44 }, { size: 30, min: 20, lines: 1, weight: 900, family: HEAVY, fill: '#FF8C42' }),
+            small('{tagline}', { x: 760, y: 584, w: 330, h: 36 }, { fill: '#9FB3D9' }),
+            sticker('calculator', 1110, 520, 130, 180, { color: '#FFC857', color2: '#FF8C42', rotate: 8 }),
+            sticker('clock', 520, 600, 100, 110, { color: YELLOW, color2: RED }),
+            sticker('tiles', 640, 630, 280, 80, { color: '#FF8C42', color2: YELLOW, text: '7 2 9 4' }),
         ],
     },
     {
-        id: 'chalk-lesson', name: 'Chalk Lesson', subject: 'maths', description: 'Green board with a chalk frame and a polaroid photo.',
-        bg: '#2F5D50', layers: [
+        id: 'di-charts', name: 'DI Charts', subject: 'cat', description: 'Clean white with bar, pie and table stickers for data interpretation sets.',
+        bg: WHITE, layers: [
+            behind('grid', { color: '#CFE3E8', opacity: 0.6 }),
+            { type: 'photo', x: 820, y: 50, w: 440, h: 440, shape: 'circle', ring: { color: '#0E7490', width: 12 } },
+            sticker('barchart', 820, 520, 200, 170, { color: '#0E7490', color2: '#F97316' }),
+            sticker('pie', 1060, 510, 180, 180, { color: '#0E7490', color2: '#F97316', rotate: -10 }),
+            chip('{exam}', 56, 44, { fill: '#0E7490', color: WHITE }),
+            sticker('badge', 330, 40, 300, 84, { color: '#F97316', color2: BLACK, text: 'DI SPECIAL', rotate: -3 }),
+            title({ x: 56, y: 140, w: 720, h: 290 }, { fill: '#0B2A2A', outline: WHITE, outlineWidth: 8 }),
+            subline({ x: 56, y: 440, w: 720, h: 76 }, { fill: '#F97316' }),
+            chip('LEC {lecture}', 56, 530, { fill: BLACK, color: WHITE, size: 28 }),
+            text('{teacher}', { x: 300, y: 530, w: 460, h: 44 }, { size: 30, min: 20, lines: 1, weight: 900, family: HEAVY, fill: '#0E7490' }),
+            small('{tagline}', { x: 300, y: 584, w: 460, h: 36 }, { fill: '#4A5568' }),
+            sticker('table', 56, 600, 200, 110, { color: '#0E7490', color2: '#F97316', rotate: -4 }),
+            sticker('arrowRight', 560, 630, 200, 80, { color: '#F97316', color2: BLACK }),
+        ],
+    },
+    {
+        id: 'lr-puzzle', name: 'LR Puzzle', subject: 'cat', description: 'Purple with Venn diagram, dice, cube and puzzle piece for logical reasoning.',
+        bg: '#3A0CA3', defs: [glow('pink', '#F72585')], layers: [
+            behind('formulas', { color: WHITE, color2: '#FFD60A', opacity: 0.1, text: '? ! ⇒ ∴ ∧ ∨ ¬ ⊂ ∪ ∩ ≡ ∃ ∀ ⊕ ≠ ∅ ⇔ ∈' }),
+            { type: 'circle', cx: 1030, cy: 500, r: 320, fill: 'gradient:pink' },
+            sticker('venn', 1020, 24, 240, 200, { color: '#FFD60A', color2: '#F72585', rotate: 6 }),
+            { type: 'photo', x: 800, y: 240, w: 460, h: 480, shape: 'rect' },
+            chip('{exam}', 56, 44, { fill: '#FFD60A', color: BLACK }),
+            sticker('badge', 300, 40, 300, 84, { color: '#F72585', color2: WHITE, text: 'PUZZLE TIME', rotate: -3 }),
+            title({ x: 56, y: 140, w: 720, h: 290 }, { fill: WHITE, shadow: '#1A0550' }),
+            subline({ x: 56, y: 440, w: 720, h: 76 }, { fill: '#FFD60A' }),
+            chip('LEC {lecture}', 56, 530, { fill: WHITE, color: '#3A0CA3', size: 28 }),
+            text('{teacher}', { x: 300, y: 530, w: 440, h: 44 }, { size: 30, min: 20, lines: 1, weight: 900, family: HEAVY, fill: '#F72585' }),
+            small('{tagline}', { x: 300, y: 584, w: 440, h: 36 }, { fill: '#D9CCFF' }),
+            sticker('dice', 56, 600, 200, 120, { color: '#FFD60A', color2: BLACK }),
+            sticker('puzzle', 300, 630, 90, 90, { color: '#F72585', color2: '#FFD60A', rotate: 15 }),
+            sticker('cube', 620, 630, 90, 90, { color: '#4CC9F0', color2: '#3A0CA3', rotate: -8 }),
+        ],
+    },
+    {
+        id: 'geometry-lab', name: 'Geometry Lab', subject: 'maths', description: 'Chalk-green board with a polaroid photo, triangle, ruler, graph and light bulb.',
+        bg: '#1E4D3B', layers: [
+            behind('formulas', { color: '#F7F3E8', color2: '#FFE08A', opacity: 0.12, text: '∠ △ ⊥ ∥ π r² ≅ ∼ ° √ ∑ θ ⌒ ≡ ∞ ½ ab' }),
             { type: 'rect', x: 28, y: 28, w: 1224, h: 664, fill: 'none', stroke: '#F7F3E8', sw: 4, rx: 6 },
-            text('{subject}', { x: 860, y: 80, w: 360, h: 60 }, { size: 30, min: 20, lines: 1, weight: 700, family: CHALK, fill: '#F7F3E8', align: 'middle', upper: true, spacing: 4 }),
-            { type: 'photo', x: 860, y: 200, w: 360, h: 440, shape: 'rounded', rx: 6, ring: { color: '#FFFFFF', width: 14 } },
-            text('{chapter}', { x: 72, y: 110, w: 740, h: 300 }, { size: 80, min: 44, lines: 3, weight: 700, family: CHALK, fill: '#FFE08A' }),
-            text('{sub}', { x: 72, y: 420, w: 740, h: 90 }, { size: 34, min: 22, lines: 2, weight: 400, family: CHALK, fill: '#F7F3E8' }),
-            chip('Lecture {lecture}', 72, 530, { fill: 'none', stroke: '#F7F3E8', sw: 3, color: '#F7F3E8', rx: 30, size: 30, family: CHALK, upper: false }),
-            text('{tagline}', { x: 72, y: 624, w: 740, h: 40 }, { size: 24, min: 18, lines: 1, weight: 400, family: CHALK, fill: '#BFD9CC' }),
-            text('{teacher}', { x: 860, y: 650, w: 360, h: 36 }, { size: 24, min: 18, lines: 1, weight: 700, family: CHALK, fill: '#F7F3E8', align: 'middle' }),
+            { type: 'photo', x: 860, y: 110, w: 340, h: 440, shape: 'rect', ring: { color: WHITE, width: 14 } },
+            sticker('geometry', 860, 572, 150, 138, { color: '#FFE08A', color2: '#F28B82' }),
+            sticker('ruler', 1030, 600, 200, 40, { color: '#FFE08A', color2: BLACK, rotate: -6 }),
+            chip('{subject}', 72, 56, { fill: 'none', stroke: '#F7F3E8', sw: 3, color: '#F7F3E8', family: CHALK, upper: true }),
+            sticker('badge', 300, 44, 280, 80, { color: '#FFE08A', color2: BLACK, text: '{exam}', rotate: 2 }),
+            title({ x: 72, y: 140, w: 740, h: 280 }, { size: 80, fill: '#FFE08A', family: CHALK, weight: 700 }),
+            subline({ x: 72, y: 430, w: 740, h: 76 }, { fill: '#F7F3E8', family: CHALK, weight: 400 }),
+            chip('Lec {lecture}', 72, 520, { fill: 'none', stroke: '#F7F3E8', sw: 3, color: '#F7F3E8', rx: 30, size: 30, family: CHALK, upper: false }),
+            text('{teacher}', { x: 330, y: 520, w: 480, h: 44 }, { size: 30, min: 20, lines: 1, weight: 700, family: CHALK, fill: '#F7F3E8' }),
+            small('{tagline}', { x: 330, y: 574, w: 480, h: 36 }, { fill: '#BFD9CC', family: CHALK }),
+            sticker('graph', 72, 590, 190, 110, { color: '#FFE08A', color2: '#F28B82' }),
+            sticker('bulb', 640, 616, 70, 96, { color: '#FFE08A', color2: '#F28B82', rotate: 10 }),
         ],
     },
     {
-        id: 'cat-sprint', name: 'CAT Sprint', subject: 'cat', description: 'Red and black diagonal, photo cutout on the left, exam tag up top.',
-        bg: '#B3001B', layers: [
-            { type: 'polygon', points: '560,0 1280,0 1280,720 420,720', fill: '#141414' },
-            text('{subject}', { x: 40, y: 36, w: 440, h: 100 }, { size: 80, min: 40, lines: 1, weight: 900, family: HEAVY, fill: '#FFFFFF', upper: true }),
-            { type: 'photo', x: 40, y: 150, w: 440, h: 570, shape: 'rect' },
-            text('{chapter}', { x: 600, y: 110, w: 620, h: 300 }, { size: 80, min: 44, lines: 3, weight: 900, family: HEAVY, fill: '#FFFFFF' }),
-            text('{sub}', { x: 600, y: 420, w: 620, h: 90 }, { size: 32, min: 22, lines: 2, weight: 400, family: SANS, fill: '#FF8A80' }),
-            chip('LECTURE {lecture}', 600, 530, { fill: '#FFC930', color: '#141414' }),
-            text('{tagline}', { x: 600, y: 612, w: 620, h: 34 }, { size: 24, min: 18, lines: 1, weight: 400, family: SANS, fill: '#BBBBBB' }),
-            text('{teacher}', { x: 600, y: 652, w: 620, h: 34 }, { size: 26, min: 18, lines: 1, weight: 700, family: SANS, fill: '#FFFFFF' }),
+        id: 'arithmetic-sprint', name: 'Arithmetic Sprint', subject: 'aptitude', description: 'Red with a giant percent sign, stopwatch, number tiles and a lecture starburst.',
+        bg: '#C8102E', layers: [
+            behind('rays', { color: WHITE, opacity: 0.12 }),
+            sticker('percent', 1000, 20, 230, 230, { color: WHITE, color2: BLACK, rotate: 8 }),
+            { type: 'photo', x: 820, y: 270, w: 440, h: 440, shape: 'circle', ring: { color: WHITE, width: 12 } },
+            chip('{exam}', 56, 44, { fill: BLACK, color: YELLOW }),
+            sticker('badge', 300, 40, 320, 84, { color: YELLOW, color2: BLACK, text: 'SPEED MATHS', rotate: -3 }),
+            title({ x: 56, y: 140, w: 720, h: 290 }, { fill: WHITE, shadow: '#5A0010' }),
+            subline({ x: 56, y: 440, w: 720, h: 76 }, { fill: '#FFE5E5' }),
+            sticker('burst', 56, 530, 180, 180, { color: BLACK, color2: YELLOW, text: 'LEC {lecture}', rotate: -8 }),
+            text('{teacher}', { x: 260, y: 540, w: 300, h: 44 }, { size: 30, min: 20, lines: 1, weight: 900, family: HEAVY, fill: YELLOW }),
+            small('{tagline}', { x: 260, y: 594, w: 300, h: 36 }, { fill: '#FFC2C2' }),
+            sticker('clock', 580, 530, 180, 190, { color: YELLOW, color2: RED }),
+            sticker('tiles', 260, 650, 290, 70, { color: WHITE, color2: YELLOW, text: '3 8 1 6' }),
         ],
     },
     {
-        id: 'neon-formula', name: 'Neon Formula', subject: 'maths', description: 'Dark with faint notation bands, gradient title and a glowing photo frame.',
-        bg: '#0A0F1E', defs: [{ type: 'gradient', id: 'neon', x1: 0, y1: 0, x2: 1, y2: 0, stops: [['0%', '#00E5FF'], ['100%', '#FF2E9A']] }], layers: [
-            { type: 'pattern', kind: 'formulas', x: 0, y: 0, w: 1280, h: 90, color: '#FFFFFF', opacity: 0.12 },
-            { type: 'pattern', kind: 'formulas', x: 0, y: 640, w: 1280, h: 80, color: '#FFFFFF', opacity: 0.12 },
-            { type: 'rect', x: 790, y: 80, w: 440, h: 560, rx: 34, fill: '#00E5FF', opacity: 0.25 },
-            { type: 'photo', x: 800, y: 90, w: 420, h: 540, shape: 'rounded', rx: 28, ring: { color: '#00E5FF', width: 6 } },
-            chip('{subject}', 64, 48, { fill: 'none', stroke: '#00E5FF', sw: 2, color: '#00E5FF' }),
-            text('{chapter}', { x: 64, y: 120, w: 680, h: 300 }, { size: 84, min: 44, lines: 3, weight: 900, family: HEAVY, fill: 'gradient:neon' }),
-            text('{sub}', { x: 64, y: 430, w: 680, h: 90 }, { size: 34, min: 22, lines: 2, weight: 400, family: SANS, fill: '#9BB0FF' }),
-            chip('LECTURE {lecture}', 64, 540, { fill: '#FF2E9A', color: '#FFFFFF' }),
-            text('{tagline}', { x: 64, y: 606, w: 680, h: 32 }, { size: 24, min: 18, lines: 1, weight: 400, family: SANS, fill: '#6B7AA8' }),
-            text('{teacher}', { x: 800, y: 648, w: 420, h: 36 }, { size: 26, min: 18, lines: 1, weight: 700, family: SANS, fill: '#00E5FF', align: 'middle' }),
+        id: 'algebra-board', name: 'Algebra Board', subject: 'maths', description: 'Dark board with chalk formulas, a sticky-note x², light bulb and graph beside a polaroid photo.',
+        bg: '#17202A', layers: [
+            behind('formulas', { color: '#E5E7EB', color2: '#FDE68A', opacity: 0.14, text: 'x² y=mx+c a²+b² (x+y)² b²−4ac ∑ √ ∞ f(x) ≠ ∫ π α β Δ ≥' }),
+            { type: 'photo', x: 60, y: 200, w: 380, h: 480, shape: 'rect', ring: { color: WHITE, width: 12 } },
+            sticker('note', 60, 50, 130, 130, { color: '#FDE68A', color2: '#F59E0B', text: 'x²' }),
+            sticker('bulb', 1100, 36, 120, 160, { color: '#FDE68A', color2: '#F59E0B', rotate: 8 }),
+            chip('{exam}', 480, 48, { fill: '#FDE68A', color: BLACK }),
+            sticker('badge', 740, 40, 300, 84, { color: WHITE, color2: BLACK, text: 'FORMULA', rotate: 2 }),
+            title({ x: 480, y: 140, w: 600, h: 300 }, { fill: '#FDE68A', shadow: '#000000' }),
+            subline({ x: 480, y: 450, w: 740, h: 76 }, { fill: '#E5E7EB' }),
+            chip('LEC {lecture}', 480, 540, { fill: '#F59E0B', color: BLACK, size: 28 }),
+            text('{teacher}', { x: 720, y: 540, w: 500, h: 44 }, { size: 30, min: 20, lines: 1, weight: 900, family: HEAVY, fill: WHITE }),
+            small('{tagline}', { x: 720, y: 594, w: 500, h: 36 }, { fill: '#9CA3AF' }),
+            sticker('graph', 480, 606, 200, 110, { color: '#FDE68A', color2: '#34D399' }),
+            sticker('sigma', 1120, 630, 70, 90, { color: '#FDE68A', color2: BLACK, rotate: -10 }),
         ],
     },
     {
-        id: 'paper-note', name: 'Paper Note', subject: 'any', description: 'Ruled paper, marker-highlighted chapter, sticky note lecture number.',
+        id: 'percentile-pop', name: 'Percentile Pop', subject: 'cat', description: 'Purple-to-orange gradient, giant outlined lecture number, 99.9 %ile speech bubble, target and tick.',
+        bg: 'gradient:pop', defs: [{ type: 'gradient', id: 'pop', x1: 0, y1: 0, x2: 1, y2: 1, stops: [['0%', '#7B2CBF'], ['100%', '#FF7A00']] }], layers: [
+            behind('rays', { color: WHITE, opacity: 0.15 }),
+            text('{lecture}', { x: 800, y: 24, w: 440, h: 190 }, { size: 170, min: 90, lines: 1, weight: 900, family: HEAVY, fill: 'none', stroke: WHITE, sw: 5, align: 'end' }),
+            { type: 'photo', x: 810, y: 240, w: 460, h: 460, shape: 'circle', ring: { color: WHITE, width: 10 } },
+            chip('{exam}', 64, 48, { fill: WHITE, color: '#7B2CBF' }),
+            sticker('speech', 330, 30, 300, 120, { color: YELLOW, color2: BLACK, text: '99.9 %ile', rotate: -4 }),
+            title({ x: 64, y: 170, w: 700, h: 290 }, { fill: WHITE, shadow: '#3A0C6E' }),
+            subline({ x: 64, y: 470, w: 700, h: 76 }, { fill: '#FFE9D6' }),
+            text('{teacher}', { x: 64, y: 580, w: 380, h: 44 }, { size: 30, min: 20, lines: 1, weight: 900, family: HEAVY, fill: YELLOW }),
+            small('{tagline}', { x: 64, y: 634, w: 380, h: 36 }, { fill: '#FFD9B8' }),
+            sticker('target', 470, 560, 150, 150, { color: '#FF7A00', color2: '#7B2CBF', rotate: -6 }),
+            sticker('check', 640, 600, 100, 100, { color: '#34D399', color2: WHITE }),
+        ],
+    },
+    {
+        id: 'formula-sheet', name: 'Formula Sheet', subject: 'maths', description: 'Ruled paper with sticky-note formulas, pencil, ruler and a marker-highlighted chapter.',
         bg: '#FFFDF7', layers: [
             { type: 'pattern', kind: 'rules', x: 0, y: 120, w: 1280, h: 600, color: '#DCE3EC', opacity: 1 },
             { type: 'line', x1: 110, y1: 0, x2: 110, y2: 720, stroke: '#F28B82', sw: 2 },
             { type: 'rect', x: 892, y: 122, w: 320, h: 400, fill: '#000000', opacity: 0.15 },
-            { type: 'photo', x: 880, y: 110, w: 320, h: 400, shape: 'rect', ring: { color: '#FFFFFF', width: 14 } },
-            chip('{subject}', 140, 44, { fill: '#2B6CB0', color: '#FFFFFF' }),
-            text('{chapter}', { x: 140, y: 110, w: 700, h: 280 }, { size: 78, min: 44, lines: 3, weight: 900, family: HEAVY, fill: '#1F2933', highlight: '#FFE66D' }),
-            text('{sub}', { x: 140, y: 410, w: 700, h: 90 }, { size: 32, min: 22, lines: 2, weight: 400, family: SERIF, fill: '#3E4C59', style: 'italic' }),
-            { type: 'rect', x: 880, y: 540, w: 220, h: 120, fill: '#FFE66D' },
-            text('LEC {lecture}', { x: 880, y: 540, w: 220, h: 120 }, { size: 44, min: 28, lines: 1, weight: 900, family: HEAVY, fill: '#1F2933', align: 'middle', valign: 'middle', upper: true }),
-            text('{tagline}', { x: 140, y: 540, w: 700, h: 36 }, { size: 24, min: 18, lines: 1, weight: 400, family: SANS, fill: '#6B7A8C' }),
-            text('{teacher}', { x: 140, y: 596, w: 700, h: 40 }, { size: 28, min: 18, lines: 1, weight: 700, family: SANS, fill: '#2B6CB0' }),
+            { type: 'photo', x: 880, y: 110, w: 320, h: 400, shape: 'rect', ring: { color: WHITE, width: 14 } },
+            sticker('note', 870, 540, 160, 160, { color: '#FFE66D', color2: '#F59E0B', text: 'a²+b²' }),
+            sticker('note', 1050, 540, 160, 160, { color: '#FFB3C6', color2: '#E63946', text: '(x+y)²', rotate: 8 }),
+            chip('{subject}', 140, 44, { fill: '#2B6CB0', color: WHITE }),
+            sticker('badge', 370, 40, 280, 80, { color: '#FFE66D', color2: BLACK, text: '{exam}', rotate: -2 }),
+            title({ x: 140, y: 130, w: 700, h: 280 }, { size: 78, fill: '#1F2933', highlight: '#FFE66D' }),
+            subline({ x: 140, y: 420, w: 700, h: 76 }, { fill: '#3E4C59', family: SERIF, weight: 400, style: 'italic' }),
+            chip('LEC {lecture}', 140, 520, { fill: BLACK, color: WHITE, size: 28 }),
+            text('{teacher}', { x: 380, y: 520, w: 460, h: 44 }, { size: 30, min: 20, lines: 1, weight: 900, family: HEAVY, fill: '#2B6CB0' }),
+            small('{tagline}', { x: 380, y: 574, w: 460, h: 36 }, { fill: '#6B7A8C' }),
+            sticker('pencil', 140, 610, 300, 66, { color: '#FFD400', color2: '#F28B82', rotate: -4 }),
+            sticker('sigma', 480, 620, 70, 90, { color: '#2B6CB0', color2: WHITE, rotate: 6 }),
+            sticker('ruler', 580, 640, 260, 48, { color: '#FFE66D', color2: BLACK, rotate: -3 }),
         ],
     },
     {
-        id: 'gradient-pop', name: 'Gradient Pop', subject: 'any', description: 'Purple-to-orange gradient, giant outlined lecture number, round photo.',
-        bg: 'gradient:pop', defs: [{ type: 'gradient', id: 'pop', x1: 0, y1: 0, x2: 1, y2: 1, stops: [['0%', '#7B2CBF'], ['100%', '#FF7A00']] }], layers: [
-            text('{lecture}', { x: 800, y: 30, w: 440, h: 200 }, { size: 170, min: 90, lines: 1, weight: 900, family: HEAVY, fill: 'none', stroke: '#FFFFFF', sw: 4, align: 'end' }),
-            { type: 'photo', x: 810, y: 240, w: 460, h: 460, shape: 'circle', ring: { color: '#FFFFFF', width: 10 } },
-            chip('{subject}', 64, 48, { fill: '#FFFFFF', color: '#7B2CBF' }),
-            text('{chapter}', { x: 64, y: 120, w: 700, h: 330 }, { size: 88, min: 44, lines: 3, weight: 900, family: HEAVY, fill: '#FFFFFF' }),
-            text('{sub}', { x: 64, y: 470, w: 700, h: 90 }, { size: 34, min: 22, lines: 2, weight: 400, family: SANS, fill: '#FFE9D6' }),
-            text('{tagline}', { x: 64, y: 590, w: 700, h: 34 }, { size: 24, min: 18, lines: 1, weight: 400, family: SANS, fill: '#FFD9B8' }),
-            text('{teacher}', { x: 64, y: 640, w: 700, h: 40 }, { size: 28, min: 18, lines: 1, weight: 700, family: SANS, fill: '#FFFFFF' }),
-        ],
-    },
-    {
-        id: 'minimal-pro', name: 'Minimal Pro', subject: 'any', description: 'White, blue accent bar, photo in a rounded frame. Calm and clear.',
-        bg: '#FFFFFF', layers: [
-            { type: 'rect', x: 0, y: 0, w: 16, h: 720, fill: '#004AC6' },
-            { type: 'pattern', kind: 'dots', x: 780, y: 40, w: 480, h: 640, color: '#C7D2E8', opacity: 1 },
-            { type: 'photo', x: 820, y: 80, w: 400, h: 560, shape: 'rounded', rx: 12 },
-            chip('{subject}', 72, 60, { fill: '#E8F0FF', color: '#004AC6' }),
-            text('{chapter}', { x: 72, y: 140, w: 700, h: 300 }, { size: 76, min: 44, lines: 3, weight: 800, family: SANS, fill: '#0B1C30' }),
-            text('{sub}', { x: 72, y: 450, w: 700, h: 90 }, { size: 32, min: 22, lines: 2, weight: 400, family: SANS, fill: '#4A5568' }),
-            text('Lecture {lecture}', { x: 72, y: 560, w: 700, h: 50 }, { size: 36, min: 24, lines: 1, weight: 700, family: SANS, fill: '#004AC6' }),
-            text('{tagline}', { x: 72, y: 628, w: 700, h: 34 }, { size: 24, min: 18, lines: 1, weight: 400, family: SANS, fill: '#718096' }),
-            text('{teacher}', { x: 820, y: 652, w: 400, h: 36 }, { size: 24, min: 18, lines: 1, weight: 700, family: SANS, fill: '#0B1C30', align: 'middle' }),
-        ],
-    },
-    {
-        id: 'aptitude-arena', name: 'Aptitude Arena', subject: 'aptitude', description: 'Teal and yellow sports stripes with a tall rounded photo.',
-        bg: '#0B3D3A', layers: [
-            { type: 'polygon', points: '0,0 120,0 0,300', fill: '#F5C518' },
-            { type: 'polygon', points: '0,720 0,560 220,720', fill: '#F5C518' },
-            { type: 'photo', x: 820, y: 60, w: 400, h: 600, shape: 'rounded', rx: 40, ring: { color: '#F5C518', width: 8 } },
-            chip('{subject}', 160, 48, { fill: 'none', stroke: '#F5C518', sw: 2, color: '#F5C518' }),
-            text('{chapter}', { x: 160, y: 110, w: 620, h: 310 }, { size: 84, min: 44, lines: 3, weight: 900, family: HEAVY, fill: '#FFFFFF' }),
-            text('{sub}', { x: 160, y: 430, w: 620, h: 90 }, { size: 32, min: 22, lines: 2, weight: 400, family: SANS, fill: '#BFE6E0' }),
-            chip('LECTURE {lecture}', 160, 540, { fill: '#F5C518', color: '#0B3D3A' }),
-            text('{tagline}', { x: 160, y: 616, w: 620, h: 34 }, { size: 24, min: 18, lines: 1, weight: 400, family: SANS, fill: '#8FC9C2' }),
-            text('{teacher}', { x: 820, y: 672, w: 400, h: 36 }, { size: 24, min: 18, lines: 1, weight: 700, family: SANS, fill: '#F5C518', align: 'middle' }),
-        ],
-    },
-    {
-        id: 'exam-ticket', name: 'Exam Ticket', subject: 'cat', description: 'A red ticket stub carries the lecture number; photo framed on the right.',
-        bg: '#FFF8E7', layers: [
-            { type: 'rect', x: 0, y: 0, w: 200, h: 720, fill: '#E63946' },
-            { type: 'line', x1: 200, y1: 0, x2: 200, y2: 720, stroke: '#FFF8E7', sw: 4, dash: '14 10' },
-            text('{subject}', { x: 20, y: 60, w: 160, h: 60 }, { size: 28, min: 18, lines: 1, weight: 700, family: SANS, fill: '#FFFFFF', align: 'middle', upper: true }),
-            text('{lecture}', { x: 20, y: 200, w: 160, h: 160 }, { size: 110, min: 60, lines: 1, weight: 900, family: HEAVY, fill: '#FFFFFF', align: 'middle', valign: 'middle' }),
-            text('LECTURE', { x: 20, y: 370, w: 160, h: 40 }, { size: 22, min: 16, lines: 1, weight: 700, family: SANS, fill: '#FFFFFF', align: 'middle', spacing: 4 }),
-            { type: 'photo', x: 860, y: 60, w: 380, h: 600, shape: 'rect', ring: { color: '#1D1D1D', width: 6 } },
-            text('{chapter}', { x: 248, y: 110, w: 560, h: 310 }, { size: 76, min: 44, lines: 3, weight: 900, family: HEAVY, fill: '#1D1D1D' }),
-            text('{sub}', { x: 248, y: 430, w: 560, h: 90 }, { size: 30, min: 22, lines: 2, weight: 400, family: SANS, fill: '#5C5C5C' }),
-            text('{tagline}', { x: 248, y: 560, w: 560, h: 34 }, { size: 24, min: 18, lines: 1, weight: 400, family: SANS, fill: '#9A8F7A' }),
-            text('{teacher}', { x: 248, y: 618, w: 560, h: 40 }, { size: 28, min: 18, lines: 1, weight: 700, family: SANS, fill: '#E63946' }),
+        id: 'number-theory', name: 'Number Theory', subject: 'aptitude', description: 'Deep blue with primes floating behind, a factor tree, number line and digit tiles.',
+        bg: '#061A40', defs: [glow('cyan', '#7DF9FF')], layers: [
+            behind('formulas', { color: '#D7FF3F', color2: '#7DF9FF', opacity: 0.12, text: '2 3 5 7 11 13 17 19 23 29 31 37 41 43 47 53 59 61 67 71 73 79' }),
+            { type: 'circle', cx: 1030, cy: 500, r: 320, fill: 'gradient:cyan' },
+            sticker('factortree', 1020, 24, 240, 210, { color: '#D7FF3F', color2: '#7DF9FF' }),
+            { type: 'photo', x: 800, y: 250, w: 460, h: 470, shape: 'rect' },
+            chip('{exam}', 56, 44, { fill: '#D7FF3F', color: BLACK }),
+            sticker('badge', 300, 40, 340, 84, { color: '#7DF9FF', color2: BLACK, text: 'NUMBER SYSTEM', rotate: 2 }),
+            title({ x: 56, y: 140, w: 720, h: 290 }, { fill: '#D7FF3F', shadow: '#000000' }),
+            subline({ x: 56, y: 440, w: 720, h: 76 }, { fill: '#7DF9FF' }),
+            chip('LEC {lecture}', 56, 530, { fill: WHITE, color: '#061A40', size: 28 }),
+            text('{teacher}', { x: 300, y: 530, w: 460, h: 44 }, { size: 30, min: 20, lines: 1, weight: 900, family: HEAVY, fill: WHITE }),
+            small('{tagline}', { x: 300, y: 584, w: 460, h: 36 }, { fill: '#9FB3D9' }),
+            sticker('numberline', 56, 640, 420, 70, { color: '#D7FF3F', color2: '#7DF9FF' }),
+            sticker('tiles', 500, 630, 260, 70, { color: '#7DF9FF', color2: '#D7FF3F', text: '2 3 5 7' }),
         ],
     },
 ];
@@ -211,7 +266,6 @@ export function fitText(layer, value, measure) {
 const PATTERNS = {
     rules: ({ x, y, w, h, color, opacity }) => Array.from({ length: Math.floor(h / 48) }, (_, i) => ({ type: 'line', x1: x, y1: y + i * 48, x2: x + w, y2: y + i * 48, stroke: color, sw: 1.5, opacity })),
     dots: ({ x, y, w, h, color, opacity }) => { const nodes = []; for (let r = 0; r <= h; r += 32) for (let c = 0; c <= w; c += 32) nodes.push({ type: 'circle', cx: x + c, cy: y + r, r: 2, fill: color, opacity }); return nodes; },
-    formulas: ({ x, y, w, h, color, opacity }) => ['∑', '∫', 'π', '√', 'θ', '∞', 'Δ', '≈', 'x²', 'f(x)', '∂', '±', 'log', 'sin', '∝'].map((symbol, i) => ({ type: 'text', lines: [{ x: x + 40 + i * (w / 15), y: y + h * 0.7, text: symbol }], size: Math.min(h * 0.55, 44), weight: 700, family: SERIF, fill: color, opacity, anchor: 'start' })),
 };
 
 const photoClip = (layer) => {
@@ -227,6 +281,14 @@ export function layoutThumbnail(template, data, measure = estimateTextWidth) {
     nodes.push({ type: 'rect', x: 0, y: 0, w: THUMB_W, h: THUMB_H, fill: template.bg });
     for (const layer of template.layers) {
         if (layer.type === 'pattern') { nodes.push(...PATTERNS[layer.kind](layer)); continue; }
+        if (layer.type === 'sticker') {
+            if (!STICKERS[layer.kind]) continue;
+            const value = layer.text ? interpolate(layer.text, data) : '';
+            if (layer.text && /\{\w+\}/.test(layer.text) && !value) continue;
+            nodes.push({ type: 'sticker', kind: layer.kind, x: layer.x, y: layer.y, w: layer.w, h: layer.h, rotate: layer.rotate || 0, opacity: layer.opacity ?? 1, color: layer.color || BLACK, color2: layer.color2 || WHITE, text: value || undefined });
+            boxes.push({ kind: 'sticker', box: { x: layer.x, y: layer.y, w: layer.w, h: layer.h }, behind: Boolean(layer.behind), field: layer.kind });
+            continue;
+        }
         if (layer.type === 'photo') {
             const clip = photoClip(layer);
             const iw = layer.w * photo.zoom, ih = layer.h * photo.zoom;
@@ -244,7 +306,7 @@ export function layoutThumbnail(template, data, measure = estimateTextWidth) {
                 const w = measure(value, font) + layer.padX * 2, h = layer.size + layer.padY * 2;
                 nodes.push({ type: 'rect', x: layer.x, y: layer.y, w, h, rx: layer.rx, fill: layer.fill, stroke: layer.stroke, sw: layer.sw });
                 nodes.push({ type: 'text', lines: [{ x: layer.x + layer.padX, y: layer.y + layer.padY + layer.size * 0.78, text: value }], ...font, fill: layer.color, anchor: 'start' });
-                boxes.push({ kind: 'text', box: { x: layer.x, y: layer.y, w, h } });
+                boxes.push({ kind: 'text', box: { x: layer.x, y: layer.y, w, h }, field: layer.text });
                 continue;
             }
             const fit = fitText(layer, value, measure);
@@ -255,7 +317,7 @@ export function layoutThumbnail(template, data, measure = estimateTextWidth) {
             const font = { size: fit.size, weight: layer.weight, family: layer.family, spacing: layer.spacing || 0, style: layer.style };
             const lines = fit.lines.map((line, i) => ({ x: lx, y: top + i * fit.size * lineHeight + fit.size * 0.8, text: line, w: measure(line, font) }));
             if (layer.highlight) for (const line of lines) nodes.push({ type: 'rect', x: anchor === 'middle' ? line.x - line.w / 2 - 10 : anchor === 'end' ? line.x - line.w - 10 : line.x - 10, y: line.y - fit.size * 0.8 - 4, w: line.w + 20, h: fit.size * lineHeight + 4, fill: layer.highlight, rx: 4 });
-            nodes.push({ type: 'text', lines, ...font, fill: layer.fill, stroke: layer.stroke, sw: layer.sw, anchor, truncated: fit.truncated });
+            nodes.push({ type: 'text', lines, ...font, fill: layer.fill, stroke: layer.stroke, sw: layer.sw, outline: layer.outline, outlineWidth: layer.outlineWidth, shadow: layer.shadow, anchor, truncated: fit.truncated });
             boxes.push({ kind: 'text', box: { x: layer.x, y: layer.y, w: layer.w, h: layer.h }, field: layer.text });
             continue;
         }

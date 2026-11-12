@@ -14,7 +14,7 @@ const editedSlidesState = (slides) => ({
     rawText: serializeQuestions(slides),
 });
 
-const defaultRawText = `Case 1: Find the greatest possible number with which when we divide 37 and 58, it leaves the respective remainder of 2 and 3.
+export const EXAMPLE_RAW_TEXT = `Case 1: Find the greatest possible number with which when we divide 37 and 58, it leaves the respective remainder of 2 and 3.
 Case 2: Find the largest possible number with which when 60 and 98 are divided it leaves the remainders 3 in each case.
 Case 3: Find the largest possible number with which when 38, 66 and 80 are divided the remainder remains the same.
 2. Worked Examples
@@ -40,7 +40,7 @@ const initialConfig = {
 export const DEFAULT_THEME_ID = DEFAULT_THEME;
 
 // The sample deck shown on first visit is not worth remembering until the teacher changes something.
-const isUntouched = (state) => state.rawText === defaultRawText && DECK_TEXT_FIELDS.every(key => (state.config?.[key] ?? '') === initialConfig[key]);
+const isUntouched = (state) => state.rawText === EXAMPLE_RAW_TEXT && DECK_TEXT_FIELDS.every(key => (state.config?.[key] ?? '') === initialConfig[key]);
 const saveDeck = (state, force = false) => upsertCurrentDeck(state, { force, untouched: isUntouched(state) });
 
 export const useStore = create(
@@ -51,7 +51,11 @@ export const useStore = create(
             setConfig: (newConfig) => set({ config: { ...get().config, ...newConfig } }),
 
             // Raw Text & Parsing
-            rawText: defaultRawText,
+            rawText: "",
+            loadExample: () => set({ rawText: EXAMPLE_RAW_TEXT, aiQuestions: null, rawTextBeforeAI: null }),
+            // One level of undo for AI formatting, which rewrites the source text.
+            rawTextBeforeAI: null,
+            undoAiFormat: () => set((state) => state.rawTextBeforeAI == null ? {} : { rawText: state.rawTextBeforeAI, aiQuestions: null, rawTextBeforeAI: null }),
             setRawText: (text) => set((state) => {
                 const title = extractDocumentTitle(text);
                 const previousTitle = extractDocumentTitle(state.rawText);
@@ -100,7 +104,7 @@ export const useStore = create(
                     
                     const cleanText = serializeQuestions(indexedData);
                     
-                    set({ aiQuestions: indexedData, activeSlides: indexedData, rawText: cleanText, isParsing: false });
+                    set({ aiQuestions: indexedData, activeSlides: indexedData, rawText: cleanText, rawTextBeforeAI: rawText, isParsing: false });
                 } catch (error) {
                     console.error("AI Generation failed:", error);
                     set({ isParsing: false });
@@ -206,7 +210,8 @@ export const useStore = create(
             clearGeneratorState: () => set({
                 currentDeckId: null,
                 config: initialConfig,
-                rawText: defaultRawText,
+                rawText: "",
+                rawTextBeforeAI: null,
                 themeId: DEFAULT_THEME_ID,
                 layoutId: 'modern-sidebar',
                 aiQuestions: null,

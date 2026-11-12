@@ -17,8 +17,16 @@ export function installSlidePdfExport() {
         try {
             await window.slidesReady;
             await document.fonts.ready;
-            if (!window.html2canvas) await loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');
-            if (!window.jspdf) await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
+            try {
+                if (!window.html2canvas) await loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');
+                if (!window.jspdf) await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
+            } catch {
+                // Offline: the print stylesheet already lays out one slide per page, so use the browser's own PDF printer.
+                button.textContent = 'Save as PDF';
+                button.disabled = false;
+                window.print();
+                return;
+            }
 
             // Workspace slides are intentional solution pages when enabled in
             // the generator. Keep them alongside question and title slides.
@@ -35,17 +43,6 @@ export function installSlidePdfExport() {
                 button.textContent = 'Saving slide ' + (i + 1) + ' of ' + slides.length + '…';
                 const clone = slides[i].cloneNode(true);
                 stage.replaceChildren(clone);
-                // MathJax 2's SVG uses `currentColor`; html2canvas serializes
-                // cloned SVGs without the inherited slide color, turning math
-                // black on dark slides. Inline the effective color before capture.
-                clone.querySelectorAll('.MathJax_SVG').forEach(math => {
-                    const color = getComputedStyle(math).color;
-                    math.style.color = color;
-                    math.querySelectorAll('svg g, svg use, svg path, svg rect, svg polygon, svg polyline, svg ellipse').forEach(shape => {
-                        if (shape.getAttribute('fill') !== 'none') shape.setAttribute('fill', color);
-                        if (shape.getAttribute('stroke') === 'currentColor') shape.setAttribute('stroke', color);
-                    });
-                });
                 const canvas = await window.html2canvas(clone, {
                     width: 1280, height: 720, scale: 2, backgroundColor: null,
                     windowWidth: 1280, windowHeight: 720, scrollX: 0, scrollY: 0,

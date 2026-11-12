@@ -56,7 +56,7 @@ test('composed designs export title, question and workspace slides with maths an
     for (const [id, theme] of designs) {
         const html = buildRevealHtml(config, [question], theme);
         assert.equal((html.match(/class="slide-container"/g) || []).length, 3, id);
-        assert.match(html, /\\frac\{1\}\{2\}/);
+        assert.match(html, /class="mfrac"/);
         assert.match(html, /<table/);
         assert.match(html, /&lt;script&gt;/);
         assert.doesNotMatch(html.split('<!-- Floating PDF Export Button -->')[0], /undefined|NaN|\[object/);

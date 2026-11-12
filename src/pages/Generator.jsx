@@ -7,6 +7,7 @@ import SlidePreview from '../components/Generator/SlidePreview';
 import { useStore, DEFAULT_THEME_ID } from '../store/useStore';
 import toast from 'react-hot-toast';
 import { exportToRevealJS } from '../utils/exportRevealJS';
+import { exportAssets } from '../utils/exportAssets.js';
 import { THEMES } from '../utils/themeConfig';
 
 export default function Generator() {
@@ -20,7 +21,7 @@ export default function Generator() {
         
         try {
             const themeData = THEMES[currentTheme] || savedThemes.find(t => t.id === currentTheme) || THEMES[DEFAULT_THEME_ID];
-            exportToRevealJS(currentConfig, currentSlides, themeData, currentLayout);
+            exportToRevealJS(currentConfig, currentSlides, themeData, currentLayout, exportAssets);
             state.saveCurrentDeck();
             
             toast.success('HTML Presentation Downloaded successfully!');
