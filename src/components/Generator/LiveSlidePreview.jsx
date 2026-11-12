@@ -1,9 +1,39 @@
 import { teachingStyles, teachingIllustrationStyle, previewStyle } from '../../utils/teachingDesign.js';
 import { signatureSlide } from '../../utils/signatureDesigns.js';
 import { watermarkStyle } from '../../utils/watermark.js';
-import React from 'react';
+import { answerIndex, answerLabel } from '../../utils/deckSequence.js';
+import React, { useCallback, useEffect, useLayoutEffect, useRef } from 'react';
 import EditableBlock from './EditableBlock';
+import MathRenderer from './MathRenderer';
 import { useStore } from '../../store/useStore';
+
+const CORRECT = '16A34A';
+const MathText = ({ text }) => <span>{String(text ?? '').split('$').map((part, i) => i % 2 ? <MathRenderer key={i} math={`\\displaystyle ${part}`} /> : part)}</span>;
+
+// Mirrors the export's present-time auto-fit: overflowing content scales down (to half size at
+// most) instead of being clipped, so the preview shows what the class will see.
+function FitBox({ children }) {
+    const ref = useRef(null);
+    const fit = useCallback(() => {
+        const box = ref.current;
+        if (!box) return;
+        Object.assign(box.style, { transform: '', width: '100%', height: '100%', flex: '1 1 auto' });
+        let scale = 1;
+        for (let step = 0; step < 16 && box.scrollHeight > box.clientHeight + 1 && scale > 0.5; step++) {
+            scale = Math.max(0.5, scale * Math.min(0.97, Math.max(0.8, box.clientHeight / box.scrollHeight)));
+            Object.assign(box.style, { transformOrigin: '0 0', transform: `scale(${scale})`, width: `${100 / scale}%`, height: `${100 / scale}%`, flex: '0 0 auto' });
+        }
+    }, []);
+    useLayoutEffect(fit);
+    useEffect(() => {
+        const parent = ref.current?.parentElement;
+        if (!parent || typeof ResizeObserver === 'undefined') return undefined;
+        const observer = new ResizeObserver(() => fit());
+        observer.observe(parent);
+        return () => observer.disconnect();
+    }, [fit]);
+    return <div ref={ref} style={{ width: '100%', height: '100%', minHeight: 0, flex: '1 1 auto' }}>{children}</div>;
+}
 
 // Math helpers to map PPTX inches to CSS percentages
 const x = (val) => `${(val / 10) * 100}%`;
@@ -13,7 +43,7 @@ const h = (val) => `${(val / 5.625) * 100}%`;
 const fs = (pt) => `${pt * 0.1388}cqw`;
 
 export default function LiveSlidePreview({ theme, type = 'title', config, questionData, layoutId }) {
-    const { updateSlideQuestion, updateSlideContext, updateSlideOption } = useStore();
+    const { updateSlideQuestion, updateSlideContext, updateSlideOption, updateSlideAnswer, updateSlideSolution } = useStore();
     if (!theme) return null;
 
     const layoutType = layoutId || 'modern-sidebar';
@@ -48,11 +78,12 @@ export default function LiveSlidePreview({ theme, type = 'title', config, questi
         const totalChars = options.reduce((sum, opt) => sum + (opt.text ? opt.text.length : 0), 0);
         const hasContext = Boolean(questionData?.context?.trim());
         const cols = hasContext && totalChars > 160 ? 1 : !hasContext && totalChars < 60 && options.length === 4 ? 4 : 2;
+        const correct = answerIndex(questionData);
 
         return (
             <div style={{ marginTop: '2.4cqw', display: 'grid', gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`, width: '100%', gap: '1.2cqw' }}>
                 {options.map((opt, i) => (
-                    <div key={i} style={{ minWidth: 0, display: 'flex', alignItems: 'baseline', gap: '0.4em', color: `#${color}`, fontSize: theme.teaching ? '2.1875cqw' : fs(11), lineHeight: 1.5 }}>
+                    <div key={i} title={i === correct ? 'Correct answer: revealed on the next click when presenting' : undefined} style={{ minWidth: 0, display: 'flex', alignItems: 'baseline', gap: '0.4em', color: `#${color}`, fontSize: theme.teaching ? '2.1875cqw' : fs(11), lineHeight: 1.5, ...(i === correct ? { outline: `0.16cqw dashed #${CORRECT}`, outlineOffset: '0.3cqw', borderRadius: '0.6cqw' } : {}) }}>
                         <strong style={{ whiteSpace: 'nowrap' }}>({opt.label})</strong> 
                         <EditableBlock 
                             value={opt.text} 
@@ -60,16 +91,42 @@ export default function LiveSlidePreview({ theme, type = 'title', config, questi
                             onChange={(newVal) => updateSlideOption(slideIndex, i, newVal)} 
                             style={{ minWidth: 0, flex: 1, overflowWrap: 'anywhere', lineHeight: 1.5 }}
                         />
+                        {i === correct && <span aria-label="correct answer" style={{ color: `#${CORRECT}`, fontWeight: 900, paddingRight: '0.6cqw' }}>✓</span>}
                     </div>
                 ))}
             </div>
         );
     };
 
-    const renderQuestionBody = (optionColor, textColor = theme.textWhite, bold = false) => {
+    const questionSize = theme.teaching ? '2.5cqw' : fs(11);
+    const renderSolutionBody = (accent, textColor) => {
+        const answer = questionData?.answerText ?? answerLabel(questionData);
+        return <div style={{ minWidth: 0 }}>
+            {answer && <div style={{ display: 'flex', gap: '0.4em', color: `#${accent}`, fontSize: questionSize, fontWeight: 'bold', marginBottom: '1.25cqw' }}>Answer:
+                <EditableBlock value={answer} theme={theme} onChange={value => updateSlideAnswer(questionData?.index, value)} />
+            </div>}
+            <div style={{ color: `#${textColor}`, fontSize: theme.teaching ? '2.1875cqw' : fs(10), lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>
+                <EditableBlock value={questionData?.solution} renderTables theme={theme} onChange={value => updateSlideSolution(questionData?.index, value)} />
+            </div>
+        </div>;
+    };
+    const renderAnswerKey = (accent, textColor) => {
+        const entries = questionData?.entries || [];
+        return <div style={{ display: 'grid', gridTemplateColumns: `repeat(${entries.length > 12 ? 4 : entries.length > 6 ? 3 : 2}, minmax(0, 1fr))`, gap: '0.94cqw 2.5cqw', fontSize: theme.teaching ? '2.1875cqw' : fs(11), color: `#${textColor}` }}>
+            {entries.map(entry => <div key={entry.badge} style={{ display: 'flex', gap: '0.94cqw', alignItems: 'baseline', borderBottom: '0.08cqw dashed currentColor', paddingBottom: '0.47cqw' }}>
+                <strong style={{ color: `#${accent}`, whiteSpace: 'nowrap' }}>{entry.badge}</strong><MathText text={entry.answer} />
+            </div>)}
+        </div>;
+    };
+
+    const renderQuestionBody = (optionColor, textColor = theme.textWhite, bold = false) => <FitBox>{renderQuestionContent(optionColor, textColor, bold)}</FitBox>;
+    const renderQuestionContent = (optionColor, textColor, bold) => {
+        if (questionData?.kind === 'solution') return renderSolutionBody(optionColor, textColor);
+        if (questionData?.kind === 'key') return renderAnswerKey(optionColor, textColor);
+        const freeAnswer = answerIndex(questionData) < 0 && String(questionData?.answer ?? '').trim();
         const promptAndOptions = (
             <div style={{ minWidth: 0 }}>
-                <div style={{ color: `#${textColor}`, fontSize: theme.teaching ? '2.5cqw' : fs(11), lineHeight: 1.5, whiteSpace: 'pre-wrap', fontWeight: bold ? 'bold' : 'normal' }}>
+                <div style={{ color: `#${textColor}`, fontSize: questionSize, lineHeight: 1.5, whiteSpace: 'pre-wrap', fontWeight: bold ? 'bold' : 'normal' }}>
                     <EditableBlock
                         value={questionData?.qText}
                         theme={theme}
@@ -77,6 +134,9 @@ export default function LiveSlidePreview({ theme, type = 'title', config, questi
                     />
                 </div>
                 {renderOptionsGrid(questionData?.options, optionColor, questionData?.index)}
+                {freeAnswer && <div title="Revealed on the next click when presenting" style={{ marginTop: '2.2cqw', display: 'inline-flex', gap: '0.4em', color: `#${optionColor}`, fontSize: questionSize, fontWeight: 'bold', outline: `0.16cqw dashed #${CORRECT}`, outlineOffset: '0.3cqw', borderRadius: '0.6cqw' }}>Answer:
+                    <EditableBlock value={String(questionData.answer)} theme={theme} onChange={value => updateSlideAnswer(questionData?.index, value)} />
+                </div>}
             </div>
         );
 

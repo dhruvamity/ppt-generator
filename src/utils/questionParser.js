@@ -43,6 +43,20 @@ const stripEmphasis = (text) => outsideMath(text, part => part
 const questionStart = /^(?:(?:Question|Q)\.?\s*(\d+)|Case\s*(\d+)|Exp\.\s*(\d+))\s*(?:[:.)-]\s*)?(.*)$/i;
 const optionStart = /^(?:[-*+]\s+)?(?:\(([A-Fa-f1-6])\.?\)|([A-Fa-f1-6])[.)])\s*(.*)$/;
 const labelFor = label => /^\d$/.test(label) ? String.fromCharCode(96 + Number(label)) : label.toLowerCase();
+const answerStart = /^(?:Correct\s+)?(?:Answer|Ans)\s*(?:key)?\s*[:.\-–]\s*(.*)$/i;
+const solutionStart = /^(?:Solution|Sol|Explanation|Working)\s*[:.\-–]\s*(.*)$/i;
+// "(b)", "B.", "b) 105:77", "(2)" and a lone "2" name an option; anything else is a free-form answer.
+const parseAnswer = (value, options) => {
+    const trimmed = value.trim();
+    const letter = trimmed.match(/^\(?([A-Fa-f])(?:\)|\.|\s|$)/);
+    if (letter) return letter[1].toLowerCase();
+    const digit = trimmed.match(/^(?:\(([1-6])\)|([1-6])\)|([1-6])$)/);
+    if (digit && options.length) {
+        const number = digit[1] || digit[2] || digit[3];
+        return options.every(option => /^[a-f]$/.test(option.label)) ? labelFor(number) : number;
+    }
+    return convertFractions(trimmed);
+};
 
 export const parseLocalText = (rawText) => {
     if (!rawText?.trim()) return [];
@@ -65,6 +79,8 @@ export const parseLocalText = (rawText) => {
                 label: option.label,
                 text: convertFractions(option.lines.join('\n').trim()),
             })),
+            ...(current.answer ? { answer: parseAnswer(current.answer, current.options) } : {}),
+            ...(current.solution.join('').trim() ? { solution: convertFractions(current.solution.join('\n').trim()) } : {}),
         });
         current = null;
     };
@@ -98,6 +114,9 @@ export const parseLocalText = (rawText) => {
                 lines: question[4] ? [question[4]] : [],
                 context: [...(singleContext?.lines || (applicableRange ? rangeContext.lines : []))],
                 options: [],
+                answer: '',
+                solution: [],
+                inSolution: false,
             };
             singleContext = null;
             collectingContext = null;
@@ -118,6 +137,22 @@ export const parseLocalText = (rawText) => {
             continue;
         }
         if (!current) continue;
+        const answer = line.match(answerStart);
+        if (answer) {
+            current.answer = answer[1];
+            current.inSolution = false;
+            continue;
+        }
+        const solution = line.match(solutionStart);
+        if (solution) {
+            current.inSolution = true;
+            if (solution[1].trim()) current.solution.push(solution[1]);
+            continue;
+        }
+        if (current.inSolution) {
+            current.solution.push(line);
+            continue;
+        }
         const option = line.match(optionStart);
         if (option) {
             current.options.push({ label: labelFor(option[1] || option[2]), lines: [option[3]] });
@@ -137,5 +172,8 @@ export const serializeQuestions = (questions) => questions.map((question, index)
     if (question.options?.length) {
         text += '\n' + question.options.map((option, optionIndex) => '(' + String(option.label || String.fromCharCode(97 + optionIndex)).replace(/[().]/g, '') + ') ' + (option.text || '')).join('\n');
     }
+    const answer = String(question.answer ?? '').trim();
+    if (answer) text += '\nAnswer: ' + (/^[a-f1-6]$/i.test(answer) && question.options?.length ? '(' + answer + ')' : answer);
+    if (question.solution?.trim()) text += '\nSolution: ' + question.solution.trim();
     return text;
 }).join('\n\n');

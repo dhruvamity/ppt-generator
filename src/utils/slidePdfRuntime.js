@@ -42,6 +42,7 @@ export function installSlidePdfExport() {
             for (let i = 0; i < slides.length; i++) {
                 button.textContent = 'Saving slide ' + (i + 1) + ' of ' + slides.length + '…';
                 const clone = slides[i].cloneNode(true);
+                clone.querySelectorAll('.answer-opt, .answer-line').forEach(item => item.classList.remove('visible'));
                 stage.replaceChildren(clone);
                 const canvas = await window.html2canvas(clone, {
                     width: 1280, height: 720, scale: 2, backgroundColor: null,

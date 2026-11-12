@@ -138,6 +138,112 @@ const DESIGNS = {
         badge: { backgroundColor: `#${t.cyan}`, color: '#FFFFFF', padding: '6px 18px', borderRadius: '6px' },
         body: { left: 64, top: 110, right: 232, bottom: 72 }, titleTop: 160, watermark: { right: 64, bottom: 24, width: 600, align: 'right' },
     }),
+    // Calm: the working area sits between two tall matrix brackets.
+    matrix: (t) => ({
+        display: "Cambria, Georgia, 'Times New Roman', serif",
+        decorations: [
+            box(40, 112, 22, 560, { borderLeft: `4px solid #${t.cyan}`, borderTop: `4px solid #${t.cyan}`, borderBottom: `4px solid #${t.cyan}`, boxSizing: 'border-box' }),
+            box(1218, 112, 22, 560, { borderRight: `4px solid #${t.cyan}`, borderTop: `4px solid #${t.cyan}`, borderBottom: `4px solid #${t.cyan}`, boxSizing: 'border-box' }),
+            label(box(1040, 680, 200, 24, { color: '#9AA0C3', fontSize: '15px', lineHeight: '24px', textAlign: 'right', fontStyle: 'italic', fontFamily: 'Cambria, Georgia, serif' }), 'A = [aᵢⱼ]ₘ×ₙ'),
+        ],
+        header: { left: 96, top: 40, right: 96, height: 48 },
+        badge: { color: `#${t.cyan}`, fontSize: '26px', fontWeight: '700' },
+        body: { left: 96, top: 120, right: 96, bottom: 72 }, titleTop: 180, watermark: { left: 96, bottom: 28, width: 600, color: '#9AA0C3' },
+    }),
+    // Calm: a textbook theorem panel with a Q.E.D. tombstone.
+    theorem: (t) => ({
+        font: "'Palatino Linotype', Palatino, Georgia, serif", display: "'Palatino Linotype', Palatino, Georgia, serif",
+        decorations: [
+            { behind: true, style: box(64, 108, 1152, 548, { backgroundColor: `#${t.bgCard}`, borderRadius: '4px' }) },
+            box(64, 108, 6, 548, { backgroundColor: `#${t.cyan}` }),
+            label(box(1040, 672, 140, 24, { color: '#8A8478', fontSize: '15px', lineHeight: '24px', textAlign: 'right', fontStyle: 'italic' }), 'Q.E.D.'),
+            box(1192, 672, 24, 24, { backgroundColor: `#${t.cyan}` }),
+        ],
+        header: { left: 64, top: 44, right: 64, height: 48 },
+        badge: { color: `#${t.cyan}`, fontSize: '26px', fontWeight: '700', fontVariant: 'small-caps', letterSpacing: '2px' },
+        body: { left: 96, top: 128, right: 96, bottom: 80 }, titleTop: 170, watermark: { left: 96, bottom: 24, width: 600, color: '#8A8478' },
+    }),
+    // Balanced: aluminium-framed whiteboard, marker tray and a sticky note.
+    whiteboard: (t) => ({
+        display: "'Segoe Print', 'Bradley Hand', 'Comic Sans MS', 'Chalkboard SE', sans-serif",
+        decorations: [
+            box(0, 0, 1280, 18, { background: 'linear-gradient(180deg, #E2E6EB, #A9B2BD)' }),
+            box(0, 702, 1280, 18, { background: 'linear-gradient(0deg, #E2E6EB, #A9B2BD)' }),
+            box(0, 0, 18, 720, { background: 'linear-gradient(90deg, #E2E6EB, #A9B2BD)' }),
+            box(1262, 0, 18, 720, { background: 'linear-gradient(270deg, #E2E6EB, #A9B2BD)' }),
+            box(36, 36, 22, 22, { backgroundColor: `#${t.gold}`, borderRadius: '50%', boxShadow: '0 2px 3px rgba(0,0,0,0.3)' }),
+            box(1070, 40, 160, 150, { ...art(160, 150, `<path d="M6 12h148v118l-20 16H6Z" fill="#FDE68A"/><path d="M154 130l-20 16v-16Z" fill="#F59E0B" fill-opacity=".6"/><rect x="56" y="2" width="48" height="16" fill="#FFFFFF" fill-opacity=".75"/><g font-family="Segoe Print,Comic Sans MS,sans-serif" fill="#1E293B"><text x="20" y="62" font-size="24">a² − b²</text><text x="20" y="98" font-size="18">= (a+b)(a−b)</text></g><path d="M110 116l8 8 16-18" fill="none" stroke="#DC2626" stroke-width="4" stroke-linecap="round"/>`), transform: 'rotate(3deg)' }),
+            box(200, 680, 880, 16, { backgroundColor: '#C3CAD3', borderRadius: '4px 4px 0 0', boxShadow: 'inset 0 -3px 0 #9AA4B1' }),
+            box(240, 666, 96, 14, { backgroundColor: `#${t.cyan}`, borderRadius: '7px' }),
+            box(352, 666, 96, 14, { backgroundColor: `#${t.gold}`, borderRadius: '7px' }),
+            box(464, 666, 96, 14, { backgroundColor: '#16A34A', borderRadius: '7px' }),
+            box(940, 656, 110, 24, { backgroundColor: '#334155', borderRadius: '4px', boxShadow: 'inset 0 -8px 0 #CBD5E1' }),
+        ],
+        header: { left: 72, top: 48, right: 240, height: 52 },
+        badge: { backgroundColor: `#${t.cyan}`, color: '#FFFFFF', padding: '4px 16px', borderRadius: '6px' },
+        body: { left: 72, top: 120, right: 240, bottom: 100 }, titleTop: 170, watermark: { left: 72, bottom: 72, width: 600, color: '#94A3B8' },
+    }),
+    // Bold: the CAT exam screen, with section bar, timer, question palette and action buttons.
+    mockui: (t) => {
+        const STATES = [['#2E9E44', '#FFFFFF', 'Answered'], ['#D64545', '#FFFFFF', 'Not Answered'], ['#E3E7ED', '#5B6B82', 'Not Visited'], ['#7B4FC9', '#FFFFFF', 'Marked for Review']];
+        const order = [0, 0, 1, 0, 3, 0, 1, 0, 0, 3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2];
+        const cell = (state, x, y, w, h) => state === 3 ? `<circle cx="${x + w / 2}" cy="${y + h / 2}" r="${h / 2}" fill="${STATES[state][0]}"/>` : `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${state === 2 ? 4 : 10}" fill="${STATES[state][0]}" stroke="#B8C2D0" stroke-width="${state === 2 ? 1 : 0}"/>`;
+        const palette = order.map((state, i) => { const x = 6 + (i % 4) * 56, y = 6 + Math.floor(i / 4) * 50; return cell(state, x, y, 44, 36) + `<text x="${x + 22}" y="${y + 23}" text-anchor="middle" font-family="Arial,sans-serif" font-size="14" font-weight="700" fill="${STATES[state][1]}">${i + 1}</text>`; }).join('');
+        const legend = STATES.map(([, , name], i) => cell(i, 4, 8 + i * 52, 30, 26) + `<text x="46" y="${26 + i * 52}" font-family="Arial,sans-serif" font-size="14" fill="#33415C">${name}</text>`).join('');
+        const button = (fill, color, border) => ({ backgroundColor: fill, color, border: `1px solid ${border}`, borderRadius: '4px', boxSizing: 'border-box', fontSize: '14px', lineHeight: '30px', textAlign: 'center', fontWeight: '700' });
+        return {
+            decorations: [
+                { behind: true, style: box(0, 0, 1280, 56, { backgroundColor: '#1C3D6E' }) },
+                label(box(32, 16, 460, 24, { color: '#FFFFFF', fontSize: '15px', lineHeight: '24px', fontWeight: '700', letterSpacing: '0.5px' }), 'Section: Quantitative Ability'),
+                label(box(1000, 16, 248, 24, { color: '#FFD166', fontSize: '15px', lineHeight: '24px', fontWeight: '700', textAlign: 'right', letterSpacing: '1px' }), 'Time Left : 39:58'),
+                box(1000, 72, 256, 576, { backgroundColor: '#FFFFFF', border: '1px solid #CDD5E0', borderRadius: '6px', boxSizing: 'border-box' }),
+                label(box(1016, 84, 224, 24, { color: '#1C3D6E', fontSize: '13px', lineHeight: '24px', fontWeight: '700', letterSpacing: '2px' }), 'QUESTION PALETTE'),
+                box(1016, 120, 224, 250, art(224, 250, palette)),
+                box(1016, 400, 224, 220, art(224, 220, legend)),
+                { behind: true, style: box(0, 664, 1280, 56, { backgroundColor: '#E6EBF2' }) },
+                label(box(32, 676, 240, 32, button('#FFFFFF', '#33415C', '#8A99B0')), 'Mark for Review & Next'),
+                label(box(288, 676, 160, 32, button('#FFFFFF', '#33415C', '#8A99B0')), 'Clear Response'),
+                label(box(1056, 676, 192, 32, button(`#${t.cyan}`, '#FFFFFF', `#${t.cyan}`)), 'Save & Next'),
+            ],
+            header: { left: 32, top: 76, right: 304, height: 44 },
+            badge: { color: '#1A1A1A', fontSize: '22px', fontWeight: '800' },
+            body: { left: 32, top: 136, right: 304, bottom: 72 }, titleTop: 150, watermark: { left: 470, bottom: 18, width: 560, color: '#5B6B82' },
+        };
+    },
+    // Bold: Fibonacci squares and the golden spiral on a dark slide.
+    golden: (t) => {
+        const squares = [[0, 0, 233], [233, 0, 144], [288, 144, 89], [233, 178, 55], [233, 144, 34], [267, 144, 21], [275, 165, 13]];
+        const spiral = 'M0 233A233 233 0 0 1 233 0A144 144 0 0 1 377 144A89 89 0 0 1 288 233A55 55 0 0 1 233 178A34 34 0 0 1 267 144A21 21 0 0 1 288 165A13 13 0 0 1 275 178';
+        return {
+            display: "Georgia, 'Times New Roman', serif",
+            decorations: [
+                label(box(900, 76, 340, 240, { color: '#2A2420', fontSize: '220px', lineHeight: '240px', textAlign: 'center', fontFamily: 'Georgia, serif', fontStyle: 'italic' }), 'φ'),
+                box(880, 330, 377, 233, art(377, 233, squares.map(([x, y, s]) => `<rect x="${x + 1}" y="${y + 1}" width="${s - 2}" height="${s - 2}" fill="none" stroke="#57534E" stroke-width="2"/>`).join('') + `<path d="${spiral}" fill="none" stroke="#${t.cyan}" stroke-width="4" stroke-linecap="round"/>`)),
+                label(box(880, 580, 377, 32, { color: `#${t.gold}`, fontSize: '20px', lineHeight: '32px', textAlign: 'center', fontFamily: 'Georgia, serif', fontStyle: 'italic' }), 'φ = (1 + √5) / 2 ≈ 1.618'),
+                label(box(880, 620, 377, 24, { color: '#A8A29E', fontSize: '15px', lineHeight: '24px', textAlign: 'center', letterSpacing: '2px' }), '1, 1, 2, 3, 5, 8, 13, 21, 34 …'),
+            ],
+            header: { left: 72, top: 40, right: 420, height: 48 },
+            badge: { color: '#1C1917', backgroundColor: `#${t.cyan}`, padding: '4px 18px', borderRadius: '999px', fontWeight: '800' },
+            body: { left: 72, top: 110, right: 420, bottom: 64 }, titleTop: 170, watermark: { right: 40, top: 40, width: 360, align: 'right', color: '#A8A29E' },
+        };
+    },
+    // Bold: an LCD display for the question number beside a full keypad.
+    calculator: (t, { workspace }) => {
+        const keys = ['AC', '√', '%', '÷', '7', '8', '9', '×', '4', '5', '6', '−', '1', '2', '3', '+', '0', '.', 'x²', '='];
+        const pad = keys.map((key, i) => { const col = i % 4, row = Math.floor(i / 4), x = col * 62 + 4, y = row * 84 + 4, op = col === 3 || i < 3; return `<rect x="${x}" y="${y}" width="54" height="72" rx="10" fill="${op ? `#${t.cyan}` : '#4A515C'}"/><rect x="${x}" y="${y + 62}" width="54" height="10" rx="5" fill="#000000" fill-opacity=".25"/><text x="${x + 27}" y="${y + 44}" text-anchor="middle" font-family="Arial,sans-serif" font-size="22" font-weight="700" fill="${op ? '#2B2F36' : '#F1F3F5'}">${key}</text>`; }).join('');
+        return {
+            decorations: [
+                { behind: true, style: box(40, 24, 1200, 100, { backgroundColor: '#B9C7A5', borderRadius: '12px', boxShadow: 'inset 0 4px 12px rgba(0,0,0,0.35)' }) },
+                label(box(64, 30, 360, 18, { color: '#4A5A3A', fontSize: '13px', lineHeight: '18px', letterSpacing: '4px', fontFamily: "'Courier New', monospace", fontWeight: '700' }), 'DEG   STAT   M+'),
+                box(1040, 136, 200, 22, art(200, 22, range(5, i => `<rect x="${i * 40 + 1}" y="1" width="38" height="20" fill="#3B2F2A" stroke="#5C4A40"/>`))),
+                box(990, 170, 250, 424, art(250, 424, pad)),
+                label(box(990, 610, 250, 22, { color: '#8A919C', fontSize: '13px', lineHeight: '22px', letterSpacing: '3px', textAlign: 'center', fontWeight: '700' }), 'QUANT-CALC  fx-2026'),
+            ],
+            header: { left: 72, top: 52, right: 72, height: 60, justifyContent: 'flex-end' },
+            badge: { color: '#1F2A16', fontFamily: "'Courier New', monospace", fontSize: workspace ? '32px' : '46px', fontWeight: '700', letterSpacing: '4px' }, rule: null,
+            body: { left: 64, top: 156, right: 330, bottom: 56 }, titleTop: 170, watermark: { left: 64, bottom: 20, width: 600, color: '#8A919C' },
+        };
+    },
 };
 
 export const SIGNATURE_DESIGN_IDS = Object.keys(DESIGNS);
