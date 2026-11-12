@@ -69,7 +69,7 @@ test('question number and divider share a header row, with content moved up', ()
 test('teaching designs retain maths, shared tables, and blank workspaces in every layout', () => {
     const question = { badge: 'Q.1', tag: 'MCQ', topic: 'Algebra', qText: String.raw`Evaluate $\frac{1}{2} + \sqrt{4}$ <script>`, context: '| x | y |\n| --- | --- |\n| 1 | 2 |', options: [{ label: 'A', text: '$2$' }] };
     const teaching = Object.values(THEMES).filter(theme => theme.teaching && !theme.design);
-    assert.equal(teaching.length, 13);
+    assert.equal(teaching.length, 20);
     for (const theme of teaching) for (const layout of ['modern-sidebar', 'classic-header', 'split-focus']) {
         const html = buildRevealHtml(deckConfig(true), [question], theme, layout);
         assert.equal((html.match(/class="slide-container"/g) || []).length, 3);
@@ -87,7 +87,7 @@ test('teaching designs retain maths, shared tables, and blank workspaces in ever
 
 test('margin illustrations never sit behind the title, question or options', () => {
     const illustrated = Object.values(THEMES).filter(theme => theme.illustration);
-    assert.equal(illustrated.length, 9);
+    assert.equal(illustrated.length, 16);
     const question = { badge: 'Q.1', qText: 'Solve $x^2 = 9$.', options: [{ label: 'A', text: '$3$' }, { label: 'B', text: '$\\pm 3$' }] };
     for (const theme of illustrated) for (const layout of ['modern-sidebar', 'classic-header', 'split-focus']) {
         const slides = buildRevealHtml(deckConfig(true), [question], theme, layout).split('class="slide-container"').slice(1);

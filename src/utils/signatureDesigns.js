@@ -70,7 +70,7 @@ const DESIGNS = {
         ],
         header: { left: 1030, top: 110, width: 160, height: 100, justifyContent: 'center', textAlign: 'center' },
         badge: { fontSize: workspace ? '22px' : '46px', fontWeight: '800', color: `#${t.cyan}` }, rule: null,
-        body: { left: 64, top: 72, right: 340, bottom: 72 }, titleTop: 150, watermark: { right: 40, bottom: 56, width: 260, align: 'center', color: '#8D99AE' },
+        body: { left: 64, top: 72, right: 340, bottom: 72 }, titleTop: 150, watermark: { right: 40, bottom: 56, width: 300, align: 'center', color: '#8D99AE' },
     }),
     datadeck: (t) => ({
         decorations: [
