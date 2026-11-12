@@ -81,19 +81,6 @@ export default function SlideConfigPanel() {
                     />
                     <p className="text-[11px] text-on-surface-variant mt-1">Each design places it in a spot that never touches the question or options.</p>
                 </div>
-                <div className="flex items-center gap-2 mt-2 pt-2 border-t border-outline-variant/30">
-                    <input 
-                        type="checkbox" 
-                        id="insertBlankSlides"
-                        name="insertBlankSlides"
-                        checked={config.insertBlankSlides || false}
-                        onChange={(e) => setConfig({ insertBlankSlides: e.target.checked })}
-                        className="w-4 h-4 text-primary bg-surface-container-low border-outline-variant rounded focus:ring-primary"
-                    />
-                    <label htmlFor="insertBlankSlides" className="font-label-sm text-sm font-semibold text-on-surface">
-                        Insert Blank Solution Slides
-                    </label>
-                </div>
             </div>
         </div>
     );

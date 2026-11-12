@@ -2,6 +2,7 @@ import React from 'react';
 import { Download } from 'lucide-react';
 import ThemeSelector from '../components/Generator/ThemeSelector';
 import SlideConfigPanel from '../components/Generator/SlideConfigPanel';
+import PresentationOptions from '../components/Generator/PresentationOptions';
 import RawTextInput from '../components/Generator/RawTextInput';
 import SlidePreview from '../components/Generator/SlidePreview';
 import { useStore, DEFAULT_THEME_ID } from '../store/useStore';
@@ -35,9 +36,10 @@ export default function Generator() {
         <main className="flex-1 max-w-container-max mx-auto w-full px-margin-mobile md:px-margin-desktop pt-24 pb-12 flex flex-col lg:flex-row gap-gutter">
             {/* Sidebar Configuration */}
             <aside className="w-full lg:w-80 shrink-0 flex flex-col gap-6">
-                <div className="bg-surface p-6 rounded-2xl border border-outline-variant shadow-sm flex flex-col gap-6 sticky top-24">
+                <div className="bg-surface p-6 rounded-2xl border border-outline-variant shadow-sm flex flex-col gap-6 sticky top-24 lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto custom-scrollbar">
                     <ThemeSelector />
                     <SlideConfigPanel />
+                    <PresentationOptions />
                     <button
                         onClick={handleExport}
                         disabled={!activeSlides || activeSlides.length === 0}

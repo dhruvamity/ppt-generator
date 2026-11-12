@@ -125,6 +125,8 @@ class SlideSchema(BaseModel):
     context: Optional[str] = None
     options: Optional[List[OptionSchema]] = None
     topic: Optional[str] = None
+    answer: Optional[str] = None
+    solution: Optional[str] = None
 
 class BeamerRequest(BaseModel):
     slides: List[dict]
@@ -250,6 +252,11 @@ CRITICAL MATH RULES:
 For each question, identify a concise subject topic (1-4 words) in `topic`, and a short question type such as "MCQ" in `tag`.
 
 Extract all choices (1, 2, 3, 4) or (A, B, C, D) into the "options" array.
+
+ANSWERS AND SOLUTIONS:
+1. Only if the source states the correct answer (for example "Ans: (c)" or "Answer: 42"), put it in `answer`: the option label alone for multiple choice ("c"), otherwise the value. Never work out or guess an answer that is not written in the source.
+2. Only if the source contains a worked solution or explanation, put it in `solution`, keeping every step and the same math rules. Never write a solution yourself.
+3. Leave `answer` and `solution` empty when the source does not provide them.
 Raw text:
 {source_text}"""
 
@@ -297,6 +304,8 @@ Raw text:
                     "text": sanitize_math(opt.get("text") or "")
                 })
             slide["options"] = options
+            slide["answer"] = re.sub(r'[()]', '', str(slide.get("answer") or "")).strip()
+            slide["solution"] = sanitize_math(slide.get("solution") or "")
             processed_data.append(slide)
 
         return {"data": processed_data}

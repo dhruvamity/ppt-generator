@@ -1,9 +1,35 @@
 import React from 'react';
 import { useStore } from '../../store/useStore';
-import { Layers, Trash2, GripVertical } from 'lucide-react';
+import { Layers, Trash2, GripVertical, Lightbulb, Check } from 'lucide-react';
 import LiveSlidePreview from './LiveSlidePreview';
 import { THEMES } from '../../utils/themeConfig';
+import { deckSequence, slideData, answerIndex, normalizeLabel } from '../../utils/deckSequence.js';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
+
+const KIND_LABEL = { section: 'Section divider', workspace: 'Work space', solution: 'Solution', key: 'Answer key' };
+const SOLUTION_STARTER = 'Step 1: ';
+
+function AnswerPicker({ slide, index }) {
+    const updateSlideAnswer = useStore(state => state.updateSlideAnswer);
+    const options = Array.isArray(slide.options) ? slide.options : [];
+    const correct = answerIndex(slide);
+    if (!options.length) {
+        return <input aria-label={`Answer for question ${index + 1}`} placeholder="Answer" defaultValue={slide.answer || ''} key={slide.answer || ''}
+            onBlur={event => event.target.value.trim() !== (slide.answer || '') && updateSlideAnswer(index, event.target.value)}
+            className="w-24 bg-surface border border-outline-variant rounded-md px-2 py-1 text-xs focus:outline-none focus:border-primary" />;
+    }
+    return <div className="flex items-center gap-1" role="group" aria-label={`Correct answer for question ${index + 1}`}>
+        <span className="text-[11px] text-on-surface-variant mr-1 hidden sm:inline">Answer</span>
+        {options.map((option, i) => {
+            const label = normalizeLabel(option.label) || String.fromCharCode(97 + i);
+            return <button key={i} type="button" aria-pressed={i === correct} title={i === correct ? 'Clear the answer' : `Mark (${label.toUpperCase()}) as correct`}
+                onClick={() => updateSlideAnswer(index, i === correct ? '' : label)}
+                className={`min-w-7 h-7 px-1.5 rounded-md text-xs font-bold border transition-colors ${i === correct ? 'bg-emerald-600 border-emerald-600 text-white' : 'border-outline-variant text-on-surface-variant hover:border-emerald-600 hover:text-emerald-700'}`}>
+                {label.toUpperCase()}
+            </button>;
+        })}
+    </div>;
+}
 
 export default function SlidePreview() {
     const themeId = useStore(state => state.themeId);
@@ -14,6 +40,7 @@ export default function SlidePreview() {
     const activeSlides = useStore(state => state.activeSlides);
     const removeSlide = useStore(state => state.removeSlide);
     const reorderSlides = useStore(state => state.reorderSlides);
+    const updateSlideSolution = useStore(state => state.updateSlideSolution);
 
     const currentTheme = THEMES[themeId] || savedThemes.find(t => t.id === themeId) || THEMES['dark-neon'];
 
@@ -48,22 +75,39 @@ export default function SlidePreview() {
         );
     }
 
+    // Number every slide in presentation order, then group the extras with their question.
+    const sequence = deckSequence(config, activeSlides).map((entry, position) => ({ ...entry, number: position + 1 }));
+    const groups = activeSlides.map((_, index) => sequence.filter(entry => entry.index === index && entry.kind !== 'key'));
+    const keySlide = sequence.find(entry => entry.kind === 'key');
+    const answered = activeSlides.filter(slide => String(slide.answer ?? '').trim()).length;
+    const solutionSlides = config.solutionSlides !== false;
+
+    const renderEntry = entry => entry.kind === 'section'
+        ? <LiveSlidePreview theme={currentTheme} type="title" config={{ ...config, ...entry.config }} layoutId={layoutId} />
+        : <LiveSlidePreview theme={currentTheme} type="question" config={config} questionData={{ ...slideData(entry), index: entry.index }} layoutId={layoutId} />;
+    const caption = entry => <span className="text-xs font-label-md text-on-surface-variant uppercase tracking-wider pl-1">Slide {entry.number}{KIND_LABEL[entry.kind] ? ` · ${KIND_LABEL[entry.kind]}` : ''}</span>;
+
     return (
         <div className="flex flex-col gap-4">
-            <div className="flex justify-between items-center px-1">
+            <div className="flex flex-wrap justify-between items-center gap-2 px-1">
                 <h3 className="font-headline-md text-lg font-semibold text-on-surface flex items-center gap-2">
                     <Layers size={18} className="text-secondary" />
                     Live Presentation Preview
                 </h3>
-                <span className="bg-surface-variant text-on-surface-variant px-3 py-1 rounded-full text-xs font-bold font-label-sm border border-outline-variant">
-                    {activeSlides.length + 1} Slides Ready
-                </span>
+                <div className="flex items-center gap-2">
+                    <span className="bg-emerald-50 text-emerald-800 px-3 py-1 rounded-full text-xs font-bold border border-emerald-200" title="Questions with a marked answer reveal it on the next click when presenting">
+                        {answered}/{activeSlides.length} answers set
+                    </span>
+                    <span className="bg-surface-variant text-on-surface-variant px-3 py-1 rounded-full text-xs font-bold font-label-sm border border-outline-variant">
+                        {sequence.length} Slides Ready
+                    </span>
+                </div>
             </div>
             
             <div className="flex flex-col gap-8 max-h-[800px] overflow-y-auto pr-2 pb-8 custom-scrollbar">
                 {/* Title Slide Preview */}
                 <div className="flex flex-col gap-2">
-                    <span className="text-xs font-label-md text-on-surface-variant uppercase tracking-wider pl-1">Title Slide</span>
+                    <span className="text-xs font-label-md text-on-surface-variant uppercase tracking-wider pl-1">Slide 1 · Title</span>
                     <LiveSlidePreview theme={currentTheme} type="title" config={config} layoutId={layoutId} />
                 </div>
 
@@ -77,22 +121,31 @@ export default function SlidePreview() {
                                             <div 
                                                 ref={provided.innerRef} 
                                                 {...provided.draggableProps} 
-                                                className={`flex flex-col gap-2 ${snapshot.isDragging ? 'opacity-90 scale-[1.02] shadow-xl z-50' : ''}`}
+                                                className={`flex flex-col gap-3 ${snapshot.isDragging ? 'opacity-90 scale-[1.02] shadow-xl z-50' : ''}`}
                                             >
-                                                <div className="flex justify-between items-center pl-1 pr-1">
+                                                {groups[idx].filter(entry => entry.kind === 'section').map(entry => <div key="section" className="flex flex-col gap-2">{caption(entry)}{renderEntry(entry)}</div>)}
+                                                <div className="flex flex-wrap justify-between items-center gap-2 pl-1 pr-1">
                                                     <div className="flex items-center gap-2">
-                                                        <div {...provided.dragHandleProps} className="cursor-grab p-1 hover:bg-surface-variant rounded text-on-surface-variant transition-colors">
+                                                        <div {...provided.dragHandleProps} className="cursor-grab p-1 hover:bg-surface-variant rounded text-on-surface-variant transition-colors" aria-label="Drag to reorder">
                                                             <GripVertical size={16} />
                                                         </div>
-                                                        <span className="text-xs font-label-md text-on-surface-variant uppercase tracking-wider">Slide {idx + 2}</span>
+                                                        {caption(groups[idx].find(entry => entry.kind === 'question'))}
                                                     </div>
                                                     <div className="flex items-center gap-2 bg-surface-container-low border border-outline-variant rounded-lg p-1">
-                                                        <button onClick={() => removeSlide(idx)} className="p-1 hover:bg-error/10 text-error rounded transition-colors ml-1">
+                                                        <AnswerPicker slide={q} index={idx} />
+                                                        {solutionSlides && !String(q.solution ?? '').trim() && <button type="button" onClick={() => updateSlideSolution(idx, SOLUTION_STARTER)} className="flex items-center gap-1 px-2 h-7 rounded-md text-xs border border-outline-variant text-on-surface-variant hover:border-primary hover:text-primary" title="Add a worked-solution slide after this question">
+                                                            <Lightbulb size={13} /> Solution
+                                                        </button>}
+                                                        {String(q.solution ?? '').trim() && <span className="flex items-center gap-1 px-2 h-7 text-xs text-emerald-700" title={solutionSlides ? 'Shown as its own slide after the question' : 'Turn on solution slides in Presentation options to show it'}><Check size={13} /> Solution</span>}
+                                                        <button type="button" onClick={() => removeSlide(idx)} aria-label={`Delete question ${idx + 1}`} className="p-1 hover:bg-error/10 text-error rounded transition-colors ml-1">
                                                             <Trash2 size={16} />
                                                         </button>
                                                     </div>
                                                 </div>
-                                                <LiveSlidePreview theme={currentTheme} type="question" questionData={{ ...q, index: idx }} layoutId={layoutId} />
+                                                {groups[idx].filter(entry => entry.kind !== 'section').map(entry => <div key={entry.kind} className="flex flex-col gap-2">
+                                                    {entry.kind !== 'question' && caption(entry)}
+                                                    {renderEntry(entry)}
+                                                </div>)}
                                             </div>
                                         )}
                                     </Draggable>
@@ -102,6 +155,7 @@ export default function SlidePreview() {
                         )}
                     </Droppable>
                 </DragDropContext>
+                {keySlide && <div className="flex flex-col gap-2">{caption(keySlide)}{renderEntry(keySlide)}</div>}
             </div>
         </div>
     );

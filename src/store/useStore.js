@@ -6,6 +6,7 @@ import toast from 'react-hot-toast';
 import { extractDocumentTitle, parseLocalText, serializeQuestions } from '../utils/questionParser.js';
 import { DEFAULT_THUMBNAIL } from '../utils/thumbnailDesign.js';
 import { upsertCurrentDeck, DEFAULT_THEME_ID as DEFAULT_THEME, DECK_TEXT_FIELDS } from '../utils/recentDecks.js';
+import { PRESENTATION_DEFAULTS } from '../utils/deckSequence.js';
 export { normalizeMathText, convertFractions, extractDocumentTitle, parseLocalText } from '../utils/questionParser.js';
 
 const editedSlidesState = (slides) => ({
@@ -26,7 +27,10 @@ Question 1: The ratio of two numbers is 15:11. If their HCF is 13, then these nu
 (a) 15:11
 (b) 75:55
 (c) 105:77
-(d) 195:143`;
+(d) 195:143
+Answer: (d)
+Solution: Let the numbers be $15x$ and $11x$. As 15 and 11 are co-prime, their HCF is $x$, so $x = 13$.
+The numbers are $15 \\times 13 = 195$ and $11 \\times 13 = 143$.`;
 
 const initialConfig = {
     mainTitle1: 'HCF &',
@@ -35,7 +39,7 @@ const initialConfig = {
     pill2: '2026 EDITION',
     footer: 'JEE | CAT | COMPETITIVE EXAMS',
     watermark: '',
-    insertBlankSlides: false,
+    ...PRESENTATION_DEFAULTS,
 };
 export const DEFAULT_THEME_ID = DEFAULT_THEME;
 
@@ -92,13 +96,17 @@ export const useStore = create(
                         throw new Error(`Formatting returned ${data.length} of ${sourceQuestions.length} detected questions. Please retry; your original text is preserved.`);
                     }
                     
+                    const sameCount = sourceQuestions.length === data.length;
                     const indexedData = data.map((slide, i) => ({
                         ...slide,
                         // Explicit shared ranges are authoritative. Preserve all
                         // table values even if the AI compresses the passage.
-                        context: sourceQuestions.length === data.length && sourceQuestions[i].context
+                        context: sameCount && sourceQuestions[i].context
                             ? sourceQuestions[i].context
                             : (slide.context || ''),
+                        // Answers and solutions written by the teacher win over the model's copy.
+                        answer: (sameCount && sourceQuestions[i].answer) || slide.answer || '',
+                        solution: (sameCount && sourceQuestions[i].solution) || slide.solution || '',
                         badge: `Q.${i + 1}`
                     }));
                     
@@ -146,6 +154,9 @@ export const useStore = create(
                 } : slide);
                 return editedSlidesState(newSlides);
             }),
+            // Answers and worked solutions travel with the question (and its raw text) everywhere.
+            updateSlideAnswer: (slideIndex, answer) => set((state) => editedSlidesState(state.activeSlides.map((slide, index) => index === slideIndex ? { ...slide, answer: String(answer ?? '').trim() } : slide))),
+            updateSlideSolution: (slideIndex, solution) => set((state) => editedSlidesState(state.activeSlides.map((slide, index) => index === slideIndex ? { ...slide, solution: String(solution ?? '') } : slide))),
             removeSlide: (index) => set((state) => {
                 const filtered = state.activeSlides.filter((_, i) => i !== index);
                 const renumbered = filtered.map((slide, i) => ({

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { ArrowUpRight, Plus, Search } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useStore } from '../store/useStore';
-import { THEMES } from '../utils/themeConfig';
+import { THEMES, THEME_GROUPS, themeGroup } from '../utils/themeConfig';
 import { DESIGN_LAYOUTS, hasSignatureLayout } from '../utils/teachingDesign.js';
 import DesignThumbnail, { PreviewViews } from '../components/Generator/DesignThumbnail';
 
@@ -15,9 +15,7 @@ export default function Templates() {
     const themes = Object.entries(THEMES).map(([id, theme]) => ({ ...theme, id }));
     const matches = theme => `${theme.name} ${theme.description || ''}`.toLowerCase().includes(query.trim().toLowerCase());
     const groups = [
-        ['Original designs', themes.filter(theme => !theme.teaching)],
-        ['Maths, CAT & aptitude signatures', themes.filter(theme => theme.design)],
-        ['Made for teaching', themes.filter(theme => theme.teaching && !theme.design)],
+        ...THEME_GROUPS.filter(group => group.id !== 'all').map(group => [`${group.name} · ${group.hint}`, themes.filter(theme => themeGroup(theme) === group.id)]),
         ['Your custom themes', savedThemes],
     ];
     return <main className="flex-1 max-w-container-max mx-auto w-full px-margin-mobile md:px-margin-desktop pt-24 pb-12">

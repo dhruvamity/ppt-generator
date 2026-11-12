@@ -104,6 +104,66 @@ export const THEMES = {
         bgColor: 'FFFBEB', textWhite: '2A1F0A', textBlack: 'FFFBEB', cyan: 'B45309',
         purple: 'B45309', gold: '1F2937', bgCard: 'FFFBEB', rule: 'F1E3BE'
     },
+    'coordinate-plane': {
+        name: 'Coordinate Plane', teaching: true, illustration: 'axes', description: 'Axes, a plotted line, slope and a circle in the margin. For coordinate geometry and graphs.',
+        bgColor: 'F5F8FF', textWhite: '1A2340', textBlack: 'F5F8FF', cyan: '3451C6',
+        purple: '3451C6', gold: 'E0533D', bgCard: 'F5F8FF', rule: 'D8DFF2'
+    },
+    'progressions': {
+        name: 'Series & Progressions', teaching: true, illustration: 'series', description: 'A growing dot pattern, doubling bars and a big sigma. For AP, GP and sums.',
+        bgColor: 'FFFDF5', textWhite: '2D2416', textBlack: 'FFFDF5', cyan: '9A5B00',
+        purple: '9A5B00', gold: '2F7D6D', bgCard: 'FFFDF5', rule: 'EEE3C8'
+    },
+    'perm-comb': {
+        name: 'Permutations & Combinations', teaching: true, illustration: 'combinatorics', description: 'Round-table seating, arrangement boxes and Pascal’s triangle on deep indigo.',
+        bgColor: '161B33', textWhite: 'EEF0FA', textBlack: '161B33', cyan: 'A5B4FC',
+        purple: 'A5B4FC', gold: 'F9A8D4', bgCard: '161B33', rule: '2E355A'
+    },
+    'clock-calendar': {
+        name: 'Clocks & Calendars', teaching: true, illustration: 'calendar', description: 'A clock with the angle between its hands, a month grid and a leap-day page.',
+        bgColor: 'FBF7F2', textWhite: '2A2420', textBlack: 'FBF7F2', cyan: 'B4483A',
+        purple: 'B4483A', gold: '3B6E8F', bgCard: 'FBF7F2', rule: 'EADFD3'
+    },
+    'mixture-alligation': {
+        name: 'Mixtures & Alligation', teaching: true, illustration: 'alligation', description: 'Two beakers, the alligation cross and the replacement formula for mixture sums.',
+        bgColor: 'F2FBFA', textWhite: '0F2E2B', textBlack: 'F2FBFA', cyan: '0F8B7E',
+        purple: '0F8B7E', gold: '7C3AED', bgCard: 'F2FBFA', rule: 'CDEBE7'
+    },
+    'time-work': {
+        name: 'Time & Work', teaching: true, illustration: 'pipes', description: 'A cistern with inlet and outlet pipes, a crew of workers and the work formulas.',
+        bgColor: '102A43', textWhite: 'F0F4F8', textBlack: '102A43', cyan: '62B0E8',
+        purple: '62B0E8', gold: 'F7C948', bgCard: '102A43', rule: '243B53'
+    },
+    'interest-growth': {
+        name: 'Interest & Growth', teaching: true, illustration: 'interest', description: 'Simple vs compound interest curves, a coin stack and growth bars.',
+        bgColor: 'F7FBF2', textWhite: '1F2A14', textBlack: 'F7FBF2', cyan: '4D7C0F',
+        purple: '4D7C0F', gold: 'B45309', bgCard: 'F7FBF2', rule: 'DDE8CC'
+    },
+    'log-exponent': {
+        name: 'Logs & Exponents', teaching: true, illustration: 'logs', description: 'Exponential and log curves mirrored in y = x, with the laws of indices.',
+        bgColor: '1A1423', textWhite: 'F3EEF9', textBlack: '1A1423', cyan: 'C4B5FD',
+        purple: 'C4B5FD', gold: '5EEAD4', bgCard: '1A1423', rule: '342B45'
+    },
+    'direction-sense': {
+        name: 'Directions & Seating', teaching: true, illustration: 'compass', description: 'A compass rose, a walked path and a round table. For direction sense and seating LR.',
+        bgColor: 'F8F7FC', textWhite: '231F3A', textBlack: 'F8F7FC', cyan: '5B4BC4',
+        purple: '5B4BC4', gold: 'D9480F', bgCard: 'F8F7FC', rule: 'E2DFF0'
+    },
+    'projector-white': {
+        name: 'Projector White', teaching: true, description: 'Maximum contrast for bright rooms and tired projectors. Nothing on the slide but the question.',
+        bgColor: 'FFFFFF', textWhite: '0B1220', textBlack: 'FFFFFF', cyan: '1D4ED8',
+        purple: '1D4ED8', gold: '1D4ED8', bgCard: 'FFFFFF', rule: 'E2E8F0'
+    },
+    'slate-amber': {
+        name: 'Slate & Amber', teaching: true, description: 'Low-glare charcoal with a warm amber accent for dim rooms and long sessions.',
+        bgColor: '1E2329', textWhite: 'ECEFF3', textBlack: '1E2329', cyan: 'F2B45A',
+        purple: 'F2B45A', gold: 'F2B45A', bgCard: '1E2329', rule: '343B45'
+    },
+    'exam-paper': {
+        name: 'Exam Paper', teaching: true, description: 'Monochrome, like a printed question paper. Prints cleanly as a handout.',
+        bgColor: 'FDFDFB', textWhite: '111111', textBlack: 'FDFDFB', cyan: '3A3A3A',
+        purple: '3A3A3A', gold: '3A3A3A', bgCard: 'FDFDFB', rule: 'DADAD4'
+    },
     'chalkboard-frame': {
         name: 'Chalkboard Frame', teaching: true, design: 'chalkboard', description: 'A green board inside a wooden frame with a chalk tray. Questions sit in the clear centre.',
         bgColor: '2F5D50', textWhite: 'F7F3E8', textBlack: '2F5D50', cyan: 'FFE08A', purple: 'FFE08A', gold: 'FFE08A', bgCard: '2F5D50', rule: '4C7A6C'
@@ -121,7 +181,7 @@ export const THEMES = {
         bgColor: 'FBFBF8', textWhite: '1A1A1A', textBlack: 'FFFFFF', cyan: 'D32F2F', purple: 'D32F2F', gold: 'D32F2F', bgCard: 'FBFBF8', rule: 'C7CED8'
     },
     'quant-clock': {
-        name: 'Quant Clock', teaching: true, design: 'quantclock', description: 'The question number sits inside a stopwatch dial with a progress bar. Made for timed CAT drills.',
+        name: 'Quant Clock', teaching: true, design: 'quantclock', bold: true, description: 'The question number sits inside a stopwatch dial with a progress bar. Made for timed CAT drills.',
         bgColor: '14213D', textWhite: 'F4F6FB', textBlack: '14213D', cyan: 'FCA311', purple: 'FCA311', gold: 'FCA311', bgCard: '14213D', rule: '2C3E66'
     },
     'data-deck': {
@@ -133,20 +193,44 @@ export const THEMES = {
         bgColor: 'FDF6E3', textWhite: '3B2F2F', textBlack: 'FFF4E6', cyan: 'C8553D', purple: 'C8553D', gold: 'C8553D', bgCard: 'FDF6E3', rule: 'E8D9BF'
     },
     'tangram-corner': {
-        name: 'Tangram Corner', teaching: true, design: 'tangram', description: 'Seven bright tangram pieces tucked in the corner of a dark slide.',
+        name: 'Tangram Corner', teaching: true, design: 'tangram', bold: true, description: 'Seven bright tangram pieces tucked in the corner of a dark slide.',
         bgColor: '101418', textWhite: 'F5F7FA', textBlack: '101418', cyan: 'F4A261', purple: 'F4A261', gold: 'F4A261', bgCard: '101418', rule: '2A3038'
     },
     'ticket-stub': {
-        name: 'Ticket Stub', teaching: true, design: 'ticket', description: 'A perforated red stub holds the question number sideways, like an exam entry pass.',
+        name: 'Ticket Stub', teaching: true, design: 'ticket', bold: true, description: 'A perforated red stub holds the question number sideways, like an exam entry pass.',
         bgColor: 'FFF8E7', textWhite: '1D1D1D', textBlack: 'FFF8E7', cyan: 'E63946', purple: 'E63946', gold: 'E63946', bgCard: 'FFF8E7', rule: 'E8DCC5'
     },
     'night-drill': {
-        name: 'Night Drill', teaching: true, design: 'nightdrill', description: 'Black with an acid-yellow band and a huge sideways question number. For speed rounds.',
+        name: 'Night Drill', teaching: true, design: 'nightdrill', bold: true, description: 'Black with an acid-yellow band and a huge sideways question number. For speed rounds.',
         bgColor: '0B0B0F', textWhite: 'F2F2F2', textBlack: '0B0B0F', cyan: 'D7FF3F', purple: 'D7FF3F', gold: 'D7FF3F', bgCard: '0B0B0F', rule: '2A2A33'
     },
     'sudoku-grid': {
         name: 'Sudoku Grid', teaching: true, design: 'sudoku', description: 'A part-filled sudoku in the corner for logic and reasoning sessions.',
         bgColor: 'F6F7FB', textWhite: '1E1B2E', textBlack: 'FFFFFF', cyan: '5B21B6', purple: '5B21B6', gold: '5B21B6', bgCard: 'F6F7FB', rule: 'D9DCE6'
+    },
+    'matrix-brackets': {
+        name: 'Matrix Brackets', teaching: true, design: 'matrix', description: 'The working area sits between two tall matrix brackets. Quiet, elegant and very readable.',
+        bgColor: 'FBFBFE', textWhite: '1B1F3B', textBlack: 'FFFFFF', cyan: '3D5AFE', purple: '3D5AFE', gold: '3D5AFE', bgCard: 'FBFBFE', rule: 'DDE1F2'
+    },
+    'theorem-box': {
+        name: 'Theorem Box', teaching: true, design: 'theorem', description: 'A textbook theorem panel in serif type with a Q.E.D. square. Calm enough for long proofs.',
+        bgColor: 'FFFFFF', textWhite: '1F2328', textBlack: 'FFFFFF', cyan: '8C1C13', purple: '8C1C13', gold: '8C1C13', bgCard: 'FAF8F3', rule: 'E4E1DA'
+    },
+    'whiteboard': {
+        name: 'Whiteboard', teaching: true, design: 'whiteboard', description: 'An aluminium-framed whiteboard with markers on the tray and a sticky note in the corner.',
+        bgColor: 'FCFCFA', textWhite: '1E293B', textBlack: 'FFFFFF', cyan: '1D4ED8', purple: '1D4ED8', gold: 'DC2626', bgCard: 'FCFCFA', rule: 'E2E8F0'
+    },
+    'cat-mock': {
+        name: 'CAT Mock Interface', teaching: true, design: 'mockui', bold: true, description: 'Looks like the real exam screen: section bar, timer, question palette and Save & Next.',
+        bgColor: 'F4F6F9', textWhite: '1A1A1A', textBlack: 'FFFFFF', cyan: '1F5FAD', purple: '1F5FAD', gold: '1F5FAD', bgCard: 'F4F6F9', rule: 'CDD5E0'
+    },
+    'golden-spiral': {
+        name: 'Golden Spiral', teaching: true, design: 'golden', bold: true, description: 'Fibonacci squares and the golden spiral glow in the corner of a dark slide.',
+        bgColor: '1C1917', textWhite: 'FAF7F2', textBlack: '1C1917', cyan: 'F59E0B', purple: 'F59E0B', gold: 'FCD34D', bgCard: '1C1917', rule: '3A332D'
+    },
+    'retro-calculator': {
+        name: 'Retro Calculator', teaching: true, design: 'calculator', bold: true, description: 'The question number glows on an LCD display beside a full keypad. Fun for speed maths.',
+        bgColor: '2B2F36', textWhite: 'F1F3F5', textBlack: '2B2F36', cyan: 'FFB020', purple: 'FFB020', gold: '9AE6B4', bgCard: '2B2F36', rule: '3D434C'
     },
     'blueprint': {
         name: 'Blueprint Architect', bgColor: '0B192C', cyan: '00FFCC', orange: 'FF6B00',
@@ -190,4 +274,24 @@ export const THEMES = {
         gold: 'FFD700', tealDecor: '2D2D2D', bgCard: '242424', textWhite: 'F5F5F5',
         textBlack: '000000', decorPurple: '4A2511'
     }
+};
+
+// How much a design competes with the maths. "Calm" and "Topic art" suit everyday teaching;
+// "Bold" designs are best for intros, speed rounds and recap slides.
+export const THEME_GROUPS = [
+    { id: 'all', name: 'All' },
+    { id: 'calm', name: 'Calm', hint: 'Plain backgrounds with a single accent. Nothing competes with the question.' },
+    { id: 'topic', name: 'Topic art', hint: 'Faint chapter artwork in the right margin, never behind the question.' },
+    { id: 'signature', name: 'Signature', hint: 'Composed classroom scenes that keep a clear working area.' },
+    { id: 'bold', name: 'Bold', hint: 'Statement looks for intros, timed drills and recap slides.' },
+    { id: 'classic', name: 'Classic', hint: 'The original collection with free layouts.' },
+];
+
+const BOLD_ORIGINALS = ['Cyberpunk Neon', 'Blueprint Architect', 'Aurora Glassmorphism', 'Neo-Brutalism', 'Dark Neon', 'Retro Terminal', 'Sunset Orange'];
+
+export const themeGroup = theme => {
+    if (theme.design) return theme.bold ? 'bold' : 'signature';
+    if (theme.illustration) return 'topic';
+    if (theme.teaching) return 'calm';
+    return BOLD_ORIGINALS.includes(theme.name) ? 'bold' : 'classic';
 };

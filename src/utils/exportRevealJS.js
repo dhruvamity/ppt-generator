@@ -2,6 +2,8 @@ import { teachingStyles, teachingIllustrationStyle, inlineStyle } from './teachi
 import { signatureSlide } from './signatureDesigns.js';
 import { watermarkStyle } from './watermark.js';
 import { installSlidePdfExport } from './slidePdfRuntime.js';
+import { installPresenterTools } from './presenterRuntime.js';
+import { deckSequence, slideData, answerIndex, answerLabel, PRESENTATION_DEFAULTS } from './deckSequence.js';
 import katex from 'katex';
 
 
@@ -59,6 +61,9 @@ const renderContext = (text) => {
 
 export const buildRevealHtml = (config, activeSlides, theme, layoutId = 'modern-sidebar', assets = {}) => {
     const style = key => assets[key] ? `<style>${assets[key]}</style>` : CDN[key];
+    const deckConfig = config;
+    const presentation = { ...PRESENTATION_DEFAULTS, ...config };
+    const timerSeconds = Math.max(0, Math.min(3600, Number(presentation.timerSeconds) || 0));
     let htmlContent = `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -91,6 +96,9 @@ export const buildRevealHtml = (config, activeSlides, theme, layoutId = 'modern-
         }
 
         #print-slides { display: none; }
+        .answer-opt { border-radius: 10px; transition: background-color .25s ease, box-shadow .25s ease; }
+        .answer-opt.visible { background-color: rgba(22, 163, 74, 0.16); box-shadow: 0 0 0 3px #16A34A; }
+        .answer-opt.visible::after { content: '✓'; margin-left: auto; padding: 0 12px; color: #16A34A; font-weight: 900; }
         @media print {
             @page { size: 960pt 540pt; margin: 0; }
             html, body { margin: 0 !important; padding: 0 !important; width: 1280px !important; height: auto !important; overflow: visible !important; }
@@ -112,7 +120,7 @@ export const buildRevealHtml = (config, activeSlides, theme, layoutId = 'modern-
         <div style="position: absolute; left: ${x(0)}; top: ${y(5.5)}; width: ${w(10)}; height: ${h(0.125)}; background-color: #${theme.gold}; opacity: 0.8;"></div>
     `;
 
-    const renderOptionsGrid = (options, color, hasContext = false) => {
+    const renderOptionsGrid = (options, color, hasContext = false, answerIdx = -1) => {
         const optionsArray = Array.isArray(options) ? options : [];
         if (optionsArray.length === 0) return '';
         
@@ -120,9 +128,11 @@ export const buildRevealHtml = (config, activeSlides, theme, layoutId = 'modern-
         const cols = theme.teaching && hasContext && totalChars > 160 ? 1 : !hasContext && totalChars < 60 && optionsArray.length === 4 ? 4 : 2;
 
         let optsHtml = `<div style="margin-top: ${theme.teaching ? '30.72px' : '2em'}; display: grid; grid-template-columns: repeat(${cols}, minmax(0, 1fr)); width: 100%; gap: ${theme.teaching ? '15.36px' : '20px'};">`;
-        optionsArray.forEach(opt => {
+        optionsArray.forEach((opt, i) => {
+            // The correct option lights up as a Reveal fragment: question first, answer on the next click.
+            const reveal = i === answerIdx && presentation.revealAnswers ? ' class="fragment custom answer-opt"' : '';
             optsHtml += `
-                <div style="min-width: 0; display: flex; gap: 8px; margin-bottom: 0.25rem; color: #${color}; font-size: ${theme.teaching ? '28px' : fs(11)}; line-height: 1.5;">
+                <div${reveal} style="min-width: 0; display: flex; gap: 8px; margin-bottom: 0.25rem; color: #${color}; font-size: ${theme.teaching ? '28px' : fs(11)}; line-height: 1.5;">
                     <strong style="white-space: nowrap;">(${escapeHtml(String(opt.label).replace(/[().]/g, "").toUpperCase())})</strong> <span style="min-width: 0;">${enforceDisplayMath(opt.text)}</span>
                 </div>
             `;
@@ -131,25 +141,40 @@ export const buildRevealHtml = (config, activeSlides, theme, layoutId = 'modern-
         return optsHtml;
     };
 
+    const textSize = theme.teaching ? '32px' : fs(11);
+    const renderSolution = (slide, color, textColor) => {
+        const answer = slide.answerText ?? answerLabel(slide);
+        return `${answer ? `<div style="color: #${color}; font-size: ${textSize}; font-weight: bold; margin-bottom: 16px;">Answer: ${enforceDisplayMath(answer)}</div>` : ''}
+            <div style="color: #${textColor}; font-size: ${theme.teaching ? '28px' : fs(10)}; line-height: 1.5;">${renderContext(String(slide.solution || ''))}</div>`;
+    };
+    const renderAnswerKey = (entries, color, textColor) => `<div style="display: grid; grid-template-columns: repeat(${entries.length > 12 ? 4 : entries.length > 6 ? 3 : 2}, minmax(0, 1fr)); gap: 12px 32px; font-size: ${theme.teaching ? '28px' : fs(11)}; color: #${textColor};">${entries.map(entry => `<div style="display: flex; gap: 12px; align-items: baseline; border-bottom: 1px dashed currentColor; padding-bottom: 6px;"><strong style="color: #${color}; white-space: nowrap;">${escapeHtml(entry.badge)}</strong><span>${enforceDisplayMath(entry.answer)}</span></div>`).join('')}</div>`;
+
     const renderQuestionContent = (slide, color, textColor = theme.textWhite, bold = false) => {
+        // Long questions, passages and solutions scale down at present time instead of being clipped.
+        const fit = html => `<div class="q-fit" style="width: 100%; height: 100%; min-height: 0; flex: 1 1 auto;">${html}</div>`;
+        if (slide.kind === 'solution') return fit(renderSolution(slide, color, textColor));
+        if (slide.kind === 'key') return fit(renderAnswerKey(slide.entries || [], color, textColor));
+        const answerIdx = answerIndex(slide);
+        const freeAnswer = answerIdx < 0 && presentation.revealAnswers && String(slide.answer ?? '').trim()
+            ? `<div class="fragment fade-up answer-line" style="margin-top: 28px; color: #${color}; font-size: ${textSize}; font-weight: bold;">Answer: ${enforceDisplayMath(String(slide.answer).trim())}</div>` : '';
         const question = `
-            <div style="color: #${textColor}; font-size: ${theme.teaching ? '32px' : fs(11)}; font-weight: ${bold ? 'bold' : 'normal'}; line-height: 1.5; white-space: pre-wrap;">${enforceDisplayMath(slide.qText)}</div>
-            ${renderOptionsGrid(slide.options, color, Boolean(slide.context))}
+            <div style="color: #${textColor}; font-size: ${textSize}; font-weight: ${bold ? 'bold' : 'normal'}; line-height: 1.5; white-space: pre-wrap;">${enforceDisplayMath(slide.qText)}</div>
+            ${renderOptionsGrid(slide.options, color, Boolean(slide.context), answerIdx)}${freeAnswer}
         `;
         const context = slide.context?.trim();
-        if (!context) return question;
+        if (!context) return fit(question);
 
-        return `
+        return fit(`
             <div style="display: grid; grid-template-columns: ${theme.teaching ? 'minmax(0, 0.48fr) minmax(0, 0.52fr)' : 'minmax(0, 1fr) minmax(0, 1fr)'}; width: 100%; height: 100%; gap: 32px; min-height: 0; align-items: flex-start;">
                 <div style="min-width: 0; height: 100%; box-sizing: border-box; padding-right: ${theme.teaching ? '24px' : '28px'}; border-right: 1px solid #${theme.cyan || theme.pinkOrb || theme.black}; color: #${textColor}; font-size: ${theme.teaching ? '24px' : fs(10)}; line-height: 1.45; overflow: hidden;">${renderContext(context)}</div>
                 <div style="min-width: 0;">
                     ${question}
                 </div>
             </div>
-        `;
+        `);
     };
 
-    const generateSlideHtml = (isTitle, slide, layoutType) => {
+    const generateSlideHtml = (isTitle, slide, layoutType, config = deckConfig) => {
         let slideHtml = '';
 
         if (theme.design) {
@@ -515,22 +540,17 @@ export const buildRevealHtml = (config, activeSlides, theme, layoutId = 'modern-
     // Wrap all slides in a single section for vertical (up-down) navigation
     const watermarkText = String(config?.watermark ?? '').trim();
     const withWatermark = html => watermarkText ? html.replace(/(<div class="slide-container"[^>]*>)/, `$1<div style="${inlineStyle(watermarkStyle(theme, layoutId))}">${escapeHtml(watermarkText)}</div>`) : html;
+    // The presenter runtime reads the slide kind (timer runs on questions only).
+    const tagSlide = (html, kind) => html.replace('<div class="slide-container"', `<div class="slide-container" data-kind="${kind}"${kind === 'question' && timerSeconds ? ` data-timer="${timerSeconds}"` : ''}`);
 
     htmlContent += `<section>\n`;
 
-    // GENERATE TITLE SLIDE FIRST
-    htmlContent += withWatermark(generateSlideHtml(true, null, layoutId));
-
-    // GENERATE QUESTION SLIDES
-    activeSlides.forEach(slide => {
-        htmlContent += withWatermark(generateSlideHtml(false, slide, layoutId));
-        
-        if (config.insertBlankSlides) {
-            // Generate identical slide but without qText or options
-            const blankSlide = { ...slide, qText: '', context: '', options: [], isWorkspace: true };
-            htmlContent += withWatermark(generateSlideHtml(false, blankSlide, layoutId));
-        }
-    });
+    // Title, optional section dividers, questions and their workspace / solution pages, optional key.
+    for (const entry of deckSequence(config, activeSlides)) {
+        const isTitle = entry.kind === 'title' || entry.kind === 'section';
+        const slideHtml = generateSlideHtml(isTitle, isTitle ? null : slideData(entry), layoutId, entry.kind === 'section' ? entry.config : config);
+        htmlContent += withWatermark(tagSlide(slideHtml, entry.kind));
+    }
 
     // Close the vertical stack
     htmlContent += `</section>\n`;
@@ -540,9 +560,40 @@ export const buildRevealHtml = (config, activeSlides, theme, layoutId = 'modern-
     </div>
 
     <!-- Floating PDF Export Button -->
-    <button type="button" id="pdf-btn" style="position: fixed; bottom: 20px; right: 20px; z-index: 9999; background: #${theme.cyan}; color: black; padding: 10px 20px; border-radius: 8px; font-family: sans-serif; font-weight: bold; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.5); opacity: 0.8; transition: opacity 0.2s;">
+    <button type="button" id="pdf-btn" style="position: fixed; bottom: 20px; right: 20px; z-index: 9999; background: #${theme.cyan || theme.blueOrb || theme.acidGreen || '2563EB'}; color: black; padding: 10px 20px; border-radius: 8px; font-family: sans-serif; font-weight: bold; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.5); opacity: 0.8; transition: opacity 0.2s;">
         Save as PDF
     </button>
+
+    <!-- Presenter tools: never part of a slide, so print and PDF output stay clean -->
+    <style>
+        #presenter-bar { position: fixed; left: 16px; bottom: 16px; z-index: 9999; display: flex; gap: 2px; padding: 5px; border-radius: 12px; background: rgba(15, 23, 42, 0.82); box-shadow: 0 6px 18px rgba(0,0,0,0.35); opacity: 0.35; transition: opacity .2s; font-family: 'Segoe UI', Arial, sans-serif; }
+        #presenter-bar:hover, #presenter-bar:focus-within, #presenter-bar:has([data-tool][aria-pressed="true"]) { opacity: 1; }
+        #presenter-bar button { width: 34px; height: 34px; display: grid; place-items: center; border: 0; border-radius: 8px; background: transparent; color: #E2E8F0; cursor: pointer; padding: 0; }
+        #presenter-bar button:hover { background: rgba(255,255,255,0.12); }
+        #presenter-bar button[aria-pressed="true"] { background: #F8FAFC; color: #0F172A; }
+        #presenter-bar svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+        #presenter-bar [data-action="color"] span { width: 14px; height: 14px; border-radius: 50%; background: var(--ink, #E11D48); box-shadow: 0 0 0 2px #E2E8F0; }
+        #presenter-bar .sep { width: 1px; margin: 6px 3px; background: rgba(255,255,255,0.18); }
+        #presenter-timer { position: fixed; top: 14px; right: 14px; z-index: 9999; padding: 6px 16px; border-radius: 999px; background: rgba(15, 23, 42, 0.78); color: #F8FAFC; font: 800 26px/1.2 'Segoe UI', Arial, sans-serif; letter-spacing: 1px; font-variant-numeric: tabular-nums; cursor: pointer; }
+        #presenter-timer[hidden] { display: none; }
+        #presenter-timer[data-state="low"] { background: #B45309; }
+        #presenter-timer[data-state="done"] { background: #DC2626; animation: presenter-pulse 0.9s ease-in-out infinite; }
+        @keyframes presenter-pulse { 50% { transform: scale(1.08); } }
+        #presenter-laser { position: fixed; z-index: 60; width: 18px; height: 18px; margin: -9px 0 0 -9px; border-radius: 50%; background: #FF2D2D; box-shadow: 0 0 14px 5px rgba(255, 45, 45, 0.6); pointer-events: none; display: none; }
+        .presenter-laser-on, .presenter-laser-on * { cursor: none !important; }
+    </style>
+    <div id="presenter-bar" role="toolbar" aria-label="Presenter tools">
+        <button type="button" data-tool="pen" aria-pressed="false" title="Pen (D)"><svg viewBox="0 0 24 24"><path d="M4 20l4-1L19 8l-3-3L5 16z"/></svg></button>
+        <button type="button" data-tool="marker" aria-pressed="false" title="Highlighter (M)"><svg viewBox="0 0 24 24"><path d="M14 4l6 6-8 8-6-6zM6 12l-2 6h6"/></svg></button>
+        <button type="button" data-action="color" title="Pen colour"><span></span></button>
+        <button type="button" data-tool="laser" aria-pressed="false" title="Laser pointer (X)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg></button>
+        <button type="button" data-action="undo" title="Undo stroke (U)"><svg viewBox="0 0 24 24"><path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 010 12h-3"/></svg></button>
+        <button type="button" data-action="erase" title="Erase ink on this slide (E)"><svg viewBox="0 0 24 24"><path d="M20 20H9l-5-5L14 5l7 7-8 8"/></svg></button>
+        <span class="sep"></span>
+        <button type="button" data-action="answer" title="Show / hide answer (A)"><svg viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg></button>
+        <button type="button" data-action="timer" aria-pressed="false" title="Timer (T)"><svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2M9 2h6"/></svg></button>
+    </div>
+    <div id="presenter-timer" role="timer" aria-live="off" title="Click or press T to pause" hidden>00:00</div>
 
     ${assets.revealJs ? `<script>${assets.revealJs}</script>` : CDN.revealJs}
     <script>
@@ -553,6 +604,7 @@ export const buildRevealHtml = (config, activeSlides, theme, layoutId = 'modern-
             minScale: 0.1,
             maxScale: 3.0,
             controls: true, progress: true, center: true, hash: true, transition: 'slide',
+            slideNumber: ${presentation.slideNumbers ? "'c/t'" : 'false'},
             pdfSeparateFragments: false,
             pdfMaxPagesPerSlide: 1,
             pdfPageHeightOffset: 0,
@@ -566,9 +618,12 @@ export const buildRevealHtml = (config, activeSlides, theme, layoutId = 'modern-
             document.querySelectorAll('.slides .slide-container').forEach(slide => {
                 pages.appendChild(slide.cloneNode(true));
             });
+            // Handouts never give answers away; the optional answer key slide is the place for them.
+            pages.querySelectorAll('.answer-opt, .answer-line').forEach(item => item.classList.remove('visible'));
             document.body.appendChild(pages);
         });
         (${installSlidePdfExport.toString()})();
+        (${installPresenterTools.toString()})();
     </script>
 </body>
 </html>`;
