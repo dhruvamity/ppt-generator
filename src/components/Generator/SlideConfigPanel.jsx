@@ -68,6 +68,19 @@ export default function SlideConfigPanel() {
                         className="w-full bg-surface-container-low border border-outline-variant rounded-lg p-2 text-sm text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
                     />
                 </div>
+                <div>
+                    <label className="font-label-sm text-xs font-semibold text-on-surface-variant block mb-1">Watermark · educator or brand name (optional)</label>
+                    <input 
+                        type="text" 
+                        name="watermark"
+                        value={config.watermark || ''}
+                        onChange={handleChange}
+                        placeholder="e.g. Dhruv Sir · Quant Academy"
+                        maxLength={60}
+                        className="w-full bg-surface-container-low border border-outline-variant rounded-lg p-2 text-sm text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
+                    />
+                    <p className="text-[11px] text-on-surface-variant mt-1">Each design places it in a spot that never touches the question or options.</p>
+                </div>
                 <div className="flex items-center gap-2 mt-2 pt-2 border-t border-outline-variant/30">
                     <input 
                         type="checkbox" 

@@ -1,5 +1,6 @@
 import { teachingStyles, teachingIllustrationStyle, inlineStyle } from './teachingDesign.js';
 import { signatureSlide } from './signatureDesigns.js';
+import { watermarkStyle } from './watermark.js';
 import { installSlidePdfExport } from './slidePdfRuntime.js';
 
 
@@ -501,19 +502,22 @@ export const buildRevealHtml = (config, activeSlides, theme, layoutId = 'modern-
     };
 
     // Wrap all slides in a single section for vertical (up-down) navigation
+    const watermarkText = String(config?.watermark ?? '').trim();
+    const withWatermark = html => watermarkText ? html.replace(/(<div class="slide-container"[^>]*>)/, `$1<div style="${inlineStyle(watermarkStyle(theme, layoutId))}">${escapeHtml(watermarkText)}</div>`) : html;
+
     htmlContent += `<section>\n`;
 
     // GENERATE TITLE SLIDE FIRST
-    htmlContent += generateSlideHtml(true, null, layoutId);
+    htmlContent += withWatermark(generateSlideHtml(true, null, layoutId));
 
     // GENERATE QUESTION SLIDES
     activeSlides.forEach(slide => {
-        htmlContent += generateSlideHtml(false, slide, layoutId);
+        htmlContent += withWatermark(generateSlideHtml(false, slide, layoutId));
         
         if (config.insertBlankSlides) {
             // Generate identical slide but without qText or options
             const blankSlide = { ...slide, qText: '', context: '', options: [], isWorkspace: true };
-            htmlContent += generateSlideHtml(false, blankSlide, layoutId);
+            htmlContent += withWatermark(generateSlideHtml(false, blankSlide, layoutId));
         }
     });
 

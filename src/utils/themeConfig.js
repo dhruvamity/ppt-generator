@@ -1,4 +1,9 @@
 export const THEMES = {
+    'modern-neon': {
+        name: 'Cyberpunk Neon', isDefault: true, bgColor: '110F1A', cyan: '00C6D4', purple: '7E32C6',
+        gold: 'C4961A', magenta: 'CC00FF', watermark: '2B2043', tealDecor: '00C6D4', 
+        bgCard: '110F1A', textWhite: 'FFFFFF', textBlack: '000000', decorPurple: '7E32C6'
+    },
     'signal-studio': {
         name: 'Signal Studio', teaching: true, illustration: 'signal', description: 'A bright, contemporary data-inspired look with quiet graph details at the edge.',
         bgColor: 'F4F8FB', textWhite: '1B2B3B', textBlack: 'F4F8FB', cyan: '147D92',
@@ -107,11 +112,6 @@ export const THEMES = {
     'sudoku-grid': {
         name: 'Sudoku Grid', teaching: true, design: 'sudoku', description: 'A part-filled sudoku in the corner for logic and reasoning sessions.',
         bgColor: 'F6F7FB', textWhite: '1E1B2E', textBlack: 'FFFFFF', cyan: '5B21B6', purple: '5B21B6', gold: '5B21B6', bgCard: 'F6F7FB', rule: 'D9DCE6'
-    },
-    'modern-neon': {
-        name: 'Cyberpunk Neon', bgColor: '110F1A', cyan: '00C6D4', purple: '7E32C6',
-        gold: 'C4961A', magenta: 'CC00FF', watermark: '2B2043', tealDecor: '00C6D4', 
-        bgCard: '110F1A', textWhite: 'FFFFFF', textBlack: '000000', decorPurple: '7E32C6'
     },
     'blueprint': {
         name: 'Blueprint Architect', bgColor: '0B192C', cyan: '00FFCC', orange: 'FF6B00',

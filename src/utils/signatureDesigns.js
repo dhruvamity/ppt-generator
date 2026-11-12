@@ -24,7 +24,7 @@ const DESIGNS = {
         ],
         header: { left: 72, top: 52, right: 72, height: 56 },
         badge: { border: `3px solid #${t.cyan}`, borderRadius: '50%', padding: '6px 18px' },
-        body: { left: 72, top: 128, right: 72, bottom: 96 }, titleTop: 180,
+        body: { left: 72, top: 128, right: 72, bottom: 96 }, titleTop: 180, watermark: { left: 72, bottom: 72, width: 500, color: '#F7F3E8', opacity: '0.6' },
     }),
     spiral: (t) => ({
         decorations: [
@@ -35,7 +35,7 @@ const DESIGNS = {
         ],
         header: { left: 144, top: 36, right: 64, height: 48 },
         badge: { backgroundColor: `#${t.cyan}`, color: '#FFFFFF', padding: '6px 18px', borderRadius: '8px' },
-        body: { left: 144, top: 110, right: 64, bottom: 80 }, titleTop: 170,
+        body: { left: 144, top: 110, right: 64, bottom: 80 }, titleTop: 170, watermark: { left: 144, bottom: 32, width: 900 },
     }),
     indexcard: () => ({
         display: 'Georgia, serif',
@@ -46,7 +46,7 @@ const DESIGNS = {
         ],
         header: { left: 104, top: 80, right: 220, height: 50 },
         badge: { backgroundColor: '#F2C14E', color: '#1D1D1D', padding: '6px 18px', borderRadius: '6px 6px 0 0' },
-        body: { left: 104, top: 172, right: 200, bottom: 100 }, titleTop: 200,
+        body: { left: 104, top: 172, right: 200, bottom: 100 }, titleTop: 200, watermark: { right: 104, bottom: 72, width: 600, align: 'right', color: '#8A94A6' },
     }),
     omr: (t) => ({
         display: "'Courier New', monospace",
@@ -59,7 +59,7 @@ const DESIGNS = {
         ],
         header: { left: 48, top: 84, right: 256, height: 44 },
         badge: { backgroundColor: `#${t.cyan}`, color: '#FFFFFF', padding: '4px 16px', letterSpacing: '2px' },
-        body: { left: 48, top: 144, right: 256, bottom: 72 }, titleTop: 170,
+        body: { left: 48, top: 144, right: 256, bottom: 72 }, titleTop: 170, watermark: { left: 300, top: 30, width: 740, color: '#9AA3AE' },
     }),
     quantclock: (t, { workspace }) => ({
         decorations: [
@@ -70,7 +70,7 @@ const DESIGNS = {
         ],
         header: { left: 1030, top: 110, width: 160, height: 100, justifyContent: 'center', textAlign: 'center' },
         badge: { fontSize: workspace ? '22px' : '46px', fontWeight: '800', color: `#${t.cyan}` }, rule: null,
-        body: { left: 64, top: 72, right: 340, bottom: 72 }, titleTop: 150,
+        body: { left: 64, top: 72, right: 340, bottom: 72 }, titleTop: 150, watermark: { right: 40, bottom: 56, width: 260, align: 'center', color: '#8D99AE' },
     }),
     datadeck: (t) => ({
         decorations: [
@@ -80,7 +80,7 @@ const DESIGNS = {
         ],
         header: { left: 64, top: 40, right: 180, height: 48 },
         badge: { backgroundColor: `#${t.cyan}`, color: '#FFFFFF', padding: '6px 18px', borderRadius: '6px' },
-        body: { left: 64, top: 110, right: 160, bottom: 128 }, titleTop: 160,
+        body: { left: 64, top: 110, right: 160, bottom: 128 }, titleTop: 160, watermark: { right: 64, bottom: 32, width: 600, align: 'right' },
     }),
     abacus: (t) => ({
         decorations: [
@@ -91,7 +91,7 @@ const DESIGNS = {
         ],
         header: { left: 48, top: 24, width: 220, height: 48 },
         badge: { color: '#FFF4E6', fontSize: '26px', fontWeight: '800', letterSpacing: '1px' }, rule: null,
-        body: { left: 64, top: 136, right: 64, bottom: 64 }, titleTop: 160,
+        body: { left: 64, top: 136, right: 64, bottom: 64 }, titleTop: 160, watermark: { right: 64, bottom: 36, width: 600, align: 'right' },
     }),
     tangram: (t) => ({
         decorations: [
@@ -100,7 +100,7 @@ const DESIGNS = {
         ],
         header: { left: 72, top: 36, right: 320, height: 48 },
         badge: { backgroundColor: `#${t.cyan}`, color: '#101418', padding: '6px 18px', borderRadius: '2px' },
-        body: { left: 72, top: 100, right: 320, bottom: 56 }, titleTop: 150,
+        body: { left: 72, top: 100, right: 320, bottom: 56 }, titleTop: 150, watermark: { right: 72, top: 40, width: 220, align: 'right', color: '#8A94A6' },
     }),
     ticket: (t, { workspace }) => ({
         display: BLACK_DISPLAY,
@@ -115,7 +115,7 @@ const DESIGNS = {
         ],
         header: { left: 0, top: 40, width: 190, height: 560, justifyContent: 'center' },
         badge: { writingMode: 'vertical-rl', transform: 'rotate(180deg)', color: '#FFF8E7', fontSize: workspace ? '36px' : '64px', fontWeight: '900', fontFamily: BLACK_DISPLAY, letterSpacing: '4px' }, rule: null,
-        body: { left: 248, top: 72, right: 72, bottom: 72 }, titleTop: 150,
+        body: { left: 248, top: 72, right: 72, bottom: 72 }, titleTop: 150, watermark: { left: 248, bottom: 20, width: 700, color: '#9A8F7A' },
     }),
     nightdrill: (t, { workspace }) => ({
         display: BLACK_DISPLAY,
@@ -127,7 +127,7 @@ const DESIGNS = {
         ],
         header: { left: 0, top: 40, width: 160, height: 560, justifyContent: 'center' },
         badge: { writingMode: 'vertical-rl', transform: 'rotate(180deg)', color: '#0B0B0F', fontSize: workspace ? '36px' : '72px', fontWeight: '900', fontFamily: BLACK_DISPLAY }, rule: null,
-        body: { left: 208, top: 72, right: 72, bottom: 72 }, titleTop: 150,
+        body: { left: 208, top: 72, right: 72, bottom: 72 }, titleTop: 150, watermark: { left: 208, bottom: 16, width: 400, color: '#5A5A66' },
     }),
     sudoku: (t) => ({
         decorations: [
@@ -136,7 +136,7 @@ const DESIGNS = {
         ],
         header: { left: 64, top: 40, right: 232, height: 48 },
         badge: { backgroundColor: `#${t.cyan}`, color: '#FFFFFF', padding: '6px 18px', borderRadius: '6px' },
-        body: { left: 64, top: 110, right: 232, bottom: 72 }, titleTop: 160,
+        body: { left: 64, top: 110, right: 232, bottom: 72 }, titleTop: 160, watermark: { right: 64, bottom: 24, width: 600, align: 'right' },
     }),
 };
 
@@ -157,6 +157,7 @@ export function signatureSlide(theme, title, workspace) {
         badge: { whiteSpace: 'nowrap', ...d.badge },
         rule: d.rule === null ? null : { flex: 1, height: '1px', backgroundColor: `#${theme.rule}` },
         body: { ...region({ ...d.body, top: title ? d.titleTop : d.body.top }), color: `#${theme.textWhite}`, textAlign: 'left', overflowWrap: 'anywhere' },
+        watermark: { color: `#${theme.cyan}`, ...d.watermark },
         title: { fontSize: '68px', lineHeight: 1.15, fontWeight: '700', marginBottom: '32px', fontFamily: display },
         subtitle: { fontSize: '22px', letterSpacing: '2px', color: `#${theme.cyan}` },
         footer: { fontSize: '24px', marginTop: '48px' },
