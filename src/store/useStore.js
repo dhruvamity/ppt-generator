@@ -5,6 +5,7 @@ import toast from 'react-hot-toast';
 
 import { extractDocumentTitle, parseLocalText, serializeQuestions } from '../utils/questionParser.js';
 import { DEFAULT_THUMBNAIL } from '../utils/thumbnailDesign.js';
+import { upsertCurrentDeck, DEFAULT_THEME_ID as DEFAULT_THEME, DECK_TEXT_FIELDS } from '../utils/recentDecks.js';
 export { normalizeMathText, convertFractions, extractDocumentTitle, parseLocalText } from '../utils/questionParser.js';
 
 const editedSlidesState = (slides) => ({
@@ -33,8 +34,14 @@ const initialConfig = {
     pill1: 'MATHEMATICS',
     pill2: '2026 EDITION',
     footer: 'JEE | CAT | COMPETITIVE EXAMS',
+    watermark: '',
     insertBlankSlides: false,
 };
+export const DEFAULT_THEME_ID = DEFAULT_THEME;
+
+// The sample deck shown on first visit is not worth remembering until the teacher changes something.
+const isUntouched = (state) => state.rawText === defaultRawText && DECK_TEXT_FIELDS.every(key => (state.config?.[key] ?? '') === initialConfig[key]);
+const saveDeck = (state, force = false) => upsertCurrentDeck(state, { force, untouched: isUntouched(state) });
 
 export const useStore = create(
     persist(
@@ -155,7 +162,7 @@ export const useStore = create(
             }),
 
             // Themes
-            themeId: 'modern-neon',
+            themeId: DEFAULT_THEME_ID,
             setThemeId: (id) => set({ themeId: id }),
 
             // Layout (independent from theme colors)
@@ -171,9 +178,9 @@ export const useStore = create(
 
             // Dashboard Persistence (Decks, Themes & Folders)
             recentDecks: [],
-            addRecentDeck: (deck) => set((state) => ({ 
-                recentDecks: [deck, ...state.recentDecks.filter(d => d.id !== deck.id)].slice(0, 10) 
-            })),
+            currentDeckId: null,
+            saveCurrentDeck: () => set((state) => saveDeck(state, true) || {}),
+            removeRecentDeck: (id) => set((state) => ({ recentDecks: state.recentDecks.filter(deck => deck.id !== id), ...(state.currentDeckId === id ? { currentDeckId: null } : {}) })),
             
             savedThemes: [],
             addSavedTheme: (theme) => set((state) => ({ 
@@ -187,19 +194,23 @@ export const useStore = create(
 
             // Actions for routing
             loadDeck: (deck) => set({
-                config: deck.config,
+                currentDeckId: deck.id,
+                config: { ...initialConfig, ...deck.config },
                 rawText: deck.rawText,
                 themeId: deck.themeId,
                 layoutId: deck.layoutId || 'modern-sidebar',
-                aiQuestions: deck.aiQuestions || null
+                aiQuestions: deck.aiQuestions || null,
+                activeSlides: deck.aiQuestions || [],
             }),
 
             clearGeneratorState: () => set({
+                currentDeckId: null,
                 config: initialConfig,
                 rawText: defaultRawText,
-                themeId: 'modern-neon',
+                themeId: DEFAULT_THEME_ID,
                 layoutId: 'modern-sidebar',
-                aiQuestions: null
+                aiQuestions: null,
+                activeSlides: [],
             })
         }),
         {
@@ -210,8 +221,18 @@ export const useStore = create(
             onRehydrateStorage: () => (state) => {
                 if (state) {
                     state.isParsing = false;
+                    state.config = { ...initialConfig, ...state.config };
+                    if (!state.themeId) state.themeId = DEFAULT_THEME_ID;
                 }
             }
         }
     )
 );
+
+// Keep the working deck in recent decks as the teacher parses, edits or restyles it.
+const DECK_FIELDS = ['activeSlides', 'config', 'themeId', 'layoutId', 'rawText'];
+useStore.subscribe((state, previous) => {
+    if (DECK_FIELDS.every(key => state[key] === previous[key])) return;
+    const patch = saveDeck(state);
+    if (patch) useStore.setState(patch);
+});
