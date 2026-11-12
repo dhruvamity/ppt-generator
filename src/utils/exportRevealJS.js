@@ -1,3 +1,4 @@
+import { teachingStyles, teachingIllustrationStyle, inlineStyle } from './teachingDesign.js';
 import { installSlidePdfExport } from './slidePdfRuntime.js';
 
 
@@ -103,12 +104,12 @@ export const buildRevealHtml = (config, activeSlides, theme, layoutId = 'modern-
         if (optionsArray.length === 0) return '';
         
         const totalChars = optionsArray.reduce((sum, opt) => sum + (opt.text ? opt.text.length : 0), 0);
-        const cols = !hasContext && totalChars < 60 && optionsArray.length === 4 ? 4 : 2;
+        const cols = theme.teaching && hasContext && totalChars > 160 ? 1 : !hasContext && totalChars < 60 && optionsArray.length === 4 ? 4 : 2;
 
-        let optsHtml = `<div style="margin-top: 2em; display: grid; grid-template-columns: repeat(${cols}, minmax(0, 1fr)); width: 100%; gap: 20px;">`;
+        let optsHtml = `<div style="margin-top: ${theme.teaching ? '30.72px' : '2em'}; display: grid; grid-template-columns: repeat(${cols}, minmax(0, 1fr)); width: 100%; gap: ${theme.teaching ? '15.36px' : '20px'};">`;
         optionsArray.forEach(opt => {
             optsHtml += `
-                <div style="min-width: 0; display: flex; gap: 8px; margin-bottom: 0.25rem; color: #${color}; font-size: ${fs(11)}; line-height: 1.5;">
+                <div style="min-width: 0; display: flex; gap: 8px; margin-bottom: 0.25rem; color: #${color}; font-size: ${theme.teaching ? '28px' : fs(11)}; line-height: 1.5;">
                     <strong>(${escapeHtml(String(opt.label).replace(/[().]/g, "").toUpperCase())})</strong> <span style="min-width: 0;">${enforceDisplayMath(opt.text)}</span>
                 </div>
             `;
@@ -119,15 +120,15 @@ export const buildRevealHtml = (config, activeSlides, theme, layoutId = 'modern-
 
     const renderQuestionContent = (slide, color, textColor = theme.textWhite, bold = false) => {
         const question = `
-            <div style="color: #${textColor}; font-size: ${fs(11)}; font-weight: ${bold ? 'bold' : 'normal'}; line-height: 1.5; white-space: pre-wrap;">${enforceDisplayMath(slide.qText)}</div>
+            <div style="color: #${textColor}; font-size: ${theme.teaching ? '32px' : fs(11)}; font-weight: ${bold ? 'bold' : 'normal'}; line-height: 1.5; white-space: pre-wrap;">${enforceDisplayMath(slide.qText)}</div>
             ${renderOptionsGrid(slide.options, color, Boolean(slide.context))}
         `;
         const context = slide.context?.trim();
         if (!context) return question;
 
         return `
-            <div style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); width: 100%; height: 100%; gap: 32px; min-height: 0; align-items: flex-start;">
-                <div style="min-width: 0; height: 100%; box-sizing: border-box; padding-right: 28px; border-right: 1px solid #${theme.cyan || theme.pinkOrb || theme.black}; color: #${textColor}; font-size: ${fs(10)}; line-height: 1.45; overflow: hidden;">${renderContext(context)}</div>
+            <div style="display: grid; grid-template-columns: ${theme.teaching ? 'minmax(0, 0.48fr) minmax(0, 0.52fr)' : 'minmax(0, 1fr) minmax(0, 1fr)'}; width: 100%; height: 100%; gap: 32px; min-height: 0; align-items: flex-start;">
+                <div style="min-width: 0; height: 100%; box-sizing: border-box; padding-right: ${theme.teaching ? '24px' : '28px'}; border-right: 1px solid #${theme.cyan || theme.pinkOrb || theme.black}; color: #${textColor}; font-size: ${theme.teaching ? '24px' : fs(10)}; line-height: 1.45; overflow: hidden;">${renderContext(context)}</div>
                 <div style="min-width: 0;">
                     ${question}
                 </div>
@@ -137,6 +138,18 @@ export const buildRevealHtml = (config, activeSlides, theme, layoutId = 'modern-
 
     const generateSlideHtml = (isTitle, slide, layoutType) => {
         let slideHtml = '';
+
+        if (theme.teaching) {
+            const workspace = Boolean(slide?.isWorkspace);
+            const styles = Object.fromEntries(Object.entries(teachingStyles(theme, layoutType, isTitle, workspace)).map(([key, style]) => [key, inlineStyle(style)]));
+            const illustration = theme.illustration ? inlineStyle(teachingIllustrationStyle(theme)) : '';
+            return `<section><div class="slide-container" data-workspace="${workspace}" style="font-family:Arial,sans-serif"><div style="${styles.accent}"></div>${illustration ? `<div style="${illustration}"></div>` : ''}
+                ${!isTitle ? `<div style="${styles.header}"><span>${workspace ? 'WORK SPACE' : escapeHtml(slide?.badge)}</span><div style="${styles.rule}"></div></div>` : ''}
+                ${layoutType === 'split-focus' && !isTitle && !workspace ? `<div style="${styles.rail}"></div>` : ''}
+                <div style="${styles.body}">${isTitle
+                    ? `<div style="${styles.title}">${escapeHtml(config?.mainTitle1)}<br><span style="color:#${theme.cyan}">${escapeHtml(config?.mainTitle2)}</span></div><div style="${styles.subtitle}">${[config?.pill1, config?.pill2].filter(Boolean).map(escapeHtml).join(' / ')}</div><div style="${styles.footer}">${escapeHtml(config?.footer)}</div>`
+                    : workspace ? `<div style="${styles.workspace}"></div>` : renderQuestionContent(slide, theme.cyan)}</div></div></section>`;
+        }
 
         if (theme.name === 'Cyberpunk Neon') {
             const isWorkspace = slide?.isWorkspace || false;

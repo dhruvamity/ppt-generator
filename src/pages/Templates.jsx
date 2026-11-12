@@ -1,100 +1,38 @@
-import React from 'react';
-import { Search, Grid, Plus } from 'lucide-react';
+import React, { useState } from 'react';
+import { ArrowUpRight, Plus, Search } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useStore } from '../store/useStore';
 import { THEMES } from '../utils/themeConfig';
-import LiveSlidePreview from '../components/Generator/LiveSlidePreview';
-
-const LAYOUT_IDS = ['modern-sidebar', 'classic-header', 'split-focus'];
+import { DESIGN_LAYOUTS, hasSignatureLayout } from '../utils/teachingDesign.js';
+import DesignThumbnail, { PreviewViews } from '../components/Generator/DesignThumbnail';
 
 export default function Templates() {
-    const savedThemes = useStore(state => state.savedThemes);
-    const setThemeId = useStore(state => state.setThemeId);
-    const setLayoutId = useStore(state => state.setLayoutId);
+    const { savedThemes, setThemeId, setLayoutId } = useStore();
     const navigate = useNavigate();
-
-    const handleSelectTemplate = (themeId, layoutId) => {
-        setThemeId(themeId);
-        setLayoutId(layoutId);
-        navigate('/generator');
-    };
-
-    const mockConfig = {
-        mainTitle1: 'Your Next',
-        mainTitle2: 'Lesson',
-        pill1: 'TEMPLATE',
-        pill2: '2026 EDITION',
-        footer: 'BEAUTIFUL PRESENTATIONS',
-    };
-
-    // Build a card for each theme × layout combination to showcase structural diversity
-    const templateCards = [];
-    Object.entries(THEMES).forEach(([themeId, theme]) => {
-        // Assign each theme a "default" showcase layout in a round-robin to keep the gallery diverse
-        const idx = templateCards.length % LAYOUT_IDS.length;
-        const layoutId = LAYOUT_IDS[idx];
-        templateCards.push({ themeId, theme, layoutId });
-    });
-
-    return (
-        <main className="flex-1 max-w-container-max mx-auto w-full px-margin-mobile md:px-margin-desktop pt-24 pb-12">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
-                <div>
-                    <h1 className="font-headline-lg text-[32px] font-semibold text-on-surface mb-1">Templates Gallery</h1>
-                    <p className="font-body-md text-on-surface-variant">Choose a starting point for your next presentation.</p>
-                </div>
-                <div className="flex items-center bg-surface border border-outline-variant rounded-lg px-4 py-2 focus-within:border-primary transition-all">
-                    <Search size={18} className="text-outline mr-2" />
-                    <input 
-                        className="bg-transparent border-none outline-none font-body-md text-sm text-on-surface placeholder:text-outline w-full md:w-64" 
-                        placeholder="Search templates..." 
-                        type="text"
-                    />
-                </div>
-            </div>
-
-            <section className="mb-12">
-                <h2 className="font-headline-md text-xl font-semibold text-on-surface mb-6 flex items-center gap-2">
-                    <Grid size={20} />
-                    System Templates
-                </h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {templateCards.map(({ themeId, theme, layoutId }) => (
-                        <div key={`${themeId}-${layoutId}`} onClick={() => handleSelectTemplate(themeId, layoutId)} className="group flex flex-col bg-surface border border-outline-variant rounded-xl overflow-hidden hover:border-primary transition-all hover:shadow-md cursor-pointer">
-                            <div className="relative bg-surface-container-low pointer-events-none w-full">
-                                <LiveSlidePreview theme={theme} type="title" config={mockConfig} layoutId={layoutId} />
-                            </div>
-                            <div className="p-4 border-t border-outline-variant flex justify-between items-center">
-                                <div>
-                                    <h3 className="font-label-lg font-semibold text-on-surface group-hover:text-primary transition-colors">{theme.name}</h3>
-                                    <span className="font-label-sm text-xs text-on-surface-variant uppercase tracking-wider">
-                                        {layoutId === 'modern-sidebar' ? 'Sidebar' : layoutId === 'classic-header' ? 'Header' : 'Split'} Layout
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </section>
-
-            <section>
-                <h2 className="font-headline-md text-xl font-semibold text-on-surface mb-6">My Custom Themes</h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <Link to="/generator" className="aspect-[16/9] bg-surface-container-low border border-dashed border-outline-variant rounded-xl flex flex-col items-center justify-center gap-2 text-on-surface-variant hover:text-primary hover:border-primary hover:bg-surface transition-all">
-                        <Plus size={24} />
-                        <span className="font-label-md text-sm font-semibold">Create New</span>
-                    </Link>
-                    
-                    {savedThemes.map((theme, i) => (
-                        <div key={i} onClick={() => handleSelectTemplate(theme.id, 'modern-sidebar')} className="group relative aspect-[16/9] rounded-xl overflow-hidden border border-outline-variant transition-all hover:shadow-md cursor-pointer">
-                            <LiveSlidePreview theme={theme} type="title" config={mockConfig} layoutId="modern-sidebar" />
-                            <div className="absolute bottom-0 w-full p-3 bg-surface border-t border-outline-variant transform translate-y-full group-hover:translate-y-0 transition-transform duration-200 ease-out z-10 pointer-events-auto">
-                                <span className="font-label-md text-sm font-semibold text-on-surface block truncate">{theme.name}</span>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </section>
-        </main>
-    );
+    const [query, setQuery] = useState('');
+    const [view, setView] = useState('question');
+    const [layout, setLayout] = useState('classic-header');
+    const themes = Object.entries(THEMES).map(([id, theme]) => ({ ...theme, id }));
+    const matches = theme => `${theme.name} ${theme.description || ''}`.toLowerCase().includes(query.trim().toLowerCase());
+    const groups = [
+        ['Made for teaching', themes.filter(theme => theme.teaching)],
+        ['Original designs', themes.filter(theme => !theme.teaching)],
+        ['Your custom themes', savedThemes],
+    ];
+    return <main className="flex-1 max-w-container-max mx-auto w-full px-margin-mobile md:px-margin-desktop pt-24 pb-12">
+        <div className="max-w-2xl mb-8"><p className="text-xs uppercase tracking-[0.2em] text-primary font-semibold mb-3">The teaching collection</p><h1 className="text-3xl md:text-4xl font-semibold text-on-surface tracking-tight mb-3">Clear slides. More room to solve.</h1><p className="text-on-surface-variant leading-relaxed">Choose a design with your lesson in view. Explore real question, title and workspace previews before you start.</p></div>
+        <div className="flex flex-wrap items-center gap-4 justify-between mb-10 p-4 rounded-xl border border-outline-variant bg-surface">
+            <PreviewViews value={view} onChange={setView} />
+            <label className="flex items-center gap-2 text-sm">Layout<select aria-label="Layout" value={layout} onChange={event => setLayout(event.target.value)} className="bg-surface-container-low rounded-lg p-2 border border-outline-variant">{DESIGN_LAYOUTS.map(item => <option value={item.id} key={item.id}>{item.name}</option>)}</select></label>
+            <label className="flex items-center gap-2 border border-outline-variant rounded-lg p-2"><Search size={16} /><input aria-label="Search designs" placeholder="Search designs…" value={query} onChange={event => setQuery(event.target.value)} className="bg-transparent outline-none text-sm w-40" /></label>
+        </div>
+        {groups.map(([title, items]) => items.some(matches) && <section key={title} className="mb-10"><h2 className="text-xl font-semibold mb-5">{title}</h2><div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {items.filter(matches).map(theme => <button key={theme.id} type="button" onClick={() => { setThemeId(theme.id); setLayoutId(layout); navigate('/generator'); }} className="group flex flex-col text-left rounded-xl border border-outline-variant overflow-hidden bg-surface hover:border-primary hover:shadow-md transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary">
+                <DesignThumbnail theme={theme} layoutId={layout} view={view} />
+                <div className="p-4"><div className="flex justify-between items-center gap-2"><h3 className="font-semibold">{theme.name}</h3><ArrowUpRight size={17} className="text-primary" /></div><p className="text-sm text-on-surface-variant mt-1">{theme.description || (hasSignatureLayout(theme) ? 'Original collection · Signature layout' : 'Original collection · Flexible layouts')}</p></div>
+            </button>)}
+        </div></section>)}
+        {!groups.some(([, items]) => items.some(matches)) && <p role="status" className="py-10 text-center text-on-surface-variant">No designs match “{query}”. Try another name or colour.</p>}
+        <Link to="/dashboard" className="inline-flex items-center gap-2 text-sm text-primary"><Plus size={18} />Create your own colour theme</Link>
+    </main>;
 }
