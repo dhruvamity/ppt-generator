@@ -34,6 +34,36 @@ export const THEMES = {
         bgColor: '132034', textWhite: 'F2F5FA', textBlack: '132034', cyan: 'A9C9F2',
         purple: 'A9C9F2', gold: 'A9C9F2', bgCard: '132034', rule: '34465E'
     },
+    'graph-paper': {
+        name: 'Graph Paper', teaching: true, illustration: 'grid', description: 'Squared paper with a plotted parabola and straight line in the margin. The working area stays plain.',
+        bgColor: 'F7FAFD', textWhite: '1C2A3A', textBlack: 'F7FAFD', cyan: '2B5FB3',
+        purple: '2B5FB3', gold: '2B5FB3', bgCard: 'F7FAFD', rule: 'D3DFEC'
+    },
+    'geometry-set': {
+        name: 'Geometry Set', teaching: true, illustration: 'geometry', description: 'A circle theorem, protractor and labelled triangle on warm paper, kept clear of the question.',
+        bgColor: 'FFFCF7', textWhite: '2B2521', textBlack: 'FFFCF7', cyan: 'B8532A',
+        purple: 'B8532A', gold: '6B7F8F', bgCard: 'FFFCF7', rule: 'EBDFD0'
+    },
+    'formula-board': {
+        name: 'Formula Board', teaching: true, illustration: 'formula', description: 'A dark slate board with faint sigma, integral and pi notation beside bright amber headings.',
+        bgColor: '1B2130', textWhite: 'F4F1EA', textBlack: '1B2130', cyan: 'F2B75C',
+        purple: 'F2B75C', gold: '8FA6C9', bgCard: '1B2130', rule: '3A4457'
+    },
+    'number-line': {
+        name: 'Number Line', teaching: true, illustration: 'numberline', description: 'A labelled integer line with jump arcs. Suited to integers, fractions and early algebra.',
+        bgColor: 'F4F8F5', textWhite: '1E2B25', textBlack: 'F4F8F5', cyan: '2E7D5B',
+        purple: '2E7D5B', gold: 'D9822B', bgCard: 'F4F8F5', rule: 'D2E1D7'
+    },
+    'fraction-tiles': {
+        name: 'Fraction Tiles', teaching: true, illustration: 'fractions', description: 'Equivalent-fraction bars, a quartered circle and counters for visual learners.',
+        bgColor: 'FFFDF8', textWhite: '24303B', textBlack: 'FFFDF8', cyan: '3B6FD4',
+        purple: '3B6FD4', gold: 'F2A541', bgCard: 'FFFDF8', rule: 'E5E3DC'
+    },
+    'trig-wave': {
+        name: 'Trig Wave', teaching: true, illustration: 'wave', description: 'A unit circle and flowing sine and cosine curves on deep teal for trigonometry and functions.',
+        bgColor: '0F2A2C', textWhite: 'ECF7F5', textBlack: '0F2A2C', cyan: '7FE3C8',
+        purple: '7FE3C8', gold: 'F7C873', bgCard: '0F2A2C', rule: '2C4A4B'
+    },
     'modern-neon': {
         name: 'Cyberpunk Neon', bgColor: '110F1A', cyan: '00C6D4', purple: '7E32C6',
         gold: 'C4961A', magenta: 'CC00FF', watermark: '2B2043', tealDecor: '00C6D4', 

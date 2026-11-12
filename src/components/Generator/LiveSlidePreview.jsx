@@ -49,7 +49,7 @@ export default function LiveSlidePreview({ theme, type = 'title', config, questi
             <div style={{ marginTop: '2.4cqw', display: 'grid', gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`, width: '100%', gap: '1.2cqw' }}>
                 {options.map((opt, i) => (
                     <div key={i} style={{ minWidth: 0, display: 'flex', alignItems: 'baseline', gap: '0.4em', color: `#${color}`, fontSize: theme.teaching ? '2.1875cqw' : fs(11), lineHeight: 1.5 }}>
-                        <strong>({opt.label})</strong> 
+                        <strong style={{ whiteSpace: 'nowrap' }}>({opt.label})</strong> 
                         <EditableBlock 
                             value={opt.text} 
                             theme={theme}

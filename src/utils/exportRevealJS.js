@@ -110,7 +110,7 @@ export const buildRevealHtml = (config, activeSlides, theme, layoutId = 'modern-
         optionsArray.forEach(opt => {
             optsHtml += `
                 <div style="min-width: 0; display: flex; gap: 8px; margin-bottom: 0.25rem; color: #${color}; font-size: ${theme.teaching ? '28px' : fs(11)}; line-height: 1.5;">
-                    <strong>(${escapeHtml(String(opt.label).replace(/[().]/g, "").toUpperCase())})</strong> <span style="min-width: 0;">${enforceDisplayMath(opt.text)}</span>
+                    <strong style="white-space: nowrap;">(${escapeHtml(String(opt.label).replace(/[().]/g, "").toUpperCase())})</strong> <span style="min-width: 0;">${enforceDisplayMath(opt.text)}</span>
                 </div>
             `;
         });
