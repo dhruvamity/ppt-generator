@@ -1,3 +1,4 @@
+import { teachingStyles, previewStyle } from '../../utils/teachingDesign.js';
 import React from 'react';
 import EditableBlock from './EditableBlock';
 import { useStore } from '../../store/useStore';
@@ -47,7 +48,7 @@ export default function LiveSlidePreview({ theme, type = 'title', config, questi
         return (
             <div style={{ marginTop: '2.4cqw', display: 'grid', gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`, width: '100%', gap: '1.2cqw' }}>
                 {options.map((opt, i) => (
-                    <div key={i} style={{ minWidth: 0, display: 'flex', alignItems: 'baseline', gap: '0.4em', color: `#${color}`, fontSize: fs(11), lineHeight: 1.5 }}>
+                    <div key={i} style={{ minWidth: 0, display: 'flex', alignItems: 'baseline', gap: '0.4em', color: `#${color}`, fontSize: theme.teaching ? '2.1875cqw' : fs(11), lineHeight: 1.5 }}>
                         <strong>({opt.label})</strong> 
                         <EditableBlock 
                             value={opt.text} 
@@ -64,7 +65,7 @@ export default function LiveSlidePreview({ theme, type = 'title', config, questi
     const renderQuestionBody = (optionColor, textColor = theme.textWhite, bold = false) => {
         const promptAndOptions = (
             <div style={{ minWidth: 0 }}>
-                <div style={{ color: `#${textColor}`, fontSize: fs(11), lineHeight: 1.5, whiteSpace: 'pre-wrap', fontWeight: bold ? 'bold' : 'normal' }}>
+                <div style={{ color: `#${textColor}`, fontSize: theme.teaching ? '2.5cqw' : fs(11), lineHeight: 1.5, whiteSpace: 'pre-wrap', fontWeight: bold ? 'bold' : 'normal' }}>
                     <EditableBlock
                         value={questionData?.qText}
                         theme={theme}
@@ -80,7 +81,7 @@ export default function LiveSlidePreview({ theme, type = 'title', config, questi
         const accent = theme.cyan || theme.blueOrb || theme.black || textColor;
         return (
             <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 0.48fr) minmax(0, 0.52fr)', gap: '2.5cqw', width: '100%', height: '100%', minHeight: 0 }}>
-                <div style={{ boxSizing: 'border-box', height: '100%', minWidth: 0, paddingRight: '1.875cqw', borderRight: `0.08cqw solid #${accent}`, color: `#${textColor}`, fontSize: fs(10), lineHeight: 1.45, whiteSpace: 'pre-wrap' }}>
+                <div style={{ boxSizing: 'border-box', height: '100%', minWidth: 0, paddingRight: '1.875cqw', borderRight: `0.08cqw solid #${accent}`, color: `#${textColor}`, fontSize: theme.teaching ? '1.875cqw' : fs(10), lineHeight: 1.45, whiteSpace: 'pre-wrap' }}>
                     <EditableBlock
                         value={questionData.context}
                         renderTables
@@ -391,6 +392,21 @@ export default function LiveSlidePreview({ theme, type = 'title', config, questi
         );
     };
 
+    if (theme.teaching) {
+        const title = type === 'title';
+        const workspace = Boolean(questionData?.isWorkspace);
+        const styles = Object.fromEntries(Object.entries(teachingStyles(theme, layoutType, title, workspace)).map(([key, style]) => [key, previewStyle(style)]));
+        return <div style={baseStyle} className="rounded-lg border border-outline-variant/30 flex-shrink-0">
+            <div style={styles.accent} />
+            {!title && <div style={styles.header}><span>{workspace ? 'WORK SPACE' : questionData?.badge}</span><div style={styles.rule} /></div>}
+            {layoutType === 'split-focus' && !title && !workspace && <div style={styles.rail} />}
+            <div style={styles.body}>
+                {title ? <><div style={styles.title}>{config?.mainTitle1}<br /><span style={{ color: `#${theme.cyan}` }}>{config?.mainTitle2}</span></div><div style={styles.subtitle}>{[config?.pill1, config?.pill2].filter(Boolean).join(' / ')}</div><div style={styles.footer}>{config?.footer}</div></>
+                    : workspace ? <div style={styles.workspace} /> : renderQuestionBody(theme.cyan)}
+            </div>
+        </div>;
+    }
+
     if (theme.name === 'Blueprint Architect') {
         return (
             <div style={baseStyle} className="shadow-md rounded-lg border border-outline-variant/30 flex-shrink-0">
@@ -421,6 +437,19 @@ export default function LiveSlidePreview({ theme, type = 'title', config, questi
                 {type === 'title' ? renderModernNeonTitle() : renderModernNeonQuestion()}
             </div>
         );
+    }
+
+    // The original export already has this workspace composition for flexible themes.
+    if (type === 'question' && questionData?.isWorkspace) {
+        const color = theme.cyan || theme.gold || theme.textWhite;
+        return <div style={baseStyle} className="rounded-lg border border-outline-variant/30 flex-shrink-0">
+            {renderGlobalDecorations()}
+            <div style={{ position: 'absolute', left: '5%', right: '5%', top: '6.2222%', display: 'flex', alignItems: 'center', gap: '1.40625cqw', zIndex: 2 }}>
+                <div style={{ padding: '0.625cqw 1.40625cqw', border: `0.15625cqw solid #${color}`, borderRadius: '0.625cqw', color: `#${color}`, fontSize: fs(14), fontWeight: 'bold', letterSpacing: '0.078125cqw' }}>WORK SPACE</div>
+                <div style={{ height: '0.15625cqw', flex: 1, background: `#${color}`, opacity: 0.7 }} />
+            </div>
+            <div style={{ position: 'absolute', left: '5%', right: '5%', top: '18.6667%', bottom: '9.7778%', background: `repeating-linear-gradient(to bottom, transparent 0, transparent 4.296875cqw, #${color} 4.375cqw, transparent 4.453125cqw)`, opacity: 0.38 }} />
+        </div>;
     }
 
     return (

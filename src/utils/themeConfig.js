@@ -1,4 +1,24 @@
 export const THEMES = {
+    'lecture-paper': {
+        name: 'Lecture Paper', teaching: true, description: 'Crisp white paper with a quiet blue accent.',
+        bgColor: 'FFFFFF', textWhite: '172B4D', textBlack: 'FFFFFF', cyan: '215DB0',
+        purple: '215DB0', gold: '215DB0', bgCard: 'FFFFFF', rule: 'DCE4EE'
+    },
+    'chalk-study': {
+        name: 'Chalk Study', teaching: true, description: 'A calm green board for step-by-step teaching.',
+        bgColor: '153A34', textWhite: 'F4F8EF', textBlack: '153A34', cyan: 'BCE3CD',
+        purple: 'BCE3CD', gold: 'BCE3CD', bgCard: '153A34', rule: '386056'
+    },
+    'ivory-notes': {
+        name: 'Ivory Notes', teaching: true, description: 'Warm paper tones for extended practice sessions.',
+        bgColor: 'FAF6EC', textWhite: '302D29', textBlack: 'FAF6EC', cyan: '86502E',
+        purple: '86502E', gold: '86502E', bgCard: 'FAF6EC', rule: 'DED6C7'
+    },
+    'midnight-focus': {
+        name: 'Midnight Focus', teaching: true, description: 'High-contrast navy with room for working.',
+        bgColor: '132034', textWhite: 'F2F5FA', textBlack: '132034', cyan: 'A9C9F2',
+        purple: 'A9C9F2', gold: 'A9C9F2', bgCard: '132034', rule: '34465E'
+    },
     'modern-neon': {
         name: 'Cyberpunk Neon', bgColor: '110F1A', cyan: '00C6D4', purple: '7E32C6',
         gold: 'C4961A', magenta: 'CC00FF', watermark: '2B2043', tealDecor: '00C6D4', 

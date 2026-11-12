@@ -1,91 +1,33 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { Check, ChevronDown } from 'lucide-react';
 import { useStore } from '../../store/useStore';
-import { Palette, CheckCircle, LayoutTemplate, Columns, PanelTop, PanelLeft } from 'lucide-react';
-import { THEMES } from "../../utils/themeConfig";
-
-const LAYOUTS = [
-    { id: 'modern-sidebar', name: 'Sidebar', icon: PanelLeft, desc: 'Colored bars & floating circles' },
-    { id: 'classic-header', name: 'Header', icon: PanelTop, desc: 'Top header bar, clean body' },
-    { id: 'split-focus', name: 'Split', icon: Columns, desc: '30/70 vertical split panel' },
-];
+import { THEMES } from '../../utils/themeConfig';
+import { DESIGN_LAYOUTS, hasSignatureLayout } from '../../utils/teachingDesign.js';
+import DesignThumbnail, { PreviewViews } from './DesignThumbnail';
 
 export default function ThemeSelector() {
-    const themeId = useStore(state => state.themeId);
-    const setThemeId = useStore(state => state.setThemeId);
-    const layoutId = useStore(state => state.layoutId);
-    const setLayoutId = useStore(state => state.setLayoutId);
-    const savedThemes = useStore(state => state.savedThemes);
-
-    const staticThemes = Object.entries(THEMES).map(([id, t]) => ({ id, name: t.name, colors: [t.bgColor, t.cyan, t.purple, t.gold] }));
-    const allThemes = [...staticThemes, ...savedThemes.map(t => ({ ...t, colors: [t.bgColor, t.cyan, t.purple, t.gold] }))];
-
-    return (
-        <div className="flex flex-col gap-5 mb-6">
-            {/* Color Theme Picker */}
-            <div className="flex flex-col gap-3">
-                <h3 className="font-label-md text-label-md text-outline uppercase tracking-wider flex items-center gap-2">
-                    <Palette size={16} /> Color Theme
-                </h3>
-                <div className="grid grid-cols-1 gap-2">
-                    {allThemes.map(t => (
-                        <button
-                            key={t.id}
-                            onClick={() => setThemeId(t.id)}
-                            className={`flex items-center justify-between p-3 rounded-lg border transition-all ${
-                                themeId === t.id 
-                                    ? `bg-surface-container-high border-primary text-primary font-bold shadow-sm` 
-                                    : 'bg-surface-container-low border-outline-variant text-on-surface hover:border-primary'
-                            }`}
-                        >
-                            <div className="flex items-center gap-3">
-                                {/* Color swatch dots */}
-                                <div className="flex gap-1">
-                                    {t.colors?.slice(0, 4).map((c, i) => (
-                                        <div key={i} className="w-3.5 h-3.5 rounded-full border border-outline-variant/50" style={{ backgroundColor: `#${c}` }} />
-                                    ))}
-                                </div>
-                                <span className="text-sm">{t.name}</span>
-                            </div>
-                            {themeId === t.id && <CheckCircle size={18} />}
-                        </button>
-                    ))}
-                </div>
-            </div>
-
-            {/* Divider */}
-            <div className="h-px bg-outline-variant/40" />
-
-            {/* Layout Type Picker */}
-            <div className="flex flex-col gap-3">
-                <h3 className="font-label-md text-label-md text-outline uppercase tracking-wider flex items-center gap-2">
-                    <LayoutTemplate size={16} /> Layout Type
-                </h3>
-                <div className="grid grid-cols-1 gap-2">
-                    {LAYOUTS.map(l => {
-                        const Icon = l.icon;
-                        return (
-                            <button
-                                key={l.id}
-                                onClick={() => setLayoutId(l.id)}
-                                className={`flex items-center justify-between p-3 rounded-lg border transition-all ${
-                                    layoutId === l.id 
-                                        ? `bg-surface-container-high border-primary text-primary font-bold shadow-sm` 
-                                        : 'bg-surface-container-low border-outline-variant text-on-surface hover:border-primary'
-                                }`}
-                            >
-                                <div className="flex items-center gap-3">
-                                    <Icon size={18} className={layoutId === l.id ? 'text-primary' : 'text-on-surface-variant'} />
-                                    <div className="flex flex-col items-start">
-                                        <span className="text-sm">{l.name}</span>
-                                        <span className="text-[10px] text-on-surface-variant font-normal">{l.desc}</span>
-                                    </div>
-                                </div>
-                                {layoutId === l.id && <CheckCircle size={18} />}
-                            </button>
-                        );
-                    })}
-                </div>
-            </div>
-        </div>
-    );
+    const { themeId, setThemeId, layoutId, setLayoutId, savedThemes } = useStore();
+    const [view, setView] = useState('question');
+    const [expanded, setExpanded] = useState(false);
+    const themes = [...Object.entries(THEMES).map(([id, theme]) => ({ ...theme, id })), ...savedThemes];
+    const selected = themes.find(theme => theme.id === themeId) || themes[0];
+    return <div className="flex flex-col gap-4 mb-6">
+        <div className="flex items-center justify-between"><h3 className="font-semibold">Slide design</h3><span className="text-xs text-on-surface-variant">{themes.length} designs</span></div>
+        <PreviewViews value={view} onChange={setView} />
+        <DesignThumbnail theme={selected} layoutId={layoutId} view={view} />
+        <div><p className="font-semibold text-sm">{selected.name}</p><p className="text-xs text-on-surface-variant mt-1">{selected.description || 'Original collection'}</p></div>
+        <button type="button" aria-expanded={expanded} onClick={() => setExpanded(!expanded)} className="flex items-center justify-between p-3 rounded-lg border border-outline-variant text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary">Browse designs<ChevronDown size={16} /></button>
+        {expanded && <div className="grid gap-3 max-h-[440px] overflow-y-auto p-1">
+            {themes.map(theme => <button type="button" key={theme.id} aria-pressed={themeId === theme.id} onClick={() => setThemeId(theme.id)} className={`text-left p-2 rounded-xl border focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary ${themeId === theme.id ? 'border-primary bg-surface-container-high' : 'border-outline-variant hover:border-primary'}`}>
+                <DesignThumbnail theme={theme} layoutId={layoutId} view={view} />
+                <span className="flex items-center justify-between text-sm font-semibold mt-2">{theme.name}{themeId === theme.id && <Check size={16} />}</span>
+            </button>)}
+        </div>}
+        {hasSignatureLayout(selected) ? <p className="text-xs text-on-surface-variant">Signature layout · This original design has its own fixed composition.</p> : <details className="border-t border-outline-variant pt-3">
+            <summary className="cursor-pointer text-sm font-semibold">Layout · {DESIGN_LAYOUTS.find(layout => layout.id === layoutId)?.name}</summary>
+            <div className="grid gap-3 mt-3">{DESIGN_LAYOUTS.map(layout => <button type="button" key={layout.id} aria-pressed={layoutId === layout.id} onClick={() => setLayoutId(layout.id)} className={`p-2 rounded-lg border text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary ${layoutId === layout.id ? 'border-primary' : 'border-outline-variant'}`}>
+                <DesignThumbnail theme={selected} layoutId={layout.id} view={view} /><span className="block text-xs mt-2">{layout.name}</span>
+            </button>)}</div>
+        </details>}
+    </div>;
 }

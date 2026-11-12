@@ -65,3 +65,22 @@ test('question number and divider share a header row, with content moved up', ()
         assert.doesNotMatch(html, /top: 89\.6px; width: 1100\.8px; height: 2\.56px/);
     }
 });
+
+test('teaching designs retain maths, shared tables, and blank workspaces in every layout', () => {
+    const question = { badge: 'Q.1', tag: 'MCQ', topic: 'Algebra', qText: String.raw`Evaluate $\frac{1}{2} + \sqrt{4}$ <script>`, context: '| x | y |\n| --- | --- |\n| 1 | 2 |', options: [{ label: 'A', text: '$2$' }] };
+    const teaching = Object.values(THEMES).filter(theme => theme.teaching);
+    assert.equal(teaching.length, 4);
+    for (const theme of teaching) for (const layout of ['modern-sidebar', 'classic-header', 'split-focus']) {
+        const html = buildRevealHtml(deckConfig(true), [question], theme, layout);
+        assert.equal((html.match(/class="slide-container"/g) || []).length, 3);
+        assert.equal((html.match(/data-workspace="true"/g) || []).length, 1);
+        assert.match(html, /\\frac\{1\}\{2\}/);
+        assert.match(html, /\\sqrt\{4\}/);
+        assert.match(html, /<table/);
+        assert.match(html, /&lt;script&gt;/);
+        assert.doesNotMatch(html, /MCQ|Algebra|SLIDEGEN|Dhruv|#undefined/);
+        const workspace = html.split('data-workspace="true"')[1].split('</section>')[0];
+        assert.match(workspace, /WORK SPACE/);
+        assert.doesNotMatch(workspace, /Evaluate|<table/);
+    }
+});
