@@ -1,46 +1,28 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { Download } from 'lucide-react';
 import ThemeSelector from '../components/Generator/ThemeSelector';
 import SlideConfigPanel from '../components/Generator/SlideConfigPanel';
 import RawTextInput from '../components/Generator/RawTextInput';
 import SlidePreview from '../components/Generator/SlidePreview';
-import { useStore, parseLocalText } from '../store/useStore';
+import { useStore, DEFAULT_THEME_ID } from '../store/useStore';
 import toast from 'react-hot-toast';
 import { exportToRevealJS } from '../utils/exportRevealJS';
+import { exportAssets } from '../utils/exportAssets.js';
 import { THEMES } from '../utils/themeConfig';
 
 export default function Generator() {
-    const config = useStore(state => state.config);
-    const themeId = useStore(state => state.themeId);
-    const layoutId = useStore(state => state.layoutId);
-    const rawText = useStore(state => state.rawText);
     const activeSlides = useStore(state => state.activeSlides);
-    const aiQuestions = useStore(state => state.aiQuestions);
-    const addRecentDeck = useStore(state => state.addRecentDeck);
 
     const handleExport = async () => {
         const state = useStore.getState();
-        const { config: currentConfig, activeSlides: currentSlides, themeId: currentTheme, layoutId: currentLayout, rawText: currentRawText, aiQuestions: currentAiQuestions, savedThemes } = state;
+        const { config: currentConfig, activeSlides: currentSlides, themeId: currentTheme, layoutId: currentLayout, savedThemes } = state;
         
         if (!currentSlides || currentSlides.length === 0) return;
         
         try {
-            const themeData = THEMES[currentTheme] || savedThemes.find(t => t.id === currentTheme) || THEMES['dark-neon'];
-            exportToRevealJS(currentConfig, currentSlides, themeData, currentLayout);
-            
-            // Save to recent decks
-            const newDeck = {
-                id: Date.now().toString(),
-                title: `${currentConfig.mainTitle1} ${currentConfig.mainTitle2}`,
-                date: new Date().toISOString(),
-                slidesCount: currentSlides.length,
-                themeId: currentTheme,
-                layoutId: currentLayout,
-                config: currentConfig,
-                rawText: currentRawText,
-                aiQuestions: currentAiQuestions
-            };
-            state.addRecentDeck(newDeck);
+            const themeData = THEMES[currentTheme] || savedThemes.find(t => t.id === currentTheme) || THEMES[DEFAULT_THEME_ID];
+            exportToRevealJS(currentConfig, currentSlides, themeData, currentLayout, exportAssets);
+            state.saveCurrentDeck();
             
             toast.success('HTML Presentation Downloaded successfully!');
         } catch (error) {

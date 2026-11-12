@@ -2,9 +2,9 @@ import React from 'react';
 import LiveSlidePreview from './LiveSlidePreview';
 import { SAMPLE_CONFIG, SAMPLE_QUESTION } from '../../utils/teachingDesign.js';
 
-export default function DesignThumbnail({ theme, layoutId, view = 'question' }) {
+export default function DesignThumbnail({ theme, layoutId, view = 'question', config = SAMPLE_CONFIG }) {
     return <div inert aria-hidden="true" className="pointer-events-none w-full">
-        <LiveSlidePreview theme={theme} layoutId={layoutId} type={view === 'title' ? 'title' : 'question'} config={SAMPLE_CONFIG} questionData={view === 'workspace' ? { isWorkspace: true, badge: 'WORK SPACE', qText: '', options: [] } : SAMPLE_QUESTION} />
+        <LiveSlidePreview theme={theme} layoutId={layoutId} type={view === 'title' ? 'title' : 'question'} config={config} questionData={view === 'workspace' ? { isWorkspace: true, badge: 'WORK SPACE', qText: '', options: [] } : SAMPLE_QUESTION} />
     </div>;
 }
 

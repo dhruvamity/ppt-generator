@@ -11,13 +11,13 @@ export default function Templates() {
     const navigate = useNavigate();
     const [query, setQuery] = useState('');
     const [view, setView] = useState('question');
-    const [layout, setLayout] = useState('classic-header');
+    const [layout, setLayout] = useState(() => useStore.getState().layoutId || 'modern-sidebar');
     const themes = Object.entries(THEMES).map(([id, theme]) => ({ ...theme, id }));
     const matches = theme => `${theme.name} ${theme.description || ''}`.toLowerCase().includes(query.trim().toLowerCase());
     const groups = [
+        ['Original designs', themes.filter(theme => !theme.teaching)],
         ['Maths, CAT & aptitude signatures', themes.filter(theme => theme.design)],
         ['Made for teaching', themes.filter(theme => theme.teaching && !theme.design)],
-        ['Original designs', themes.filter(theme => !theme.teaching)],
         ['Your custom themes', savedThemes],
     ];
     return <main className="flex-1 max-w-container-max mx-auto w-full px-margin-mobile md:px-margin-desktop pt-24 pb-12">
@@ -30,7 +30,7 @@ export default function Templates() {
         {groups.map(([title, items]) => items.some(matches) && <section key={title} className="mb-10"><h2 className="text-xl font-semibold mb-5">{title}</h2><div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {items.filter(matches).map(theme => <button key={theme.id} type="button" onClick={() => { setThemeId(theme.id); setLayoutId(layout); navigate('/generator'); }} className="group flex flex-col text-left rounded-xl border border-outline-variant overflow-hidden bg-surface hover:border-primary hover:shadow-md transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary">
                 <DesignThumbnail theme={theme} layoutId={layout} view={view} />
-                <div className="p-4"><div className="flex justify-between items-center gap-2"><h3 className="font-semibold">{theme.name}</h3><ArrowUpRight size={17} className="text-primary" /></div><p className="text-sm text-on-surface-variant mt-1">{theme.description || (hasSignatureLayout(theme) ? 'Original collection · Signature layout' : 'Original collection · Flexible layouts')}</p></div>
+                <div className="p-4"><div className="flex justify-between items-center gap-2"><h3 className="font-semibold flex items-center gap-2">{theme.name}{theme.isDefault && <span className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-primary/10 text-primary">Default</span>}</h3><ArrowUpRight size={17} className="text-primary" /></div><p className="text-sm text-on-surface-variant mt-1">{theme.description || (hasSignatureLayout(theme) ? 'Original collection · Signature layout' : 'Original collection · Flexible layouts')}</p></div>
             </button>)}
         </div></section>)}
         {!groups.some(([, items]) => items.some(matches)) && <p role="status" className="py-10 text-center text-on-surface-variant">No designs match “{query}”. Try another name or colour.</p>}

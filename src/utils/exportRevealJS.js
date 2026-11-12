@@ -1,20 +1,31 @@
 import { teachingStyles, teachingIllustrationStyle, inlineStyle } from './teachingDesign.js';
 import { signatureSlide } from './signatureDesigns.js';
+import { watermarkStyle } from './watermark.js';
 import { installSlidePdfExport } from './slidePdfRuntime.js';
+import katex from 'katex';
 
 
 const escapeHtml = (value) => String(value ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
 const enforceDisplayMath = (text) => {
     if (!text) return "";
-    const parts = escapeHtml(text).replaceAll(String.fromCharCode(12) + 'rac', '\\frac').split('$');
+    const parts = String(text).replaceAll(String.fromCharCode(12) + 'rac', '\\frac').split('$');
     return parts.map((part, index) => {
         if (part === '') return '';
-        if (index % 2 !== 0) {
-            return '$' + (part.includes('\\displaystyle') ? part : '\\displaystyle ' + part) + '$';
-        }
-        return part;
+        if (index % 2 !== 0) return renderTex(part);
+        return escapeHtml(part);
     }).join('');
+};
+
+// Render $…$ with the same KaTeX settings as the live preview, so the file matches what the
+// teacher saw. Fractions are forced to display style, as the preview does for readability.
+const renderTex = (tex) => katex.renderToString(tex.includes('\\displaystyle') ? tex : `\\displaystyle ${tex}`, { displayMode: false, throwOnError: false, strict: false, trust: true, output: 'html' });
+
+const CDN = {
+    resetCss: '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.2.1/reset.min.css">',
+    revealCss: '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.2.1/reveal.min.css">',
+    katexCss: '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.22/katex.min.css">',
+    revealJs: '<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.2.1/reveal.min.js"></script>',
 };
 
 const x = (val) => (val * 128) + 'px';
@@ -46,15 +57,17 @@ const renderContext = (text) => {
     return html;
 };
 
-export const buildRevealHtml = (config, activeSlides, theme, layoutId = 'modern-sidebar') => {
+export const buildRevealHtml = (config, activeSlides, theme, layoutId = 'modern-sidebar', assets = {}) => {
+    const style = key => assets[key] ? `<style>${assets[key]}</style>` : CDN[key];
     let htmlContent = `<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
     <title>${escapeHtml(config.mainTitle1)} ${escapeHtml(config.mainTitle2)}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reset.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.min.css">
+    ${style('resetCss')}
+    ${style('revealCss')}
+    ${style('katexCss')}
     
     <style>
         html, body, .reveal { background-color: #${theme.bgColor} !important; margin: 0; padding: 0; width: 100%; height: 100%; }
@@ -66,8 +79,7 @@ export const buildRevealHtml = (config, activeSlides, theme, layoutId = 'modern-
             box-sizing: border-box;
             position: relative;
         }
-        .MathJax { font-size: 1.1em !important; }
-        .MathJax_SVG svg g, .MathJax_SVG svg use { fill: currentColor !important; stroke: currentColor !important; }
+        .katex { font-size: 1.1em; }
         
         .slide-container {
             position: relative;
@@ -501,19 +513,22 @@ export const buildRevealHtml = (config, activeSlides, theme, layoutId = 'modern-
     };
 
     // Wrap all slides in a single section for vertical (up-down) navigation
+    const watermarkText = String(config?.watermark ?? '').trim();
+    const withWatermark = html => watermarkText ? html.replace(/(<div class="slide-container"[^>]*>)/, `$1<div style="${inlineStyle(watermarkStyle(theme, layoutId))}">${escapeHtml(watermarkText)}</div>`) : html;
+
     htmlContent += `<section>\n`;
 
     // GENERATE TITLE SLIDE FIRST
-    htmlContent += generateSlideHtml(true, null, layoutId);
+    htmlContent += withWatermark(generateSlideHtml(true, null, layoutId));
 
     // GENERATE QUESTION SLIDES
     activeSlides.forEach(slide => {
-        htmlContent += generateSlideHtml(false, slide, layoutId);
+        htmlContent += withWatermark(generateSlideHtml(false, slide, layoutId));
         
         if (config.insertBlankSlides) {
             // Generate identical slide but without qText or options
             const blankSlide = { ...slide, qText: '', context: '', options: [], isWorkspace: true };
-            htmlContent += generateSlideHtml(false, blankSlide, layoutId);
+            htmlContent += withWatermark(generateSlideHtml(false, blankSlide, layoutId));
         }
     });
 
@@ -529,14 +544,7 @@ export const buildRevealHtml = (config, activeSlides, theme, layoutId = 'modern-
         Save as PDF
     </button>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.min.js"></script>
-    <script>
-        window.MathJax = {
-            tex2jax: { inlineMath: [['$','$']], displayMath: [['$$','$$']], processEscapes: true },
-            SVG: { useGlobalCache: false }, showMathMenu: false, messageStyle: 'none'
-        };
-    </script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-AMS_SVG"></script>
+    ${assets.revealJs ? `<script>${assets.revealJs}</script>` : CDN.revealJs}
     <script>
         window.slidesReady = Reveal.initialize({
             width: 1280,
@@ -550,10 +558,6 @@ export const buildRevealHtml = (config, activeSlides, theme, layoutId = 'modern-
             pdfPageHeightOffset: 0,
         });
 
-        window.slidesReady = window.slidesReady.then(() => new Promise(resolve => {
-            if (window.MathJax?.Hub) window.MathJax.Hub.Queue(['Typeset', window.MathJax.Hub], resolve);
-            else throw new Error("Math rendering could not load. Check your connection and reload the slides.");
-        }));
         window.addEventListener('beforeprint', () => {
             document.getElementById('print-slides')?.remove();
             const pages = document.createElement('div');
@@ -572,8 +576,8 @@ export const buildRevealHtml = (config, activeSlides, theme, layoutId = 'modern-
     return htmlContent;
 };
 
-export const exportToRevealJS = (config, activeSlides, theme, layoutId = 'modern-sidebar') => {
-    const htmlContent = buildRevealHtml(config, activeSlides, theme, layoutId);
+export const exportToRevealJS = (config, activeSlides, theme, layoutId = 'modern-sidebar', assets = {}) => {
+    const htmlContent = buildRevealHtml(config, activeSlides, theme, layoutId, assets);
     const blob = new Blob([htmlContent], { type: 'text/html' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');

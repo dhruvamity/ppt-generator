@@ -5,6 +5,7 @@ import toast from 'react-hot-toast';
 
 import { extractDocumentTitle, parseLocalText, serializeQuestions } from '../utils/questionParser.js';
 import { DEFAULT_THUMBNAIL } from '../utils/thumbnailDesign.js';
+import { upsertCurrentDeck, DEFAULT_THEME_ID as DEFAULT_THEME, DECK_TEXT_FIELDS } from '../utils/recentDecks.js';
 export { normalizeMathText, convertFractions, extractDocumentTitle, parseLocalText } from '../utils/questionParser.js';
 
 const editedSlidesState = (slides) => ({
@@ -13,7 +14,7 @@ const editedSlidesState = (slides) => ({
     rawText: serializeQuestions(slides),
 });
 
-const defaultRawText = `Case 1: Find the greatest possible number with which when we divide 37 and 58, it leaves the respective remainder of 2 and 3.
+export const EXAMPLE_RAW_TEXT = `Case 1: Find the greatest possible number with which when we divide 37 and 58, it leaves the respective remainder of 2 and 3.
 Case 2: Find the largest possible number with which when 60 and 98 are divided it leaves the remainders 3 in each case.
 Case 3: Find the largest possible number with which when 38, 66 and 80 are divided the remainder remains the same.
 2. Worked Examples
@@ -33,8 +34,14 @@ const initialConfig = {
     pill1: 'MATHEMATICS',
     pill2: '2026 EDITION',
     footer: 'JEE | CAT | COMPETITIVE EXAMS',
+    watermark: '',
     insertBlankSlides: false,
 };
+export const DEFAULT_THEME_ID = DEFAULT_THEME;
+
+// The sample deck shown on first visit is not worth remembering until the teacher changes something.
+const isUntouched = (state) => state.rawText === EXAMPLE_RAW_TEXT && DECK_TEXT_FIELDS.every(key => (state.config?.[key] ?? '') === initialConfig[key]);
+const saveDeck = (state, force = false) => upsertCurrentDeck(state, { force, untouched: isUntouched(state) });
 
 export const useStore = create(
     persist(
@@ -44,7 +51,11 @@ export const useStore = create(
             setConfig: (newConfig) => set({ config: { ...get().config, ...newConfig } }),
 
             // Raw Text & Parsing
-            rawText: defaultRawText,
+            rawText: "",
+            loadExample: () => set({ rawText: EXAMPLE_RAW_TEXT, aiQuestions: null, rawTextBeforeAI: null }),
+            // One level of undo for AI formatting, which rewrites the source text.
+            rawTextBeforeAI: null,
+            undoAiFormat: () => set((state) => state.rawTextBeforeAI == null ? {} : { rawText: state.rawTextBeforeAI, aiQuestions: null, rawTextBeforeAI: null }),
             setRawText: (text) => set((state) => {
                 const title = extractDocumentTitle(text);
                 const previousTitle = extractDocumentTitle(state.rawText);
@@ -93,7 +104,7 @@ export const useStore = create(
                     
                     const cleanText = serializeQuestions(indexedData);
                     
-                    set({ aiQuestions: indexedData, activeSlides: indexedData, rawText: cleanText, isParsing: false });
+                    set({ aiQuestions: indexedData, activeSlides: indexedData, rawText: cleanText, rawTextBeforeAI: rawText, isParsing: false });
                 } catch (error) {
                     console.error("AI Generation failed:", error);
                     set({ isParsing: false });
@@ -155,7 +166,7 @@ export const useStore = create(
             }),
 
             // Themes
-            themeId: 'modern-neon',
+            themeId: DEFAULT_THEME_ID,
             setThemeId: (id) => set({ themeId: id }),
 
             // Layout (independent from theme colors)
@@ -171,9 +182,9 @@ export const useStore = create(
 
             // Dashboard Persistence (Decks, Themes & Folders)
             recentDecks: [],
-            addRecentDeck: (deck) => set((state) => ({ 
-                recentDecks: [deck, ...state.recentDecks.filter(d => d.id !== deck.id)].slice(0, 10) 
-            })),
+            currentDeckId: null,
+            saveCurrentDeck: () => set((state) => saveDeck(state, true) || {}),
+            removeRecentDeck: (id) => set((state) => ({ recentDecks: state.recentDecks.filter(deck => deck.id !== id), ...(state.currentDeckId === id ? { currentDeckId: null } : {}) })),
             
             savedThemes: [],
             addSavedTheme: (theme) => set((state) => ({ 
@@ -187,19 +198,24 @@ export const useStore = create(
 
             // Actions for routing
             loadDeck: (deck) => set({
-                config: deck.config,
+                currentDeckId: deck.id,
+                config: { ...initialConfig, ...deck.config },
                 rawText: deck.rawText,
                 themeId: deck.themeId,
                 layoutId: deck.layoutId || 'modern-sidebar',
-                aiQuestions: deck.aiQuestions || null
+                aiQuestions: deck.aiQuestions || null,
+                activeSlides: deck.aiQuestions || [],
             }),
 
             clearGeneratorState: () => set({
+                currentDeckId: null,
                 config: initialConfig,
-                rawText: defaultRawText,
-                themeId: 'modern-neon',
+                rawText: "",
+                rawTextBeforeAI: null,
+                themeId: DEFAULT_THEME_ID,
                 layoutId: 'modern-sidebar',
-                aiQuestions: null
+                aiQuestions: null,
+                activeSlides: [],
             })
         }),
         {
@@ -210,8 +226,18 @@ export const useStore = create(
             onRehydrateStorage: () => (state) => {
                 if (state) {
                     state.isParsing = false;
+                    state.config = { ...initialConfig, ...state.config };
+                    if (!state.themeId) state.themeId = DEFAULT_THEME_ID;
                 }
             }
         }
     )
 );
+
+// Keep the working deck in recent decks as the teacher parses, edits or restyles it.
+const DECK_FIELDS = ['activeSlides', 'config', 'themeId', 'layoutId', 'rawText'];
+useStore.subscribe((state, previous) => {
+    if (DECK_FIELDS.every(key => state[key] === previous[key])) return;
+    const patch = saveDeck(state);
+    if (patch) useStore.setState(patch);
+});

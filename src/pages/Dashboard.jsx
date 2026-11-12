@@ -1,13 +1,16 @@
 import React, { useState } from 'react';
-import { Plus, Grid, Star, Clock, Folder, PlusCircle, Frown } from 'lucide-react';
+import { Plus, Grid, Star, Clock, Folder, PlusCircle, Frown, Trash2 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useStore } from '../store/useStore';
+import { useStore, DEFAULT_THEME_ID } from '../store/useStore';
+import { THEMES } from '../utils/themeConfig';
 import ThemeBuilderModal from '../components/Dashboard/ThemeBuilderModal';
+import DesignThumbnail from '../components/Generator/DesignThumbnail';
 
 export default function Dashboard() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const navigate = useNavigate();
-    const { recentDecks, savedThemes, clearGeneratorState, loadDeck } = useStore();
+    const { recentDecks, savedThemes, clearGeneratorState, loadDeck, removeRecentDeck } = useStore();
+    const themeFor = deck => THEMES[deck.themeId] || savedThemes.find(theme => theme.id === deck.themeId) || THEMES[DEFAULT_THEME_ID];
 
     const handleNewPresentation = () => {
         clearGeneratorState();
@@ -99,21 +102,24 @@ export default function Dashboard() {
                     ) : (
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-gutter">
                             {recentDecks.map((deck) => (
-                                <div key={deck.id} onClick={() => handleLoadDeck(deck)} className="group bg-surface border border-outline-variant rounded-xl overflow-hidden hover:border-primary hover:shadow-[0_4px_20px_rgba(0,0,0,0.05)] transition-all duration-150 cursor-pointer flex flex-col">
-                                    <div className="w-full aspect-video relative overflow-hidden bg-surface-container-low flex items-center justify-center text-outline">
-                                        <Folder size={48} className="opacity-20" />
+                                <div key={deck.id} role="button" tabIndex={0} onClick={() => handleLoadDeck(deck)} onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); handleLoadDeck(deck); } }} className="group bg-surface border border-outline-variant rounded-xl overflow-hidden hover:border-primary hover:shadow-[0_4px_20px_rgba(0,0,0,0.05)] transition-all duration-150 cursor-pointer flex flex-col focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary">
+                                    <div className="w-full relative overflow-hidden bg-surface-container-low">
+                                        <DesignThumbnail theme={themeFor(deck)} layoutId={deck.layoutId} view="title" config={deck.config} />
                                         <div className="absolute top-2 right-2 bg-surface/90 backdrop-blur-sm px-2 py-1 rounded font-label-sm text-xs font-bold text-on-surface border border-outline-variant/50">
                                             {deck.slidesCount} Slides
                                         </div>
                                     </div>
-                                    <div className="p-4 flex flex-col gap-1 border-t border-outline-variant">
-                                        <h3 className="font-label-md font-semibold text-on-surface truncate group-hover:text-primary transition-colors">{deck.title || "Untitled Deck"}</h3>
-                                        <div className="flex items-center gap-2 text-on-surface-variant font-label-sm text-xs">
-                                            <span className="w-2 h-2 rounded-full bg-secondary"></span>
-                                            <span>Generated</span>
-                                            <span className="text-outline mx-1">•</span>
-                                            <span>{new Date(deck.date).toLocaleDateString()}</span>
+                                    <div className="p-4 flex items-start justify-between gap-2 border-t border-outline-variant">
+                                        <div className="min-w-0 flex flex-col gap-1">
+                                            <h3 className="font-label-md font-semibold text-on-surface truncate group-hover:text-primary transition-colors">{deck.title || "Untitled Deck"}</h3>
+                                            <div className="flex items-center gap-2 text-on-surface-variant font-label-sm text-xs">
+                                                <span className="w-2 h-2 rounded-full bg-secondary"></span>
+                                                <span>{themeFor(deck).name}</span>
+                                                <span className="text-outline mx-1">•</span>
+                                                <span>{new Date(deck.date).toLocaleDateString()}</span>
+                                            </div>
                                         </div>
+                                        <button type="button" aria-label={`Remove ${deck.title || 'deck'} from recent decks`} onClick={event => { event.stopPropagation(); removeRecentDeck(deck.id); }} className="shrink-0 p-1.5 rounded-lg text-on-surface-variant hover:text-error hover:bg-error/10"><Trash2 size={16} /></button>
                                     </div>
                                 </div>
                             ))}

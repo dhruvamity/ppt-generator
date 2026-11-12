@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Check, ChevronDown } from 'lucide-react';
-import { useStore } from '../../store/useStore';
+import { useStore, DEFAULT_THEME_ID } from '../../store/useStore';
 import { THEMES } from '../../utils/themeConfig';
 import { DESIGN_LAYOUTS, hasSignatureLayout } from '../../utils/teachingDesign.js';
 import DesignThumbnail, { PreviewViews } from './DesignThumbnail';
@@ -10,7 +10,7 @@ export default function ThemeSelector() {
     const [view, setView] = useState('question');
     const [expanded, setExpanded] = useState(false);
     const themes = [...Object.entries(THEMES).map(([id, theme]) => ({ ...theme, id })), ...savedThemes];
-    const selected = themes.find(theme => theme.id === themeId) || themes[0];
+    const selected = themes.find(theme => theme.id === themeId) || themes.find(theme => theme.id === DEFAULT_THEME_ID);
     return <div className="flex flex-col gap-4 mb-6">
         <div className="flex items-center justify-between"><h3 className="font-semibold">Slide design</h3><span className="text-xs text-on-surface-variant">{themes.length} designs</span></div>
         <PreviewViews value={view} onChange={setView} />
