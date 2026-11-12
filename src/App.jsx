@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, Navigate } from 'react-router-dom';
 import {
     TaskChooseOrganization,
@@ -9,12 +9,14 @@ import {
 } from '@clerk/clerk-react';
 import TopNavBar from './components/TopNavBar';
 import Landing from './pages/Landing';
-import Dashboard from './pages/Dashboard';
-import Generator from './pages/Generator';
-import Templates from './pages/Templates';
-import ThumbnailStudio from './pages/ThumbnailStudio';
 import ErrorBoundary from './components/ErrorBoundary';
 import { Toaster } from 'react-hot-toast';
+
+// Signed-in pages load on demand so the landing page ships without the editor, KaTeX or export bundle.
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const Generator = lazy(() => import('./pages/Generator'));
+const Templates = lazy(() => import('./pages/Templates'));
+const ThumbnailStudio = lazy(() => import('./pages/ThumbnailStudio'));
 
 function NotFound() {
     return (
@@ -49,7 +51,7 @@ function ProtectedRoute({ children }) {
     if (session?.status === 'pending') return <Navigate to="/session-tasks" replace />;
     if (!isSignedIn) return <Navigate to="/" replace />;
 
-    return children;
+    return <Suspense fallback={<AuthLoading />}>{children}</Suspense>;
 }
 
 function HomeRoute() {
