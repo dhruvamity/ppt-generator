@@ -38,6 +38,9 @@ export default function TopNavBar() {
                             <Link to="/templates" className={`h-full flex items-center mt-1 font-bold pb-1 border-b-2 ${location.pathname === '/templates' ? 'text-primary border-primary' : 'text-on-surface-variant border-transparent hover:text-primary transition-colors'}`}>
                                 Templates
                             </Link>
+                            <Link to="/thumbnails" className={`h-full flex items-center mt-1 font-bold pb-1 border-b-2 ${location.pathname === '/thumbnails' ? 'text-primary border-primary' : 'text-on-surface-variant border-transparent hover:text-primary transition-colors'}`}>
+                                Thumbnails
+                            </Link>
                         </div>
 
                         <div className="flex items-center gap-stack-md ml-auto">

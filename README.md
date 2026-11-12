@@ -7,6 +7,7 @@ Deckful helps teachers turn question sets and lesson material into editable pres
 - A question parser and editor for multiple choice questions, shared passages, and workspace slides.
 - AI assisted formatting through Gemini, called by the FastAPI backend.
 - Theme and layout previews, saved decks, and presentation exports.
+- A Thumbnail studio (`/thumbnails`): pick a pre-designed 1280 × 720 layout, upload a teacher photo, edit the chapter, sub-topic, lecture number and tags, and download a PNG. The photo never leaves the browser.
 - A React and Vite frontend with a FastAPI backend.
 
 ## Local development

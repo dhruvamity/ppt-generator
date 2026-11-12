@@ -37,7 +37,7 @@ const DESIGNS = {
         badge: { backgroundColor: `#${t.cyan}`, color: '#FFFFFF', padding: '6px 18px', borderRadius: '8px' },
         body: { left: 144, top: 110, right: 64, bottom: 80 }, titleTop: 170,
     }),
-    indexcard: (t) => ({
+    indexcard: () => ({
         display: 'Georgia, serif',
         decorations: [
             { behind: true, style: box(64, 56, 1152, 608, { backgroundColor: '#FFFDF7', borderRadius: '10px', boxShadow: '0 14px 36px rgba(0,0,0,0.35)' }) },
