@@ -1,4 +1,5 @@
 import { teachingStyles, teachingIllustrationStyle, inlineStyle } from './teachingDesign.js';
+import { signatureSlide } from './signatureDesigns.js';
 import { installSlidePdfExport } from './slidePdfRuntime.js';
 
 
@@ -110,7 +111,7 @@ export const buildRevealHtml = (config, activeSlides, theme, layoutId = 'modern-
         optionsArray.forEach(opt => {
             optsHtml += `
                 <div style="min-width: 0; display: flex; gap: 8px; margin-bottom: 0.25rem; color: #${color}; font-size: ${theme.teaching ? '28px' : fs(11)}; line-height: 1.5;">
-                    <strong>(${escapeHtml(String(opt.label).replace(/[().]/g, "").toUpperCase())})</strong> <span style="min-width: 0;">${enforceDisplayMath(opt.text)}</span>
+                    <strong style="white-space: nowrap;">(${escapeHtml(String(opt.label).replace(/[().]/g, "").toUpperCase())})</strong> <span style="min-width: 0;">${enforceDisplayMath(opt.text)}</span>
                 </div>
             `;
         });
@@ -138,6 +139,18 @@ export const buildRevealHtml = (config, activeSlides, theme, layoutId = 'modern-
 
     const generateSlideHtml = (isTitle, slide, layoutType) => {
         let slideHtml = '';
+
+        if (theme.design) {
+            const workspace = Boolean(slide?.isWorkspace);
+            const composed = signatureSlide(theme, isTitle, workspace);
+            const s = key => inlineStyle(composed[key]);
+            return `<section><div class="slide-container" data-workspace="${workspace}" style="font-family:${composed.font}">
+                ${composed.decorations.map(item => `<div style="${inlineStyle(item.style)}">${escapeHtml(item.text || '')}</div>`).join('')}
+                ${!isTitle ? `<div style="${s('header')}"><span style="${s('badge')}">${workspace ? 'WORK SPACE' : escapeHtml(slide?.badge)}</span>${composed.rule ? `<div style="${s('rule')}"></div>` : ''}</div>` : ''}
+                <div style="${s('body')}">${isTitle
+                    ? `<div style="${s('title')}">${escapeHtml(config?.mainTitle1)}<br><span style="color:#${theme.cyan}">${escapeHtml(config?.mainTitle2)}</span></div><div style="${s('subtitle')}">${[config?.pill1, config?.pill2].filter(Boolean).map(escapeHtml).join(' / ')}</div><div style="${s('footer')}">${escapeHtml(config?.footer)}</div>`
+                    : workspace ? `<div style="${s('workspace')}"></div>` : renderQuestionContent(slide, theme.cyan)}</div></div></section>`;
+        }
 
         if (theme.teaching) {
             const workspace = Boolean(slide?.isWorkspace);

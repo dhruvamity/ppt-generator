@@ -1,4 +1,5 @@
 import { teachingStyles, teachingIllustrationStyle, previewStyle } from '../../utils/teachingDesign.js';
+import { signatureSlide } from '../../utils/signatureDesigns.js';
 import React from 'react';
 import EditableBlock from './EditableBlock';
 import { useStore } from '../../store/useStore';
@@ -49,7 +50,7 @@ export default function LiveSlidePreview({ theme, type = 'title', config, questi
             <div style={{ marginTop: '2.4cqw', display: 'grid', gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`, width: '100%', gap: '1.2cqw' }}>
                 {options.map((opt, i) => (
                     <div key={i} style={{ minWidth: 0, display: 'flex', alignItems: 'baseline', gap: '0.4em', color: `#${color}`, fontSize: theme.teaching ? '2.1875cqw' : fs(11), lineHeight: 1.5 }}>
-                        <strong>({opt.label})</strong> 
+                        <strong style={{ whiteSpace: 'nowrap' }}>({opt.label})</strong> 
                         <EditableBlock 
                             value={opt.text} 
                             theme={theme}
@@ -391,6 +392,21 @@ export default function LiveSlidePreview({ theme, type = 'title', config, questi
             </>
         );
     };
+
+    if (theme.design) {
+        const title = type === 'title';
+        const workspace = Boolean(questionData?.isWorkspace);
+        const slide = signatureSlide(theme, title, workspace);
+        const s = key => previewStyle(slide[key]);
+        return <div style={{ ...baseStyle, fontFamily: slide.font }} className="rounded-lg border border-outline-variant/30 flex-shrink-0">
+            {slide.decorations.map((item, i) => <div key={i} style={previewStyle(item.style)}>{item.text}</div>)}
+            {!title && <div style={s('header')}><span style={s('badge')}>{workspace ? 'WORK SPACE' : questionData?.badge}</span>{slide.rule && <div style={s('rule')} />}</div>}
+            <div style={s('body')}>
+                {title ? <><div style={s('title')}>{config?.mainTitle1}<br /><span style={{ color: `#${theme.cyan}` }}>{config?.mainTitle2}</span></div><div style={s('subtitle')}>{[config?.pill1, config?.pill2].filter(Boolean).join(' / ')}</div><div style={s('footer')}>{config?.footer}</div></>
+                    : workspace ? <div style={s('workspace')} /> : renderQuestionBody(theme.cyan)}
+            </div>
+        </div>;
+    }
 
     if (theme.teaching) {
         const title = type === 'title';

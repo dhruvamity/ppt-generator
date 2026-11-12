@@ -34,6 +34,80 @@ export const THEMES = {
         bgColor: '132034', textWhite: 'F2F5FA', textBlack: '132034', cyan: 'A9C9F2',
         purple: 'A9C9F2', gold: 'A9C9F2', bgCard: '132034', rule: '34465E'
     },
+    'graph-paper': {
+        name: 'Graph Paper', teaching: true, illustration: 'grid', description: 'Squared paper with a plotted parabola and straight line in the margin. The working area stays plain.',
+        bgColor: 'F7FAFD', textWhite: '1C2A3A', textBlack: 'F7FAFD', cyan: '2B5FB3',
+        purple: '2B5FB3', gold: '2B5FB3', bgCard: 'F7FAFD', rule: 'D3DFEC'
+    },
+    'geometry-set': {
+        name: 'Geometry Set', teaching: true, illustration: 'geometry', description: 'A circle theorem, protractor and labelled triangle on warm paper, kept clear of the question.',
+        bgColor: 'FFFCF7', textWhite: '2B2521', textBlack: 'FFFCF7', cyan: 'B8532A',
+        purple: 'B8532A', gold: '6B7F8F', bgCard: 'FFFCF7', rule: 'EBDFD0'
+    },
+    'formula-board': {
+        name: 'Formula Board', teaching: true, illustration: 'formula', description: 'A dark slate board with faint sigma, integral and pi notation beside bright amber headings.',
+        bgColor: '1B2130', textWhite: 'F4F1EA', textBlack: '1B2130', cyan: 'F2B75C',
+        purple: 'F2B75C', gold: '8FA6C9', bgCard: '1B2130', rule: '3A4457'
+    },
+    'number-line': {
+        name: 'Number Line', teaching: true, illustration: 'numberline', description: 'A labelled integer line with jump arcs. Suited to integers, fractions and early algebra.',
+        bgColor: 'F4F8F5', textWhite: '1E2B25', textBlack: 'F4F8F5', cyan: '2E7D5B',
+        purple: '2E7D5B', gold: 'D9822B', bgCard: 'F4F8F5', rule: 'D2E1D7'
+    },
+    'fraction-tiles': {
+        name: 'Fraction Tiles', teaching: true, illustration: 'fractions', description: 'Equivalent-fraction bars, a quartered circle and counters for visual learners.',
+        bgColor: 'FFFDF8', textWhite: '24303B', textBlack: 'FFFDF8', cyan: '3B6FD4',
+        purple: '3B6FD4', gold: 'F2A541', bgCard: 'FFFDF8', rule: 'E5E3DC'
+    },
+    'trig-wave': {
+        name: 'Trig Wave', teaching: true, illustration: 'wave', description: 'A unit circle and flowing sine and cosine curves on deep teal for trigonometry and functions.',
+        bgColor: '0F2A2C', textWhite: 'ECF7F5', textBlack: '0F2A2C', cyan: '7FE3C8',
+        purple: '7FE3C8', gold: 'F7C873', bgCard: '0F2A2C', rule: '2C4A4B'
+    },
+    'chalkboard-frame': {
+        name: 'Chalkboard Frame', teaching: true, design: 'chalkboard', description: 'A green board inside a wooden frame with a chalk tray. Questions sit in the clear centre.',
+        bgColor: '2F5D50', textWhite: 'F7F3E8', textBlack: '2F5D50', cyan: 'FFE08A', purple: 'FFE08A', gold: 'FFE08A', bgCard: '2F5D50', rule: '4C7A6C'
+    },
+    'spiral-notebook': {
+        name: 'Spiral Notebook', teaching: true, design: 'spiral', description: 'Spiral binding and a red margin on the left. Clean white page for the working.',
+        bgColor: 'FFFFFF', textWhite: '1F2933', textBlack: 'FFFFFF', cyan: '2B6CB0', purple: '2B6CB0', gold: '2B6CB0', bgCard: 'FFFFFF', rule: 'DCE3EC'
+    },
+    'index-card': {
+        name: 'Index Card', teaching: true, design: 'indexcard', description: 'A tabbed revision card with a paper clip on a slate desk. Great for formula recall.',
+        bgColor: '3E5C76', textWhite: '1D1D1D', textBlack: 'FFFFFF', cyan: 'C0392B', purple: 'C0392B', gold: 'C0392B', bgCard: 'FFFDF7', rule: 'E6DFD0'
+    },
+    'omr-sheet': {
+        name: 'OMR Sheet', teaching: true, design: 'omr', description: 'Answer-sheet bubbles down the right edge and a barcode header. Built for exam-style MCQs.',
+        bgColor: 'FBFBF8', textWhite: '1A1A1A', textBlack: 'FFFFFF', cyan: 'D32F2F', purple: 'D32F2F', gold: 'D32F2F', bgCard: 'FBFBF8', rule: 'C7CED8'
+    },
+    'quant-clock': {
+        name: 'Quant Clock', teaching: true, design: 'quantclock', description: 'The question number sits inside a stopwatch dial with a progress bar. Made for timed CAT drills.',
+        bgColor: '14213D', textWhite: 'F4F6FB', textBlack: '14213D', cyan: 'FCA311', purple: 'FCA311', gold: 'FCA311', bgCard: '14213D', rule: '2C3E66'
+    },
+    'data-deck': {
+        name: 'Data Deck', teaching: true, design: 'datadeck', description: 'Bar chart base and a doughnut corner for data interpretation sets.',
+        bgColor: 'FFFFFF', textWhite: '1B2A41', textBlack: 'FFFFFF', cyan: '0F766E', purple: '0F766E', gold: 'F59E0B', bgCard: 'FFFFFF', rule: 'D9E2EC'
+    },
+    'abacus-rail': {
+        name: 'Abacus Rail', teaching: true, design: 'abacus', description: 'A terracotta band of abacus beads across the top. Warm paper below for arithmetic.',
+        bgColor: 'FDF6E3', textWhite: '3B2F2F', textBlack: 'FFF4E6', cyan: 'C8553D', purple: 'C8553D', gold: 'C8553D', bgCard: 'FDF6E3', rule: 'E8D9BF'
+    },
+    'tangram-corner': {
+        name: 'Tangram Corner', teaching: true, design: 'tangram', description: 'Seven bright tangram pieces tucked in the corner of a dark slide.',
+        bgColor: '101418', textWhite: 'F5F7FA', textBlack: '101418', cyan: 'F4A261', purple: 'F4A261', gold: 'F4A261', bgCard: '101418', rule: '2A3038'
+    },
+    'ticket-stub': {
+        name: 'Ticket Stub', teaching: true, design: 'ticket', description: 'A perforated red stub holds the question number sideways, like an exam entry pass.',
+        bgColor: 'FFF8E7', textWhite: '1D1D1D', textBlack: 'FFF8E7', cyan: 'E63946', purple: 'E63946', gold: 'E63946', bgCard: 'FFF8E7', rule: 'E8DCC5'
+    },
+    'night-drill': {
+        name: 'Night Drill', teaching: true, design: 'nightdrill', description: 'Black with an acid-yellow band and a huge sideways question number. For speed rounds.',
+        bgColor: '0B0B0F', textWhite: 'F2F2F2', textBlack: '0B0B0F', cyan: 'D7FF3F', purple: 'D7FF3F', gold: 'D7FF3F', bgCard: '0B0B0F', rule: '2A2A33'
+    },
+    'sudoku-grid': {
+        name: 'Sudoku Grid', teaching: true, design: 'sudoku', description: 'A part-filled sudoku in the corner for logic and reasoning sessions.',
+        bgColor: 'F6F7FB', textWhite: '1E1B2E', textBlack: 'FFFFFF', cyan: '5B21B6', purple: '5B21B6', gold: '5B21B6', bgCard: 'F6F7FB', rule: 'D9DCE6'
+    },
     'modern-neon': {
         name: 'Cyberpunk Neon', bgColor: '110F1A', cyan: '00C6D4', purple: '7E32C6',
         gold: 'C4961A', magenta: 'CC00FF', watermark: '2B2043', tealDecor: '00C6D4', 

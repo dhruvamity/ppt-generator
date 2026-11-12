@@ -12,6 +12,7 @@ import Landing from './pages/Landing';
 import Dashboard from './pages/Dashboard';
 import Generator from './pages/Generator';
 import Templates from './pages/Templates';
+import ThumbnailStudio from './pages/ThumbnailStudio';
 import ErrorBoundary from './components/ErrorBoundary';
 import { Toaster } from 'react-hot-toast';
 
@@ -93,6 +94,7 @@ export default function App() {
                         <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
                         <Route path="/generator" element={<ProtectedRoute><Generator /></ProtectedRoute>} />
                         <Route path="/templates" element={<ProtectedRoute><Templates /></ProtectedRoute>} />
+                        <Route path="/thumbnails" element={<ProtectedRoute><ThumbnailStudio /></ProtectedRoute>} />
                         <Route path="/session-tasks" element={<SessionTasksRoute />} />
                         <Route path="*" element={<NotFound />} />
                     </Routes>

@@ -4,6 +4,7 @@ import { generateSlideData } from '../services/gemini';
 import toast from 'react-hot-toast';
 
 import { extractDocumentTitle, parseLocalText, serializeQuestions } from '../utils/questionParser.js';
+import { DEFAULT_THUMBNAIL } from '../utils/thumbnailDesign.js';
 export { normalizeMathText, convertFractions, extractDocumentTitle, parseLocalText } from '../utils/questionParser.js';
 
 const editedSlidesState = (slides) => ({
@@ -161,6 +162,13 @@ export const useStore = create(
             layoutId: 'modern-sidebar',
             setLayoutId: (id) => set({ layoutId: id }),
 
+            // Thumbnail studio. The photo is a data URL kept in memory only (see partialize).
+            thumbnail: DEFAULT_THUMBNAIL,
+            setThumbnail: (patch) => set((state) => ({ thumbnail: { ...DEFAULT_THUMBNAIL, ...state.thumbnail, ...patch } })),
+            setThumbnailPhotoAdjust: (patch) => set((state) => ({ thumbnail: { ...DEFAULT_THUMBNAIL, ...state.thumbnail, photo: { ...DEFAULT_THUMBNAIL.photo, ...state.thumbnail?.photo, ...patch } } })),
+            thumbnailPhoto: null,
+            setThumbnailPhoto: (href) => set({ thumbnailPhoto: href }),
+
             // Dashboard Persistence (Decks, Themes & Folders)
             recentDecks: [],
             addRecentDeck: (deck) => set((state) => ({ 
@@ -197,7 +205,7 @@ export const useStore = create(
         {
             name: 'slidegen-storage', 
             partialize: (state) => Object.fromEntries(
-                Object.entries(state).filter(([key]) => key !== 'isParsing')
+                Object.entries(state).filter(([key]) => key !== 'isParsing' && key !== 'thumbnailPhoto')
             ),
             onRehydrateStorage: () => (state) => {
                 if (state) {
