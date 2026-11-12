@@ -1,4 +1,19 @@
 export const THEMES = {
+    'signal-studio': {
+        name: 'Signal Studio', teaching: true, illustration: 'signal', description: 'A bright, contemporary data-inspired look with quiet graph details at the edge.',
+        bgColor: 'F4F8FB', textWhite: '1B2B3B', textBlack: 'F4F8FB', cyan: '147D92',
+        purple: '147D92', gold: '147D92', bgCard: 'F4F8FB', rule: 'D7E4EA'
+    },
+    'orbit-lab': {
+        name: 'Orbit Lab', teaching: true, illustration: 'orbit', description: 'A deep space palette with subtle orbital line art around the solving area.',
+        bgColor: '11172B', textWhite: 'F4F6FD', textBlack: '11172B', cyan: '78D6F2',
+        purple: '78D6F2', gold: '78D6F2', bgCard: '11172B', rule: '303B57'
+    },
+    'prism-flow': {
+        name: 'Prism Flow', teaching: true, illustration: 'prism', description: 'Soft violet and aqua gradients add energy while keeping equations easy to read.',
+        bgColor: 'FBF9FF', textWhite: '2C2940', textBlack: 'FBF9FF', cyan: '7056C7',
+        purple: '7056C7', gold: '7056C7', bgCard: 'FBF9FF', rule: 'E6E0F0'
+    },
     'lecture-paper': {
         name: 'Lecture Paper', teaching: true, description: 'Crisp white paper with a quiet blue accent.',
         bgColor: 'FFFFFF', textWhite: '172B4D', textBlack: 'FFFFFF', cyan: '215DB0',

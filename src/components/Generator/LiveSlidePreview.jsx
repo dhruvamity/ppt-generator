@@ -1,4 +1,4 @@
-import { teachingStyles, previewStyle } from '../../utils/teachingDesign.js';
+import { teachingStyles, teachingIllustrationStyle, previewStyle } from '../../utils/teachingDesign.js';
 import React from 'react';
 import EditableBlock from './EditableBlock';
 import { useStore } from '../../store/useStore';
@@ -396,8 +396,10 @@ export default function LiveSlidePreview({ theme, type = 'title', config, questi
         const title = type === 'title';
         const workspace = Boolean(questionData?.isWorkspace);
         const styles = Object.fromEntries(Object.entries(teachingStyles(theme, layoutType, title, workspace)).map(([key, style]) => [key, previewStyle(style)]));
+        const illustration = theme.illustration ? previewStyle(teachingIllustrationStyle(theme)) : null;
         return <div style={baseStyle} className="rounded-lg border border-outline-variant/30 flex-shrink-0">
             <div style={styles.accent} />
+            {illustration && <div style={illustration} />}
             {!title && <div style={styles.header}><span>{workspace ? 'WORK SPACE' : questionData?.badge}</span><div style={styles.rule} /></div>}
             {layoutType === 'split-focus' && !title && !workspace && <div style={styles.rail} />}
             <div style={styles.body}>

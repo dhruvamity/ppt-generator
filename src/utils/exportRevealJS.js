@@ -1,4 +1,4 @@
-import { teachingStyles, inlineStyle } from './teachingDesign.js';
+import { teachingStyles, teachingIllustrationStyle, inlineStyle } from './teachingDesign.js';
 import { installSlidePdfExport } from './slidePdfRuntime.js';
 
 
@@ -142,7 +142,8 @@ export const buildRevealHtml = (config, activeSlides, theme, layoutId = 'modern-
         if (theme.teaching) {
             const workspace = Boolean(slide?.isWorkspace);
             const styles = Object.fromEntries(Object.entries(teachingStyles(theme, layoutType, isTitle, workspace)).map(([key, style]) => [key, inlineStyle(style)]));
-            return `<section><div class="slide-container" data-workspace="${workspace}" style="font-family:Arial,sans-serif"><div style="${styles.accent}"></div>
+            const illustration = theme.illustration ? inlineStyle(teachingIllustrationStyle(theme)) : '';
+            return `<section><div class="slide-container" data-workspace="${workspace}" style="font-family:Arial,sans-serif"><div style="${styles.accent}"></div>${illustration ? `<div style="${illustration}"></div>` : ''}
                 ${!isTitle ? `<div style="${styles.header}"><span>${workspace ? 'WORK SPACE' : escapeHtml(slide?.badge)}</span><div style="${styles.rule}"></div></div>` : ''}
                 ${layoutType === 'split-focus' && !isTitle && !workspace ? `<div style="${styles.rail}"></div>` : ''}
                 <div style="${styles.body}">${isTitle
