@@ -6,16 +6,19 @@ import { THEMES, THEME_GROUPS, themeGroup } from '../utils/themeConfig';
 import { DESIGN_LAYOUTS, hasSignatureLayout } from '../utils/teachingDesign.js';
 import DesignThumbnail, { PreviewViews } from '../components/Generator/DesignThumbnail';
 
+const BUILT_IN_THEMES = Object.entries(THEMES).map(([id, theme]) => ({ ...theme, id }));
+
 export default function Templates() {
-    const { savedThemes, setThemeId, setLayoutId } = useStore();
+    const savedThemes = useStore(state => state.savedThemes);
+    const setThemeId = useStore(state => state.setThemeId);
+    const setLayoutId = useStore(state => state.setLayoutId);
     const navigate = useNavigate();
     const [query, setQuery] = useState('');
     const [view, setView] = useState('question');
     const [layout, setLayout] = useState(() => useStore.getState().layoutId || 'modern-sidebar');
-    const themes = Object.entries(THEMES).map(([id, theme]) => ({ ...theme, id }));
     const matches = theme => `${theme.name} ${theme.description || ''}`.toLowerCase().includes(query.trim().toLowerCase());
     const groups = [
-        ...THEME_GROUPS.filter(group => group.id !== 'all').map(group => [`${group.name} · ${group.hint}`, themes.filter(theme => themeGroup(theme) === group.id)]),
+        ...THEME_GROUPS.filter(group => group.id !== 'all').map(group => [`${group.name} · ${group.hint}`, BUILT_IN_THEMES.filter(theme => themeGroup(theme) === group.id)]),
         ['Your custom themes', savedThemes],
     ];
     return <main className="flex-1 max-w-container-max mx-auto w-full px-margin-mobile md:px-margin-desktop pt-24 pb-12">

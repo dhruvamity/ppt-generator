@@ -11,7 +11,12 @@ import MathRenderer from './MathRenderer';
 import { useStore } from '../../store/useStore';
 
 const CORRECT = '16A34A';
+
 const MathText = ({ text }) => <span>{String(text ?? '').split('$').map((part, i) => i % 2 ? <MathRenderer key={i} math={`\\displaystyle ${part}`} /> : part)}</span>;
+
+function SampleText({ value, style }) {
+    return <div style={style}><MathText text={value} /></div>;
+}
 
 // Mirrors the export's present-time auto-fit: overflowing content scales down (to half size at
 // most) instead of being clipped, so the preview shows what the class will see.
@@ -60,8 +65,13 @@ function classicPreview(markup, questionBody) {
     return Array.from(document.body.childNodes, render);
 }
 
-export default function LiveSlidePreview({ theme, type = 'title', config, questionData, layoutId }) {
-    const { updateSlideQuestion, updateSlideContext, updateSlideOption, updateSlideAnswer, updateSlideSolution } = useStore();
+export default function LiveSlidePreview({ theme, type = 'title', config, questionData, layoutId, thumbnail = false }) {
+    // Action references are stable. Deck edits should only render the slides whose props change.
+    const updateSlideQuestion = useStore(state => state.updateSlideQuestion);
+    const updateSlideContext = useStore(state => state.updateSlideContext);
+    const updateSlideOption = useStore(state => state.updateSlideOption);
+    const updateSlideAnswer = useStore(state => state.updateSlideAnswer);
+    const updateSlideSolution = useStore(state => state.updateSlideSolution);
     if (!theme) return null;
 
     const layoutType = layoutId || 'modern-sidebar';
@@ -78,6 +88,9 @@ export default function LiveSlidePreview({ theme, type = 'title', config, questi
         fontFamily: 'Arial, sans-serif'
     };
 
+    // Catalogue cards use a fixed, short sample. Measuring every card forces synchronous layout
+    // during the click that opens the picker, so only the editable preview uses FitBox.
+    const TextBlock = thumbnail ? SampleText : EditableBlock;
     const renderOptionsGrid = (options, color, slideIndex) => {
         if (!options || !Array.isArray(options) || options.length === 0) return null;
         
@@ -91,7 +104,7 @@ export default function LiveSlidePreview({ theme, type = 'title', config, questi
                 {options.map((opt, i) => (
                     <div key={i} title={i === correct ? 'Correct answer: revealed on the next click when presenting' : undefined} style={{ minWidth: 0, display: 'flex', alignItems: 'baseline', gap: '0.4em', color: `#${color}`, fontSize: theme.teaching ? '2.1875cqw' : fs(11), lineHeight: 1.5, ...(i === correct ? { outline: `0.16cqw dashed #${CORRECT}`, outlineOffset: '0.3cqw', borderRadius: '0.6cqw' } : {}) }}>
                         <strong style={{ whiteSpace: 'nowrap' }}>({opt.label})</strong> 
-                        <EditableBlock 
+                        <TextBlock
                             value={opt.text} 
                             theme={theme}
                             onChange={(newVal) => updateSlideOption(slideIndex, i, newVal)} 
@@ -109,10 +122,10 @@ export default function LiveSlidePreview({ theme, type = 'title', config, questi
         const answer = questionData?.answerText ?? answerLabel(questionData);
         return <div style={{ minWidth: 0 }}>
             {answer && <div style={{ display: 'flex', gap: '0.4em', color: `#${accent}`, fontSize: questionSize, fontWeight: 'bold', marginBottom: '1.25cqw' }}>Answer:
-                <EditableBlock value={answer} theme={theme} onChange={value => updateSlideAnswer(questionData?.index, value)} />
+                <TextBlock value={answer} theme={theme} onChange={value => updateSlideAnswer(questionData?.index, value)} />
             </div>}
             <div style={{ color: `#${textColor}`, fontSize: theme.teaching ? '2.1875cqw' : fs(10), lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>
-                <EditableBlock value={questionData?.solution} renderTables theme={theme} onChange={value => updateSlideSolution(questionData?.index, value)} />
+                <TextBlock value={questionData?.solution} renderTables theme={theme} onChange={value => updateSlideSolution(questionData?.index, value)} />
             </div>
         </div>;
     };
@@ -125,7 +138,10 @@ export default function LiveSlidePreview({ theme, type = 'title', config, questi
         </div>;
     };
 
-    const renderQuestionBody = (optionColor, textColor = theme.textWhite, bold = false) => <FitBox>{renderQuestionContent(optionColor, textColor, bold)}</FitBox>;
+    const renderQuestionBody = (optionColor, textColor = theme.textWhite, bold = false) => {
+        const content = renderQuestionContent(optionColor, textColor, bold);
+        return thumbnail ? content : <FitBox>{content}</FitBox>;
+    };
     const renderQuestionContent = (optionColor, textColor, bold) => {
         if (questionData?.kind === 'solution') return renderSolutionBody(optionColor, textColor);
         if (questionData?.kind === 'key') return renderAnswerKey(optionColor, textColor);
@@ -133,7 +149,7 @@ export default function LiveSlidePreview({ theme, type = 'title', config, questi
             const readOnly = questionData.kind === 'passage';
             return <div style={{ color: `#${textColor}`, fontSize: questionSize, whiteSpace: 'pre-wrap', lineHeight: 1.45 }}>
                 <h3 style={{ color: `#${optionColor}`, fontWeight: 700, marginBottom: '1cqw' }}>{questionData.title}</h3>
-                <EditableBlock value={questionData.qText} renderTables readOnly={readOnly} onChange={value => updateSlideQuestion(questionData.index, value)} />
+                <TextBlock value={questionData.qText} renderTables readOnly={readOnly} onChange={value => updateSlideQuestion(questionData.index, value)} />
                 {questionData.formula && <div style={{ marginTop: '1.4cqw', borderLeft: `0.3cqw solid #${optionColor}`, padding: '0.8cqw 1.2cqw' }}><MathText text={questionData.formula} /></div>}
             </div>;
         }
@@ -142,7 +158,7 @@ export default function LiveSlidePreview({ theme, type = 'title', config, questi
             <div style={{ minWidth: 0 }}>
                 {questionData?.contextReference && <p style={{ fontSize: questionSize, marginBottom: '0.7cqw', color: `#${optionColor}` }}>{questionData.contextReference}</p>}
                 <div style={{ color: `#${textColor}`, fontSize: questionSize, lineHeight: 1.5, whiteSpace: 'pre-wrap', fontWeight: bold ? 'bold' : 'normal' }}>
-                    <EditableBlock
+                    <TextBlock
                         value={questionData?.qText}
                         theme={theme}
                         onChange={(newVal) => updateSlideQuestion(questionData?.index, newVal)}
@@ -150,7 +166,7 @@ export default function LiveSlidePreview({ theme, type = 'title', config, questi
                 </div>
                 {renderOptionsGrid(questionData?.options, optionColor, questionData?.index)}
                 {freeAnswer && <div title="Revealed on the next click when presenting" style={{ marginTop: '2.2cqw', display: 'inline-flex', gap: '0.4em', color: `#${optionColor}`, fontSize: questionSize, fontWeight: 'bold', outline: `0.16cqw dashed #${CORRECT}`, outlineOffset: '0.3cqw', borderRadius: '0.6cqw' }}>Answer:
-                    <EditableBlock value={String(questionData.answer)} theme={theme} onChange={value => updateSlideAnswer(questionData?.index, value)} />
+                    <TextBlock value={String(questionData.answer)} theme={theme} onChange={value => updateSlideAnswer(questionData?.index, value)} />
                 </div>}
             </div>
         );
@@ -163,7 +179,7 @@ export default function LiveSlidePreview({ theme, type = 'title', config, questi
             <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 0.48fr) minmax(0, 0.52fr)', gap: '2.5cqw', width: '100%', minHeight: '100%' }}>
                 <div style={{ boxSizing: 'border-box', minWidth: 0, paddingRight: '1.875cqw', borderRight: `0.08cqw solid #${accent}`, color: `#${textColor}`, fontSize: theme.teaching ? '1.875cqw' : fs(10), lineHeight: 1.45, whiteSpace: 'pre-wrap' }}>
                     {figure && <img src={figure} alt={`Figure for ${questionData.badge}`} style={{ width: '100%', maxHeight: questionData.context ? '20cqw' : '36cqw', objectFit: 'contain' }} />}
-                    {questionData.context && <EditableBlock
+                    {questionData.context && <TextBlock
                         value={questionData.context}
                         renderTables
                         style={{ lineHeight: 1.45 }}

@@ -1,12 +1,16 @@
-import React from 'react';
+import React, { memo } from 'react';
 import LiveSlidePreview from './LiveSlidePreview';
 import { SAMPLE_CONFIG, SAMPLE_QUESTION } from '../../utils/teachingDesign.js';
 
-export default function DesignThumbnail({ theme, layoutId, view = 'question', config = SAMPLE_CONFIG }) {
+const WORKSPACE_SAMPLE = { isWorkspace: true, badge: 'WORK SPACE', qText: '', options: [] };
+
+const DesignThumbnail = memo(function DesignThumbnail({ theme, layoutId, view = 'question', config = SAMPLE_CONFIG }) {
     return <div inert aria-hidden="true" className="pointer-events-none w-full">
-        <LiveSlidePreview theme={theme} layoutId={layoutId} type={view === 'title' ? 'title' : 'question'} config={config} questionData={view === 'workspace' ? { isWorkspace: true, badge: 'WORK SPACE', qText: '', options: [] } : SAMPLE_QUESTION} />
+        <LiveSlidePreview theme={theme} layoutId={layoutId} type={view === 'title' ? 'title' : 'question'} config={config} questionData={view === 'workspace' ? WORKSPACE_SAMPLE : SAMPLE_QUESTION} thumbnail />
     </div>;
-}
+});
+
+export default DesignThumbnail;
 
 export function PreviewViews({ value, onChange }) {
     return <div className="flex flex-wrap gap-1" aria-label="Preview slide type">
