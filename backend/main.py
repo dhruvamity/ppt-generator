@@ -128,9 +128,6 @@ class SlideSchema(BaseModel):
     answer: Optional[str] = None
     solution: Optional[str] = None
 
-class BeamerRequest(BaseModel):
-    slides: List[dict]
-
 
 # Initialize Razorpay Client
 razorpay_client = razorpay.Client(
@@ -304,7 +301,9 @@ Raw text:
                     "text": sanitize_math(opt.get("text") or "")
                 })
             slide["options"] = options
-            slide["answer"] = re.sub(r'[()]', '', str(slide.get("answer") or "")).strip()
+            answer = str(slide.get("answer") or "").strip()
+            label = re.fullmatch(r"\(([A-Fa-f1-6])\)", answer) if options else None
+            slide["answer"] = label[1] if label else sanitize_math(answer)
             slide["solution"] = sanitize_math(slide.get("solution") or "")
             processed_data.append(slide)
 
@@ -313,8 +312,3 @@ Raw text:
     except Exception as e:
         print(f"Error during generation: {e}")
         raise HTTPException(status_code=500, detail=str(e))
-
-@app.post("/api/export-beamer")
-async def export_beamer(request: BeamerRequest, user=Depends(verify_token)):
-    # Structure placeholder for Beamer Export
-    return {"message": "Beamer export coming soon!"}

@@ -84,30 +84,39 @@ export const useStore = create(
             setIsParsing: (parsing) => set({ isParsing: parsing }),
 
             generateFromAI: async (token) => {
-                const { rawText } = get();
+                const { rawText, isParsing } = get();
+                if (isParsing) return;
                 set({ isParsing: true });
                 try {
-                    const data = await generateSlideData(rawText, token);
-                    const sourceQuestions = parseLocalText(rawText);
+                    const source = parseLocalText(rawText);
+                    const hasLessonContent = source.some(slide => slide.kind || slide.figure || slide.notes);
+                    // Lesson blocks and embedded images are edited locally and do not go to the formatter.
+                    const data = hasLessonContent ? source : await generateSlideData(rawText, token);
+                    if (get().rawText !== rawText) {
+                        set({ isParsing: false });
+                        return;
+                    }
+                    const sourceQuestions = source;
                     if (!Array.isArray(data) || data.length === 0) {
                         throw new Error('Formatting returned no questions. Please retry.');
                     }
-                    if (sourceQuestions.length > data.length) {
+                    if (sourceQuestions.length && sourceQuestions.length !== data.length) {
                         throw new Error(`Formatting returned ${data.length} of ${sourceQuestions.length} detected questions. Please retry; your original text is preserved.`);
                     }
                     
                     const sameCount = sourceQuestions.length === data.length;
+                    const explicitAnswer = /^\s*(?:Correct\s+)?(?:Answer|Ans)\s*(?:key)?\s*[:.\-–]/im.test(rawText);
+                    const explicitSolution = /^\s*(?:Solution|Sol|Explanation|Working)\s*[:.\-–]/im.test(rawText);
                     const indexedData = data.map((slide, i) => ({
-                        ...slide,
+                        ...(sameCount ? sourceQuestions[i] : slide),
                         // Explicit shared ranges are authoritative. Preserve all
                         // table values even if the AI compresses the passage.
-                        context: sameCount && sourceQuestions[i].context
-                            ? sourceQuestions[i].context
-                            : (slide.context || ''),
+                        context: sameCount ? sourceQuestions[i].context : slide.context || '',
                         // Answers and solutions written by the teacher win over the model's copy.
-                        answer: (sameCount && sourceQuestions[i].answer) || slide.answer || '',
-                        solution: (sameCount && sourceQuestions[i].solution) || slide.solution || '',
-                        badge: `Q.${i + 1}`
+                        answer: sameCount ? sourceQuestions[i].answer || '' : explicitAnswer ? slide.answer || '' : '',
+                        solution: sameCount ? sourceQuestions[i].solution || '' : explicitSolution ? slide.solution || '' : '',
+                        section: sameCount ? sourceQuestions[i].section : undefined,
+                        badge: sameCount ? sourceQuestions[i].badge : `Q.${i + 1}`
                     }));
                     
                     const cleanText = serializeQuestions(indexedData);
@@ -138,6 +147,13 @@ export const useStore = create(
                 const newSlides = state.activeSlides.map((slide, index) => index === slideIndex ? { ...slide, qText: newText } : slide);
                 return editedSlidesState(newSlides);
             }),
+            addLessonSlide: kind => set(state => editedSlidesState([
+                ...state.activeSlides,
+                { kind, title: kind === 'concept' ? 'New concept' : 'Formula sheet', qText: '', formula: '', notes: '' },
+            ])),
+            updateSlideDetails: (slideIndex, patch) => set(state => editedSlidesState(state.activeSlides.map(
+                (slide, index) => index === slideIndex ? { ...slide, ...patch } : slide
+            ))),
             updateSlideContext: (slideIndex, newText) => set((state) => {
                 const newSlides = state.activeSlides.map((slide, index) => index === slideIndex ? { ...slide, context: newText } : slide);
                 return editedSlidesState(newSlides);
@@ -159,20 +175,16 @@ export const useStore = create(
             updateSlideSolution: (slideIndex, solution) => set((state) => editedSlidesState(state.activeSlides.map((slide, index) => index === slideIndex ? { ...slide, solution: String(solution ?? '') } : slide))),
             removeSlide: (index) => set((state) => {
                 const filtered = state.activeSlides.filter((_, i) => i !== index);
-                const renumbered = filtered.map((slide, i) => ({
-                    ...slide,
-                    badge: `Q.${i + 1}`
-                }));
+                let questionNumber = 0;
+                const renumbered = filtered.map(slide => slide.kind ? slide : { ...slide, badge: `Q.${++questionNumber}` });
                 return editedSlidesState(renumbered);
             }),
             reorderSlides: (startIndex, endIndex) => set((state) => {
                 const result = Array.from(state.activeSlides);
                 const [removed] = result.splice(startIndex, 1);
                 result.splice(endIndex, 0, removed);
-                const renumbered = result.map((slide, i) => ({
-                    ...slide,
-                    badge: `Q.${i + 1}`
-                }));
+                let questionNumber = 0;
+                const renumbered = result.map(slide => slide.kind ? slide : { ...slide, badge: `Q.${++questionNumber}` });
                 return editedSlidesState(renumbered);
             }),
 
@@ -202,7 +214,7 @@ export const useStore = create(
                 savedThemes: [...state.savedThemes, theme] 
             })),
 
-            folders: ['Biology 101', 'SAT Math Prep', 'World History'],
+            folders: ['Maths Practice', 'CAT Quant', 'Aptitude Drills'],
             addFolder: (folderName) => set((state) => ({
                 folders: [...state.folders, folderName]
             })),

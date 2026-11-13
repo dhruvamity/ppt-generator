@@ -195,7 +195,6 @@ const DESIGNS = {
             decorations: [
                 { behind: true, style: box(0, 0, 1280, 56, { backgroundColor: '#1C3D6E' }) },
                 label(box(32, 16, 460, 24, { color: '#FFFFFF', fontSize: '15px', lineHeight: '24px', fontWeight: '700', letterSpacing: '0.5px' }), 'Section: Quantitative Ability'),
-                label(box(1000, 16, 248, 24, { color: '#FFD166', fontSize: '15px', lineHeight: '24px', fontWeight: '700', textAlign: 'right', letterSpacing: '1px' }), 'Time Left : 39:58'),
                 box(1000, 72, 256, 576, { backgroundColor: '#FFFFFF', border: '1px solid #CDD5E0', borderRadius: '6px', boxSizing: 'border-box' }),
                 label(box(1016, 84, 224, 24, { color: '#1C3D6E', fontSize: '13px', lineHeight: '24px', fontWeight: '700', letterSpacing: '2px' }), 'QUESTION PALETTE'),
                 box(1016, 120, 224, 250, art(224, 250, palette)),

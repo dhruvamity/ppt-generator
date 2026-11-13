@@ -2,6 +2,25 @@
 
 This pass is for maths, CAT and aptitude teachers. Most of the new slide designs stay out of the way of the question; a few bold ones are labelled as bold so teachers can save them for intros and speed rounds.
 
+## Checklist results
+
+| Item | Implemented and checked |
+| --- | --- |
+| 1. Editor controls | Checked question editing, lesson details, figure upload, options and downloads in Chrome, including a 390 px viewport. Component tests cover the answer picker, options and notes. The browser harness used a simulated Clerk provider. |
+| 2, 4, 8. Presenter and ink | Tested keyboard shortcuts, mouse, emulated touch and pen, fullscreen, overview, resizing, erasing and restoring ink after reload. The toolbar hides when idle, the timer can be dragged or paused, and CAT Mock uses the actual timer. Physical pen and smartboard hardware still need an on-device check. |
+| 3. Gemini formatting | The live API check confirmed that unanswered source items return empty answers and solutions, and that supplied answers and solutions survive. Structured pastes preserve their wording, options and shared context. |
+| 5–6. Dense content and sections | Long passages split before the dependent questions, repeating table headers. Answer keys split every 24 entries. Preview and export share auto-fit, and explicit source headings drive section dividers. The original 45-question paper fit in 34 theme/layout combinations. |
+| 7, 18–19. Classic layouts | One layout definition feeds preview and export. Explicit theme flags drive the Classic composition and watermark placement. The browser check included all 30 original-theme/layout combinations. |
+| 9–12. Thumbnails | Home-feed and sidebar previews include duration placement. Download a JPG under 2 MB or a ZIP for up to 30 lectures. Set a brand accent, choose the title font, or underline a word with asterisks. Chrome produced a JPG and a three-lecture ZIP. |
+| 13–15. PowerPoint and lesson material | Upload or paste a question figure, add concept slides and formula sheets, and export PowerPoint. Checked the 16:9 PowerPoint package, slide images, formula and notes. Slide artwork and maths are rendered as images in the PowerPoint file. |
+| 16. Notes and handouts | Speaker notes work offline in Reveal and are included in PowerPoint. Printable handouts group 2, 4 or 6 questions, with an optional teacher answer key. Student and teacher versions were printed to PDF in Chrome. Dense questions may flow onto a second sheet. |
+| 17. Classroom poll | Press **P** on a multiple-choice slide to enter a show-of-hands count and see the percentage for each choice before revealing the answer. Chrome verified counting and reopening the poll. |
+| 20–22. Build and maintenance | Routes and download dependencies load on demand. Production chunks stay below 500 kB each. The unused Beamer route is removed, new dashboards start with maths/CAT/aptitude folders, and component tests run with the existing CI command. |
+
+The existing slide-to-PDF renderer is outside this pass. The handout has its own print layout.
+
+The sections below preserve the original audit and proposed work for context.
+
 ## 1. What the repo scan found
 
 | Area | Finding | Status |
@@ -61,7 +80,7 @@ This pass is for maths, CAT and aptitude teachers. Most of the new slide designs
   - Confirmed: answer reveal ring, running countdown, toolbar, solution slide, answer key and margin artwork.
   - Two bugs found this way are fixed: formulas overflowing the art strip, and the solution slide showing "c" instead of "(C)".
 
-## 3. What remains, in depth
+## 3. Original follow-up checklist
 
 ### Not verified (needs a person or credentials)
 1. **Editor UI in the running app.** Every editor route is behind a Clerk sign-in, and this sandbox has no Clerk key, so none of the following was clicked:

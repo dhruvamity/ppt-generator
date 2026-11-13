@@ -15,11 +15,11 @@ export function watermarkStyle(theme, layoutId = 'modern-sidebar') {
     if (theme.design) return watermarkFromPlacement(signatureSlide(theme, false, false).watermark);
     // Teaching layouts: body ends 40px above the bottom edge; the strip below it is free in every layout.
     if (theme.teaching) return watermarkFromPlacement({ left: layoutId === 'split-focus' ? 168 : 48, bottom: 10, width: 600, color: `#${theme.cyan}` });
-    switch (theme.name) {
-        case 'Cyberpunk Neon': return watermarkFromPlacement({ right: 40, bottom: 14, width: 520, align: 'right', color: '#FFFFFF', opacity: '0.9' });
-        case 'Blueprint Architect': return watermarkFromPlacement({ right: 60, bottom: 30, width: 520, align: 'right', color: `#${theme.cyan}`, opacity: '0.8' });
-        case 'Aurora Glassmorphism': return watermarkFromPlacement({ right: 60, bottom: 30, width: 520, align: 'right', color: `#${theme.textWhite}`, opacity: '0.7' });
-        case 'Neo-Brutalism': return watermarkFromPlacement({ right: 40, bottom: 24, width: 520, align: 'right', color: `#${theme.black}`, opacity: '1', weight: '900' });
+    switch (theme.classicDesign) {
+        case 'neon': return watermarkFromPlacement({ right: 40, bottom: 14, width: 520, align: 'right', color: '#FFFFFF', opacity: '0.9' });
+        case 'blueprint': return watermarkFromPlacement({ right: 60, bottom: 30, width: 520, align: 'right', color: `#${theme.cyan}`, opacity: '0.8' });
+        case 'aurora': return watermarkFromPlacement({ right: 60, bottom: 30, width: 520, align: 'right', color: `#${theme.textWhite}`, opacity: '0.7' });
+        case 'brutalism': return watermarkFromPlacement({ right: 40, bottom: 24, width: 520, align: 'right', color: `#${theme.black}`, opacity: '1', weight: '900' });
         // Flexible originals: body padding ends at 680px and the gold ribbon starts at 704px.
         default: return { ...watermarkFromPlacement({ right: 40, bottom: 18, width: 520, align: 'right', color: `#${theme.textWhite}`, opacity: '0.7' }), fontSize: '15px', lineHeight: '20px', height: '20px' };
     }

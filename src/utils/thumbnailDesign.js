@@ -12,6 +12,24 @@ const SERIF = "Georgia, 'Times New Roman', serif";
 const CHALK = "'Chalkboard SE', 'Segoe Print', 'Comic Sans MS', sans-serif";
 const YELLOW = '#FFD400', RED = '#E53935', BLACK = '#111111', WHITE = '#FFFFFF';
 
+const BRAND_ACCENTS = {
+    'cat-blast': YELLOW, 'quant-tricks': '#FF8C42', 'di-charts': '#0E7490',
+    'lr-puzzle': '#FFD60A', 'geometry-lab': '#FFE08A', 'arithmetic-sprint': YELLOW,
+    'algebra-board': '#FDE68A', 'percentile-pop': '#7B2CBF', 'formula-sheet': '#2B6CB0',
+    'number-theory': '#D7FF3F', 'clean-lecture': '#2563EB', 'one-shot': '#D7FF3F',
+    'pyq-marathon': YELLOW, 'mock-analysis': '#FCD34D', 'speed-trick': YELLOW, 'red-pen': '#DC2626',
+};
+
+export const thumbnailAccent = id => BRAND_ACCENTS[id];
+export const thumbnailFonts = { inter: 'Inter', 'roboto-slab': 'Roboto Slab' };
+const inkOn = color => {
+    const [r, g, b] = color.slice(1).match(/../g).map(hex => {
+        const channel = parseInt(hex, 16) / 255;
+        return channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
+    });
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b > 0.179 ? '#000000' : '#FFFFFF';
+};
+
 export const THUMBNAIL_FIELDS = [
     { key: 'chapter', label: 'Chapter name', placeholder: 'Quadratic Equations' },
     { key: 'sub', label: 'Sub name / topic', placeholder: 'Nature of roots & the discriminant' },
@@ -388,9 +406,18 @@ const photoClip = (layer) => {
 
 export function layoutThumbnail(template, data, measure = estimateTextWidth) {
     const nodes = [], boxes = [];
+    const selectedAccent = /^#[0-9a-f]{6}$/i.test(data.accent) ? data.accent : null;
+    const sourceAccent = thumbnailAccent(template.id)?.toUpperCase();
+    const recolor = value => selectedAccent && typeof value === 'string' && value.toUpperCase() === sourceAccent ? selectedAccent : value;
+    const family = Object.hasOwn(thumbnailFonts, data.font) ? `"${thumbnailFonts[data.font]}", sans-serif` : null;
     const photo = { zoom: 1, x: 0, y: 0, fit: 'cover', ...(data.photo || {}) };
     nodes.push({ type: 'rect', x: 0, y: 0, w: THUMB_W, h: THUMB_H, fill: template.bg });
-    for (const layer of template.layers) {
+    for (const source of template.layers) {
+        const layer = { ...source };
+        for (const key of ['fill', 'stroke', 'color', 'color2', 'outline', 'highlight']) layer[key] = recolor(layer[key]);
+        if (layer.ring) layer.ring = { ...layer.ring, color: recolor(layer.ring.color) };
+        if (source.type === 'chip' && layer.fill !== source.fill) layer.color = inkOn(layer.fill);
+        if (family && source.text === '{chapter}') layer.family = family;
         if (layer.type === 'pattern') { nodes.push(...PATTERNS[layer.kind](layer)); continue; }
         if (layer.type === 'sticker') {
             if (!STICKERS[layer.kind]) continue;
@@ -412,6 +439,8 @@ export function layoutThumbnail(template, data, measure = estimateTextWidth) {
             let value = interpolate(layer.text, data);
             if (!value) continue;
             if (layer.upper) value = value.toUpperCase();
+            const marked = layer.text === '{chapter}' ? /\*([^\s*]+)\*/.exec(value) : null;
+            if (marked) value = value.replace(marked[0], marked[1]);
             if (layer.type === 'chip') {
                 const font = { size: layer.size, weight: layer.weight, family: layer.family, spacing: layer.spacing || 0 };
                 const w = measure(value, font) + layer.padX * 2, h = layer.size + layer.padY * 2;
@@ -427,6 +456,15 @@ export function layoutThumbnail(template, data, measure = estimateTextWidth) {
             const lx = anchor === 'middle' ? layer.x + layer.w / 2 : anchor === 'end' ? layer.x + layer.w : layer.x;
             const font = { size: fit.size, weight: layer.weight, family: layer.family, spacing: layer.spacing || 0, style: layer.style };
             const lines = fit.lines.map((line, i) => ({ x: lx, y: top + i * fit.size * lineHeight + fit.size * 0.8, text: line, w: measure(line, font) }));
+            let cursor = 0;
+            for (const line of lines) {
+                const sourceIndex = value.indexOf(line.text, cursor);
+                if (sourceIndex < 0) continue;
+                cursor = sourceIndex + line.text.length;
+                if (marked && marked.index >= sourceIndex && marked.index + marked[1].length <= cursor) {
+                    line.emphasis = { start: marked.index - sourceIndex, length: marked[1].length };
+                }
+            }
             if (layer.highlight) for (const line of lines) nodes.push({ type: 'rect', x: anchor === 'middle' ? line.x - line.w / 2 - 10 : anchor === 'end' ? line.x - line.w - 10 : line.x - 10, y: line.y - fit.size * 0.8 - 4, w: line.w + 20, h: fit.size * lineHeight + 4, fill: layer.highlight, rx: 4 });
             nodes.push({ type: 'text', lines, ...font, fill: layer.fill, stroke: layer.stroke, sw: layer.sw, outline: layer.outline, outlineWidth: layer.outlineWidth, shadow: layer.shadow, anchor, truncated: fit.truncated });
             boxes.push({ kind: 'text', box: { x: layer.x, y: layer.y, w: layer.w, h: layer.h }, field: layer.text });
@@ -434,5 +472,8 @@ export function layoutThumbnail(template, data, measure = estimateTextWidth) {
         }
         nodes.push(layer);
     }
-    return { width: THUMB_W, height: THUMB_H, defs: template.defs || [], nodes, boxes };
+    const defs = (template.defs || []).map(def => def.type === 'radial'
+        ? { ...def, color: recolor(def.color) }
+        : { ...def, stops: def.stops.map(([offset, color]) => [offset, recolor(color)]) });
+    return { width: THUMB_W, height: THUMB_H, defs, nodes, boxes };
 }

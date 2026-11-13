@@ -2,13 +2,30 @@ import React, { useRef, useState } from 'react';
 import { Download, ImagePlus, RotateCcw, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useStore } from '../store/useStore';
-import { THUMBNAIL_TEMPLATES, THUMBNAIL_FIELDS, DEFAULT_THUMBNAIL } from '../utils/thumbnailDesign.js';
-import { renderThumbnailPng } from '../utils/thumbnailExport.js';
+import { THUMBNAIL_TEMPLATES, THUMBNAIL_FIELDS, DEFAULT_THUMBNAIL, thumbnailAccent } from '../utils/thumbnailDesign.js';
+import { downloadBlob } from '../utils/download.js';
+import '@fontsource/inter/latin-900.css';
+import '@fontsource/roboto-slab/latin-900.css';
 import ThumbnailSvg from '../components/Thumbnail/ThumbnailSvg';
 
 const inputClass = 'w-full bg-surface-container-low border border-outline-variant rounded-lg p-2 text-sm text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all';
 const labelClass = 'font-label-sm text-xs font-semibold text-on-surface-variant block mb-1';
 const SUBJECT_FILTERS = [['any', 'All'], ['maths', 'Maths'], ['cat', 'CAT'], ['aptitude', 'Aptitude']];
+
+function ThumbnailPlacementPreview({ template, data, showSafeZone }) {
+    return <div className="flex flex-wrap items-start gap-4">
+        {[{ label: 'Home feed', width: 320 }, { label: 'Sidebar', width: 168 }].map(({ label, width }) => (
+            <figure key={label} className="max-w-full" style={{ width }}>
+                <div className="relative overflow-hidden rounded-lg border border-outline-variant">
+                    <ThumbnailSvg template={template} data={data} />
+                    {showSafeZone && <div aria-hidden="true" className="absolute bottom-0 right-0 border-l border-t border-dashed border-white bg-black/25" style={{ width: '11.72%', height: '11.11%' }} />}
+                    <span aria-hidden="true" className="absolute bottom-[4%] right-[3%] rounded bg-black/90 px-[2%] py-[1%] text-[10px] font-semibold leading-none text-white">12:34</span>
+                </div>
+                <figcaption className="mt-1 text-xs text-on-surface-variant">{label} · {width} px</figcaption>
+            </figure>
+        ))}
+    </div>;
+}
 
 export default function ThumbnailStudio() {
     const thumbnail = useStore(state => state.thumbnail) || DEFAULT_THUMBNAIL;
@@ -18,6 +35,9 @@ export default function ThumbnailStudio() {
     const setThumbnailPhoto = useStore(state => state.setThumbnailPhoto);
     const [filter, setFilter] = useState('any');
     const [busy, setBusy] = useState(false);
+    const [series, setSeries] = useState({ first: '', last: '' });
+    const [seriesProgress, setSeriesProgress] = useState('');
+    const [showSafeZone, setShowSafeZone] = useState(true);
     const svgRef = useRef(null);
     const template = THUMBNAIL_TEMPLATES.find(item => item.id === thumbnail.templateId) || THUMBNAIL_TEMPLATES[0];
     const data = { ...thumbnail, photoHref };
@@ -36,23 +56,33 @@ export default function ThumbnailStudio() {
         reader.readAsDataURL(file);
     };
 
-    const onDownload = async () => {
+    const onDownload = async (format) => {
         if (!svgRef.current) return;
         setBusy(true);
         try {
-            const blob = await renderThumbnailPng(svgRef.current, 1);
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = `${thumbnail.chapter || 'thumbnail'}-lecture-${thumbnail.lecture || '0'}.png`.replace(/[^\w.-]+/g, '-');
-            document.body.appendChild(link);
-            link.click();
-            link.remove();
-            URL.revokeObjectURL(link.href);
-            toast.success('Thumbnail downloaded (1280 × 720 PNG).');
+            const { renderThumbnailJpg, renderThumbnailPng } = await import('../utils/thumbnailExport.js');
+            const blob = await (format === 'jpg' ? renderThumbnailJpg : renderThumbnailPng)(svgRef.current);
+            downloadBlob(blob, `${thumbnail.chapter || 'thumbnail'}-lecture-${thumbnail.lecture || '0'}.${format}`.replace(/[^\w.-]+/g, '-'));
+            toast.success(`Thumbnail downloaded (1280 × 720 ${format.toUpperCase()}).`);
         } catch (error) {
             toast.error(error.message);
         } finally {
             setBusy(false);
+        }
+    };
+
+    const onDownloadSeries = async event => {
+        event.preventDefault();
+        setBusy(true);
+        try {
+            const { downloadThumbnailSeries } = await import('../components/Thumbnail/thumbnailSeries.jsx');
+            await downloadThumbnailSeries(template, data, series.first, series.last, (done, total) => setSeriesProgress(`Rendering ${done} of ${total}`));
+            toast.success('Thumbnail series downloaded.');
+        } catch (error) {
+            toast.error(error.message);
+        } finally {
+            setBusy(false);
+            setSeriesProgress('');
         }
     };
 
@@ -80,7 +110,31 @@ export default function ThumbnailStudio() {
                         {field.suggestions && <datalist id={`thumb-${field.key}-options`}>{field.suggestions.map(option => <option key={option} value={option} />)}</datalist>}
                     </div>)}
                 </div>
-                <button type="button" onClick={onDownload} disabled={busy} className="w-full flex items-center justify-center gap-2 bg-primary text-on-primary hover:bg-primary/90 disabled:opacity-60 px-4 py-3 rounded-xl font-label-md text-sm transition-all shadow-md shadow-primary/20"><Download size={18} />{busy ? 'Rendering…' : 'Download PNG · 1280 × 720'}</button>
+                <div className="border-t border-outline-variant pt-4 flex flex-col gap-3">
+                    <div className="flex items-center justify-between gap-2">
+                        <label htmlFor="thumb-accent" className={labelClass}>Brand accent</label>
+                        <input id="thumb-accent" type="color" value={thumbnail.accent || thumbnailAccent(template.id)} onChange={event => setThumbnail({ accent: event.target.value })} />
+                        {thumbnail.accent && <button type="button" className="text-xs text-primary" onClick={() => setThumbnail({ accent: '' })}>Reset accent</button>}
+                    </div>
+                    <label className={labelClass}>Title font
+                        <select value={thumbnail.font || ''} onChange={event => setThumbnail({ font: event.target.value })} className={inputClass}>
+                            <option value="">Template default</option><option value="inter">Inter</option><option value="roboto-slab">Roboto Slab</option>
+                        </select>
+                    </label>
+                    <p className="text-xs text-on-surface-variant">Put asterisks around one title word to underline it, as in Quadratic *Equations*.</p>
+                </div>
+                <button type="button" onClick={() => onDownload('png')} disabled={busy} className="w-full flex items-center justify-center gap-2 bg-primary text-on-primary hover:bg-primary/90 disabled:opacity-60 px-4 py-3 rounded-xl font-label-md text-sm transition-all shadow-md shadow-primary/20"><Download size={18} />{busy ? 'Rendering…' : 'Download PNG · 1280 × 720'}</button>
+                <button type="button" onClick={() => onDownload('jpg')} disabled={busy} className="w-full flex items-center justify-center gap-2 rounded-xl border border-outline-variant px-4 py-3 text-sm text-on-surface hover:border-primary disabled:opacity-60"><Download size={18} />Download JPG · under 2 MB</button>
+                <form onSubmit={onDownloadSeries} className="border-t border-outline-variant pt-4 space-y-3">
+                    <h3 className="font-semibold">Lecture series</h3>
+                    <div className="grid grid-cols-2 gap-2">
+                        {[['first', 'First lecture'], ['last', 'Last lecture']].map(([key, label]) => <label className={labelClass} key={key}>{label}
+                            <input type="number" min="1" max="999" required value={series[key]} onChange={event => setSeries({ ...series, [key]: event.target.value })} className={inputClass} />
+                        </label>)}
+                    </div>
+                    <button type="submit" disabled={busy} className="w-full rounded-xl border border-outline-variant px-4 py-3 text-sm hover:border-primary disabled:opacity-60">Download JPG series · ZIP</button>
+                    {seriesProgress && <p className="text-xs" role="status">{seriesProgress}</p>}
+                </form>
             </div>
         </aside>
         <div className="flex-1 flex flex-col gap-8 min-w-0">
@@ -89,6 +143,16 @@ export default function ThumbnailStudio() {
                     <div><p className="text-xs uppercase tracking-[0.2em] text-primary font-semibold mb-1">Thumbnail studio</p><h1 className="text-2xl md:text-3xl font-semibold tracking-tight">{template.name}</h1><p className="text-sm text-on-surface-variant mt-1">{template.description}</p></div>
                 </div>
                 <div className="rounded-xl overflow-hidden border border-outline-variant shadow-md bg-surface-container-low"><ThumbnailSvg template={template} data={data} svgRef={svgRef} /></div>
+            </section>
+            <section>
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                    <h2 className="text-lg font-semibold">YouTube preview</h2>
+                    <label className="flex items-center gap-2 text-xs text-on-surface-variant">
+                        <input type="checkbox" checked={showSafeZone} onChange={event => setShowSafeZone(event.target.checked)} />
+                        Show duration safe zone
+                    </label>
+                </div>
+                <ThumbnailPlacementPreview template={template} data={data} showSafeZone={showSafeZone} />
             </section>
             <section>
                 <div className="flex flex-wrap items-center justify-between gap-3 mb-4">

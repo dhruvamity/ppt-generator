@@ -7,8 +7,8 @@ const TOGGLES = [
     { key: 'revealAnswers', label: 'Reveal answers on click', hint: 'The marked option lights up green on the next click (or press A).' },
     { key: 'solutionSlides', label: 'Solution slides', hint: 'A worked-solution slide follows each question that has one.' },
     { key: 'insertBlankSlides', label: 'Blank work-space slides', hint: 'A ruled slide after every question for solving live.' },
-    { key: 'answerKeySlide', label: 'Answer key at the end', hint: 'One slide listing every answer, handy for printed handouts.' },
-    { key: 'sectionSlides', label: 'Section dividers', hint: 'A divider slide whenever the topic or section changes.' },
+    { key: 'answerKeySlide', label: 'Answer key at the end', hint: 'Lists answers on as many slides as needed.' },
+    { key: 'sectionSlides', label: 'Section dividers', hint: 'Add a divider for each section marked with a Markdown heading (##).' },
     { key: 'slideNumbers', label: 'Slide numbers', hint: 'Shows "4 / 20" in the corner while presenting.' },
 ];
 
@@ -42,7 +42,7 @@ export default function PresentationOptions() {
                     <span className="text-[11px] text-on-surface-variant leading-snug">Counts down on every question slide. Press T to pause; with the timer off, T runs a stopwatch.</span>
                 </label>
                 <p className="text-[11px] text-on-surface-variant leading-snug pt-2 border-t border-outline-variant/40">
-                    The downloaded deck has a pen (D), highlighter (M), laser pointer (X) and timer (T) in the bottom-left corner. Press <kbd className="px-1 border border-outline-variant rounded">?</kbd> while presenting for every shortcut.
+                    The downloaded deck has a pen (D), highlighter (M), laser pointer (X), timer (T) and class poll (P) in the bottom-left corner. Press <kbd className="px-1 border border-outline-variant rounded">?</kbd> while presenting for every shortcut.
                 </p>
             </div>
         </div>
