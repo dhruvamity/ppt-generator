@@ -88,12 +88,15 @@ export const useStore = create(
                 if (isParsing) return;
                 set({ isParsing: true });
                 try {
-                    const data = await generateSlideData(rawText, token);
+                    const source = parseLocalText(rawText);
+                    const hasLessonContent = source.some(slide => slide.kind || slide.figure || slide.notes);
+                    // Lesson blocks and embedded images are edited locally and do not go to the formatter.
+                    const data = hasLessonContent ? source : await generateSlideData(rawText, token);
                     if (get().rawText !== rawText) {
                         set({ isParsing: false });
                         return;
                     }
-                    const sourceQuestions = parseLocalText(rawText);
+                    const sourceQuestions = source;
                     if (!Array.isArray(data) || data.length === 0) {
                         throw new Error('Formatting returned no questions. Please retry.');
                     }
@@ -113,7 +116,7 @@ export const useStore = create(
                         answer: sameCount ? sourceQuestions[i].answer || '' : explicitAnswer ? slide.answer || '' : '',
                         solution: sameCount ? sourceQuestions[i].solution || '' : explicitSolution ? slide.solution || '' : '',
                         section: sameCount ? sourceQuestions[i].section : undefined,
-                        badge: `Q.${i + 1}`
+                        badge: sameCount ? sourceQuestions[i].badge : `Q.${i + 1}`
                     }));
                     
                     const cleanText = serializeQuestions(indexedData);
@@ -144,6 +147,13 @@ export const useStore = create(
                 const newSlides = state.activeSlides.map((slide, index) => index === slideIndex ? { ...slide, qText: newText } : slide);
                 return editedSlidesState(newSlides);
             }),
+            addLessonSlide: kind => set(state => editedSlidesState([
+                ...state.activeSlides,
+                { kind, title: kind === 'concept' ? 'New concept' : 'Formula sheet', qText: '', formula: '', notes: '' },
+            ])),
+            updateSlideDetails: (slideIndex, patch) => set(state => editedSlidesState(state.activeSlides.map(
+                (slide, index) => index === slideIndex ? { ...slide, ...patch } : slide
+            ))),
             updateSlideContext: (slideIndex, newText) => set((state) => {
                 const newSlides = state.activeSlides.map((slide, index) => index === slideIndex ? { ...slide, context: newText } : slide);
                 return editedSlidesState(newSlides);
@@ -165,20 +175,16 @@ export const useStore = create(
             updateSlideSolution: (slideIndex, solution) => set((state) => editedSlidesState(state.activeSlides.map((slide, index) => index === slideIndex ? { ...slide, solution: String(solution ?? '') } : slide))),
             removeSlide: (index) => set((state) => {
                 const filtered = state.activeSlides.filter((_, i) => i !== index);
-                const renumbered = filtered.map((slide, i) => ({
-                    ...slide,
-                    badge: `Q.${i + 1}`
-                }));
+                let questionNumber = 0;
+                const renumbered = filtered.map(slide => slide.kind ? slide : { ...slide, badge: `Q.${++questionNumber}` });
                 return editedSlidesState(renumbered);
             }),
             reorderSlides: (startIndex, endIndex) => set((state) => {
                 const result = Array.from(state.activeSlides);
                 const [removed] = result.splice(startIndex, 1);
                 result.splice(endIndex, 0, removed);
-                const renumbered = result.map((slide, i) => ({
-                    ...slide,
-                    badge: `Q.${i + 1}`
-                }));
+                let questionNumber = 0;
+                const renumbered = result.map(slide => slide.kind ? slide : { ...slide, badge: `Q.${++questionNumber}` });
                 return editedSlidesState(renumbered);
             }),
 

@@ -1,9 +1,14 @@
+import inter from '@fontsource/inter/files/inter-latin-900-normal.woff2?inline';
+import slab from '@fontsource/roboto-slab/files/roboto-slab-latin-900-normal.woff2?inline';
 import { THUMB_W, THUMB_H } from './thumbnailDesign.js';
 
 // Rasterise the live SVG preview: serialise it, load it as an image and paint it on a canvas.
 // Photos are data URLs inside the same document, so the canvas is never tainted.
 async function rasterizeThumbnail(svgElement, scale) {
     const svg = svgElement.cloneNode(true);
+    const styles = document.createElementNS('http://www.w3.org/2000/svg', 'style');
+    styles.textContent = `@font-face{font-family:Inter;font-weight:900;src:url(${inter}) format('woff2')}@font-face{font-family:'Roboto Slab';font-weight:900;src:url(${slab}) format('woff2')}`;
+    svg.prepend(styles);
     svg.setAttribute('width', THUMB_W * scale);
     svg.setAttribute('height', THUMB_H * scale);
     const url = URL.createObjectURL(new Blob([new XMLSerializer().serializeToString(svg)], { type: 'image/svg+xml;charset=utf-8' }));

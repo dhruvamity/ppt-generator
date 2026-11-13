@@ -1,4 +1,4 @@
-import React, { useId, useMemo } from 'react';
+import React, { useEffect, useId, useMemo, useState } from 'react';
 import { layoutThumbnail, estimateTextWidth } from '../../utils/thumbnailDesign.js';
 import { STICKERS, stickerSvg } from '../../utils/thumbnailStickers.js';
 
@@ -19,16 +19,32 @@ const Shape = ({ node, ...props }) => {
 
 const TextNode = ({ node, paint }) => {
     const common = { fontFamily: node.family, fontSize: node.size, fontWeight: node.weight, fontStyle: node.style || 'normal', textAnchor: node.anchor, letterSpacing: node.spacing || undefined };
-    const spans = node.lines.map((line, j) => <tspan key={j} x={line.x} y={line.y}>{line.text}</tspan>);
+    const spans = (emphasize) => node.lines.map((line, j) => {
+        const { start, length } = line.emphasis || {};
+        return <tspan key={j} x={line.x} y={line.y}>{emphasize && line.emphasis
+            ? <>{line.text.slice(0, start)}<tspan textDecoration="underline">{line.text.slice(start, start + length)}</tspan>{line.text.slice(start + length)}</>
+            : line.text}</tspan>;
+    });
     return <>
-        {node.shadow && <text {...common} fill={node.shadow} transform="translate(5 6)" opacity={0.9}>{spans}</text>}
-        <text {...common} fill={paint(node.fill)} stroke={node.outline || node.stroke} strokeWidth={node.outline ? node.outlineWidth || 8 : node.sw} strokeLinejoin="round" paintOrder={node.outline ? 'stroke' : undefined} opacity={node.opacity}>{spans}</text>
+        {node.shadow && <text {...common} fill={node.shadow} transform="translate(5 6)" opacity={0.9}>{spans(false)}</text>}
+        <text {...common} fill={paint(node.fill)} stroke={node.outline || node.stroke} strokeWidth={node.outline ? node.outlineWidth || 8 : node.sw} strokeLinejoin="round" paintOrder={node.outline ? 'stroke' : undefined} opacity={node.opacity}>{spans(true)}</text>
     </>;
 };
 
-export default function ThumbnailSvg({ template, data, svgRef, className, measure = measureText }) {
+export default function ThumbnailSvg({ template, data, svgRef, className, measure = measureText, fontsLoaded = false }) {
     const id = useId().replace(/:/g, '');
-    const layout = useMemo(() => layoutThumbnail(template, data, measure), [template, data, measure]);
+    const [fontReady, setFontReady] = useState(false);
+    useEffect(() => {
+        let active = true;
+        const family = data.font === 'roboto-slab' ? '"Roboto Slab"' : 'Inter';
+        (data.font ? document.fonts.load('900 32px ' + family) : Promise.resolve()).then(
+            () => { if (active) setFontReady(data.font || true); },
+            () => { if (active) setFontReady(data.font || true); },
+        );
+        return () => { active = false; };
+    }, [data.font]);
+    const ready = fontsLoaded || fontReady === (data.font || true);
+    const layout = useMemo(() => layoutThumbnail(template, data, ready ? measure : estimateTextWidth), [template, data, measure, ready]);
     const paint = value => typeof value === 'string' && value.startsWith('gradient:') ? `url(#${id}-${value.slice(9)})` : value;
     return <svg ref={svgRef} xmlns="http://www.w3.org/2000/svg" viewBox={`0 0 ${layout.width} ${layout.height}`} width="100%" className={className} role="img" aria-label={`${template.name} thumbnail preview`}>
         <defs>

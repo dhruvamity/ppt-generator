@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import 'katex/dist/katex.min.css';
 import MathRenderer from './MathRenderer';
 
-export default function EditableBlock({ value, onChange, className, style, renderTables = false }) {
+export default function EditableBlock({ value, onChange, className, style, renderTables = false, readOnly = false }) {
     const [isEditing, setIsEditing] = useState(false);
     const [tempValue, setTempValue] = useState(value || '');
 
@@ -17,15 +16,15 @@ export default function EditableBlock({ value, onChange, className, style, rende
 
     const renderTextWithMath = (text) => {
         if (!text) return null;
-        
-        // Safely split the text by $ signs. 
+
+        // Safely split the text by $ signs.
         // Odd indices will be math, even indices will be text.
         const parts = text.split('$');
-        
+
         return parts.map((part, index) => {
             // Keep empty spans for stable React rendering keys
-            if (part === '') return <span key={index}></span>; 
-            
+            if (part === '') return <span key={index}></span>;
+
             // If it's an odd index, it was wrapped in $, so it's math
             if (index % 2 !== 0) {
                 return (
@@ -67,9 +66,9 @@ export default function EditableBlock({ value, onChange, className, style, rende
             i--;
             const cellStyle = { borderBottom: '0.06em solid currentColor', padding: '0.35em 0.45em', textAlign: 'left', overflowWrap: 'anywhere' };
             blocks.push(
-                <table key={`table-${blocks.length}`} style={{ width: '100%', tableLayout: 'fixed', borderCollapse: 'collapse', margin: '0.7em 0', whiteSpace: 'normal', fontSize: '0.95em' }}>
+                <table key={`table-${blocks.length}`} style={{ width: '100%', borderCollapse: 'collapse', margin: '0.7em 0', whiteSpace: 'normal', fontSize: '0.95em' }}>
                     <thead><tr>{headings.map((heading, j) => <th key={j} style={cellStyle}>{renderTextWithMath(heading)}</th>)}</tr></thead>
-                    <tbody>{rows.map((row, j) => <tr key={j}>{headings.map((_, k) => <td key={k} style={cellStyle}>{renderTextWithMath(row[k] || '')}</td>)}</tr>)}</tbody>
+                    <tbody>{rows.map((row, j) => <tr key={j}>{headings.map((_, k) => <td key={k} style={/^[−-]?\d[\d.,]*%?$/.test(row[k]) ? { ...cellStyle, whiteSpace: 'nowrap', overflowWrap: 'normal' } : cellStyle}>{renderTextWithMath((row[k] || '').replace(/\\\|/g, '|'))}</td>)}</tr>)}</tbody>
                 </table>
             );
         }
@@ -91,10 +90,10 @@ export default function EditableBlock({ value, onChange, className, style, rende
     }
 
     return (
-        <div 
-            onClick={() => setIsEditing(true)} 
+        <div
+            onClick={readOnly ? undefined : () => setIsEditing(true)}
             className={`cursor-pointer hover:outline hover:outline-1 hover:outline-dashed hover:outline-white/50 rounded transition-all duration-200 ${className || ''}`}
-            title="Click to edit text"
+            title={readOnly ? undefined : 'Click to edit text'}
             style={{ lineHeight: 'inherit', ...style }}
         >
             {renderContent(value)}

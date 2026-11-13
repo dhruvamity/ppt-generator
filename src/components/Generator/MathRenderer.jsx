@@ -8,7 +8,7 @@ export default function MathRenderer({ math, displayMode = false, style, classNa
             displayMode: displayMode,
             throwOnError: true,
             strict: false,
-            trust: true
+            trust: false
         });
         return (
             <span 

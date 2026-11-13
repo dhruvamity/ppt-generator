@@ -1,6 +1,6 @@
 export const THEMES = {
     'modern-neon': {
-        name: 'Cyberpunk Neon', isDefault: true, bgColor: '110F1A', cyan: '00C6D4', purple: '7E32C6',
+        name: 'Cyberpunk Neon', classicDesign: 'neon', classicBold: true, isDefault: true, bgColor: '110F1A', cyan: '00C6D4', purple: '7E32C6',
         gold: 'C4961A', magenta: 'CC00FF', watermark: '2B2043', tealDecor: '00C6D4', 
         bgCard: '110F1A', textWhite: 'FFFFFF', textBlack: '000000', decorPurple: '7E32C6'
     },
@@ -233,19 +233,19 @@ export const THEMES = {
         bgColor: '2B2F36', textWhite: 'F1F3F5', textBlack: '2B2F36', cyan: 'FFB020', purple: 'FFB020', gold: '9AE6B4', bgCard: '2B2F36', rule: '3D434C'
     },
     'blueprint': {
-        name: 'Blueprint Architect', bgColor: '0B192C', cyan: '00FFCC', orange: 'FF6B00',
+        name: 'Blueprint Architect', classicDesign: 'blueprint', classicBold: true, bgColor: '0B192C', cyan: '00FFCC', orange: 'FF6B00',
         textWhite: 'FFFFFF', textBlack: '000000', bgCard: '0B192C'
     },
     'aurora': {
-        name: 'Aurora Glassmorphism', bgColor: '09090B', blueOrb: '3B82F6', pinkOrb: 'EC4899', 
+        name: 'Aurora Glassmorphism', classicDesign: 'aurora', classicBold: true, bgColor: '09090B', blueOrb: '3B82F6', pinkOrb: 'EC4899',
         dot: '27272A', textWhite: 'FFFFFF', textBlack: '000000', bgCard: '09090B'
     },
     'neobrutalism': {
-        name: 'Neo-Brutalism', bgColor: 'FAFAFA', acidGreen: 'BAFF29', pink: 'FF3366', 
+        name: 'Neo-Brutalism', classicDesign: 'brutalism', classicBold: true, bgColor: 'FAFAFA', acidGreen: 'BAFF29', pink: 'FF3366',
         black: '000000', textWhite: 'FAFAFA', textBlack: '000000', bgCard: 'FAFAFA'
     },
     'dark-neon': {
-        name: 'Dark Neon', bgColor: '05050F', cyan: '00E5FF', purple: '7C3AED',
+        name: 'Dark Neon', classicBold: true, bgColor: '05050F', cyan: '00E5FF', purple: '7C3AED',
         gold: 'FFD700', tealDecor: '008080', bgCard: '0A0A1F', textWhite: 'FFFFFF',
         textBlack: '000000', decorPurple: '7C3AED'
     },
@@ -260,7 +260,7 @@ export const THEMES = {
         textBlack: '0F172A', decorPurple: '818CF8'
     },
     'retro-terminal': {
-        name: 'Retro Terminal', bgColor: '001A00', cyan: '00FF00', purple: '008800',
+        name: 'Retro Terminal', classicBold: true, bgColor: '001A00', cyan: '00FF00', purple: '008800',
         gold: '00FF44', tealDecor: '003300', bgCard: '002200', textWhite: '00FF00',
         textBlack: '000000', decorPurple: '005500'
     },
@@ -270,7 +270,7 @@ export const THEMES = {
         textBlack: 'FFFFFF', decorPurple: '002147'
     },
     'sunset-orange': {
-        name: 'Sunset Orange', bgColor: '1A1A1A', cyan: 'FF4500', purple: 'FF8C00',
+        name: 'Sunset Orange', classicBold: true, bgColor: '1A1A1A', cyan: 'FF4500', purple: 'FF8C00',
         gold: 'FFD700', tealDecor: '2D2D2D', bgCard: '242424', textWhite: 'F5F5F5',
         textBlack: '000000', decorPurple: '4A2511'
     }
@@ -287,11 +287,10 @@ export const THEME_GROUPS = [
     { id: 'classic', name: 'Classic', hint: 'The original collection with free layouts.' },
 ];
 
-const BOLD_ORIGINALS = ['Cyberpunk Neon', 'Blueprint Architect', 'Aurora Glassmorphism', 'Neo-Brutalism', 'Dark Neon', 'Retro Terminal', 'Sunset Orange'];
 
 export const themeGroup = theme => {
     if (theme.design) return theme.bold ? 'bold' : 'signature';
     if (theme.illustration) return 'topic';
     if (theme.teaching) return 'calm';
-    return BOLD_ORIGINALS.includes(theme.name) ? 'bold' : 'classic';
+    return theme.classicBold ? 'bold' : 'classic';
 };

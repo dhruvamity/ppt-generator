@@ -123,14 +123,18 @@ export function installPresenterTools(fitSlideBox, storageKey) {
     });
 
     const button = name => bar.querySelector('[data-tool="' + name + '"], [data-action="' + name + '"]');
-    const setTool = name => {
-        tool = tool === name ? null : name;
-        const drawing = tool === 'pen' || tool === 'marker';
+    const syncTool = () => {
+        const active = deck.isOverview() ? null : tool;
+        const drawing = active === 'pen' || active === 'marker';
         canvas.style.pointerEvents = drawing ? 'auto' : 'none';
         canvas.style.cursor = drawing ? 'crosshair' : '';
-        laser.style.display = tool === 'laser' ? 'block' : 'none';
-        document.documentElement.classList.toggle('presenter-laser-on', tool === 'laser');
+        laser.style.display = active === 'laser' ? 'block' : 'none';
+        document.documentElement.classList.toggle('presenter-laser-on', active === 'laser');
         bar.querySelectorAll('[data-tool]').forEach(item => item.setAttribute('aria-pressed', String(item.dataset.tool === tool)));
+    };
+    const setTool = name => {
+        tool = tool === name ? null : name;
+        syncTool();
     };
     const cycleColor = () => {
         colorIndex = (colorIndex + 1) % COLORS.length;
@@ -174,7 +178,54 @@ export function installPresenterTools(fitSlideBox, storageKey) {
         if (!timer.total && !timer.up) timer = { ...timer, up: true, left: 0 };
         if (timer.running) stopTimer(); else startTimer();
     };
+    const poll = document.getElementById('presenter-poll');
+    const pollRows = [...poll.querySelectorAll('[data-choice]')];
+    const votesBySlide = new Map();
+    const pollChoices = () => [...(deck.getCurrentSlide()?.querySelectorAll('[data-poll-choice]') || [])].slice(0, pollRows.length).map(option => option.dataset.pollChoice);
+    const paintPoll = () => {
+        const counts = Object.fromEntries(pollRows.filter(row => !row.hidden).map(row => {
+            const votes = Math.min(9999, Math.max(0, Math.trunc(row.querySelector('input').valueAsNumber) || 0));
+            return [row.dataset.choice, votes];
+        }));
+        const total = Object.values(counts).reduce((sum, votes) => sum + votes, 0);
+        for (const row of pollRows) {
+            const share = total ? (counts[row.dataset.choice] || 0) / total : 0;
+            row.querySelector('meter').value = share;
+            row.querySelector('output').textContent = Math.round(share * 100) + '%';
+        }
+        poll.querySelector('[data-poll-total]').textContent = total + (total === 1 ? ' vote' : ' votes');
+        votesBySlide.set(slideKey(), counts);
+    };
+    const openPoll = () => {
+        const labels = pollChoices();
+        if (!labels.length || deck.isOverview() || poll.open) return;
+        const counts = votesBySlide.get(slideKey()) || {};
+        for (const [index, row] of pollRows.entries()) {
+            row.hidden = !labels[index];
+            row.dataset.choice = labels[index] || '';
+            row.querySelector('strong').textContent = row.dataset.choice;
+            row.querySelector('input').setAttribute('aria-label', 'Votes for ' + row.dataset.choice);
+            row.querySelector('meter').setAttribute('aria-label', 'Vote share for ' + row.dataset.choice);
+            row.querySelector('input').value = counts[row.dataset.choice] || '';
+        }
+        paintPoll();
+        poll.showModal();
+        document.documentElement.classList.remove('presenter-laser-on');
+        laser.style.display = 'none';
+    };
+    poll.addEventListener('input', paintPoll);
+    poll.addEventListener('keydown', event => event.stopPropagation());
+    poll.addEventListener('close', () => {
+        syncTool();
+        if (!button('poll').disabled) button('poll').focus({ preventScroll: true });
+    });
+    poll.querySelector('[data-poll-reset]').addEventListener('click', () => {
+        pollRows.forEach(row => { row.querySelector('input').value = ''; });
+        paintPoll();
+    });
     const onSlide = () => {
+        if (poll.open) poll.close();
+        button('poll').disabled = !pollChoices().length;
         stopTimer();
         const seconds = Number(deck.getCurrentSlide()?.querySelector('.slide-container')?.dataset.timer || 0);
         timer = { ...timer, total: seconds, left: seconds, up: false };
@@ -183,7 +234,7 @@ export function installPresenterTools(fitSlideBox, storageKey) {
         redraw();
     };
 
-    const actions = { pen: () => setTool('pen'), marker: () => setTool('marker'), laser: () => setTool('laser'), color: cycleColor, undo, erase, answer: toggleAnswer, timer: toggleTimer };
+    const actions = { pen: () => setTool('pen'), marker: () => setTool('marker'), laser: () => setTool('laser'), color: cycleColor, undo, erase, answer: toggleAnswer, timer: toggleTimer, poll: openPoll };
     bar.addEventListener('click', event => {
         const target = event.target.closest('button');
         if (target) actions[target.dataset.tool || target.dataset.action]?.();
@@ -229,14 +280,20 @@ export function installPresenterTools(fitSlideBox, storageKey) {
     window.addEventListener('resize', () => {
         if (chip.style.left && !chip.hidden) moveTimer(parseFloat(chip.style.left), parseFloat(chip.style.top));
     });
-    [[68, 'D', 'Pen: draw on the slide', 'pen'], [77, 'M', 'Highlighter', 'marker'], [88, 'X', 'Laser pointer', 'laser'], [85, 'U', 'Undo last stroke', 'undo'], [69, 'E', 'Erase ink on this slide', 'erase'], [65, 'A', 'Show / hide the answer', 'answer'], [84, 'T', 'Start / pause the timer', 'timer']]
+    [[68, 'D', 'Pen: draw on the slide', 'pen'], [77, 'M', 'Highlighter', 'marker'], [88, 'X', 'Laser pointer', 'laser'], [85, 'U', 'Undo last stroke', 'undo'], [69, 'E', 'Erase ink on this slide', 'erase'], [65, 'A', 'Show / hide the answer', 'answer'], [84, 'T', 'Start / pause the timer', 'timer'], [80, 'P', 'Class poll', 'poll']]
         .forEach(([keyCode, key, description, action]) => deck.addKeyBinding({ keyCode, key, description }, actions[action]));
 
     deck.on('slidechanged', onSlide);
     deck.on('slidetransitionend', redraw);
     deck.on('resize', resize);
-    deck.on('overviewshown', redraw);
-    deck.on('overviewhidden', redraw);
+    const onOverview = () => {
+        syncTool();
+        if (poll.open) poll.close();
+        button('poll').disabled = deck.isOverview() || !pollChoices().length;
+        redraw();
+    };
+    deck.on('overviewshown', onOverview);
+    deck.on('overviewhidden', onOverview);
     window.addEventListener('resize', resize);
     const pdfButton = document.getElementById('pdf-btn');
     pdfButton.disabled = true;
@@ -246,6 +303,7 @@ export function installPresenterTools(fitSlideBox, storageKey) {
                 .filter(font => font.family.replace(/['"]/g, '').startsWith('KaTeX'))
                 .map(font => font.load()));
             await document.fonts.ready;
+            await Promise.allSettled([...document.querySelectorAll('.slides img')].map(image => image.decode()));
             const oversized = fitAll();
             const warning = document.getElementById('slide-overflow-warning');
             warning.textContent = oversized.length

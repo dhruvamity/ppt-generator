@@ -42,7 +42,7 @@ export default function PresentationOptions() {
                     <span className="text-[11px] text-on-surface-variant leading-snug">Counts down on every question slide. Press T to pause; with the timer off, T runs a stopwatch.</span>
                 </label>
                 <p className="text-[11px] text-on-surface-variant leading-snug pt-2 border-t border-outline-variant/40">
-                    The downloaded deck has a pen (D), highlighter (M), laser pointer (X) and timer (T) in the bottom-left corner. Press <kbd className="px-1 border border-outline-variant rounded">?</kbd> while presenting for every shortcut.
+                    The downloaded deck has a pen (D), highlighter (M), laser pointer (X), timer (T) and class poll (P) in the bottom-left corner. Press <kbd className="px-1 border border-outline-variant rounded">?</kbd> while presenting for every shortcut.
                 </p>
             </div>
         </div>
