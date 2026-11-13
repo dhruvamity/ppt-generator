@@ -18,7 +18,7 @@ function AnswerPicker({ slide, index }) {
             onBlur={event => event.target.value.trim() !== (slide.answer || '') && updateSlideAnswer(index, event.target.value)}
             className="w-24 bg-surface border border-outline-variant rounded-md px-2 py-1 text-xs focus:outline-none focus:border-primary" />;
     }
-    return <div className="flex items-center gap-1" role="group" aria-label={`Correct answer for question ${index + 1}`}>
+    return <div className="flex flex-wrap items-center gap-1 min-w-0" role="group" aria-label={`Correct answer for question ${index + 1}`}>
         <span className="text-[11px] text-on-surface-variant mr-1 hidden sm:inline">Answer</span>
         {options.map((option, i) => {
             const label = normalizeLabel(option.label) || String.fromCharCode(97 + i);
@@ -67,7 +67,7 @@ export default function SlidePreview() {
                     <div className="text-center max-w-sm">
                         <p className="text-on-surface font-semibold mb-1">No slides generated yet</p>
                         <p className="text-on-surface-variant text-sm leading-relaxed">
-                            Paste your text above and click <strong>"Sync to Preview"</strong> or <strong>"Auto-Format with AI"</strong> to begin.
+                            Paste numbered questions to see them here, or use <strong>Auto-Format with AI</strong> for unstructured text.
                         </p>
                     </div>
                 </div>
@@ -78,7 +78,7 @@ export default function SlidePreview() {
     // Number every slide in presentation order, then group the extras with their question.
     const sequence = deckSequence(config, activeSlides).map((entry, position) => ({ ...entry, number: position + 1 }));
     const groups = activeSlides.map((_, index) => sequence.filter(entry => entry.index === index && entry.kind !== 'key'));
-    const keySlide = sequence.find(entry => entry.kind === 'key');
+    const keySlides = sequence.filter(entry => entry.kind === 'key');
     const answered = activeSlides.filter(slide => String(slide.answer ?? '').trim()).length;
     const solutionSlides = config.solutionSlides !== false;
 
@@ -131,7 +131,7 @@ export default function SlidePreview() {
                                                         </div>
                                                         {caption(groups[idx].find(entry => entry.kind === 'question'))}
                                                     </div>
-                                                    <div className="flex items-center gap-2 bg-surface-container-low border border-outline-variant rounded-lg p-1">
+                                                    <div className="flex flex-wrap items-center gap-2 min-w-0 max-w-full bg-surface-container-low border border-outline-variant rounded-lg p-1">
                                                         <AnswerPicker slide={q} index={idx} />
                                                         {solutionSlides && !String(q.solution ?? '').trim() && <button type="button" onClick={() => updateSlideSolution(idx, SOLUTION_STARTER)} className="flex items-center gap-1 px-2 h-7 rounded-md text-xs border border-outline-variant text-on-surface-variant hover:border-primary hover:text-primary" title="Add a worked-solution slide after this question">
                                                             <Lightbulb size={13} /> Solution
@@ -155,7 +155,7 @@ export default function SlidePreview() {
                         )}
                     </Droppable>
                 </DragDropContext>
-                {keySlide && <div className="flex flex-col gap-2">{caption(keySlide)}{renderEntry(keySlide)}</div>}
+                {keySlides.map(entry => <div key={entry.number} className="flex flex-col gap-2">{caption(entry)}{renderEntry(entry)}</div>)}
             </div>
         </div>
     );

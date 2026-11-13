@@ -304,7 +304,9 @@ Raw text:
                     "text": sanitize_math(opt.get("text") or "")
                 })
             slide["options"] = options
-            slide["answer"] = re.sub(r'[()]', '', str(slide.get("answer") or "")).strip()
+            answer = str(slide.get("answer") or "").strip()
+            label = re.fullmatch(r"\(([A-Fa-f1-6])\)", answer) if options else None
+            slide["answer"] = label[1] if label else sanitize_math(answer)
             slide["solution"] = sanitize_math(slide.get("solution") or "")
             processed_data.append(slide)
 

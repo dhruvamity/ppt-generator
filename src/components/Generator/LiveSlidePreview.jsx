@@ -2,7 +2,8 @@ import { teachingStyles, teachingIllustrationStyle, previewStyle } from '../../u
 import { signatureSlide } from '../../utils/signatureDesigns.js';
 import { watermarkStyle } from '../../utils/watermark.js';
 import { answerIndex, answerLabel } from '../../utils/deckSequence.js';
-import React, { useCallback, useEffect, useLayoutEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { fitSlideBox } from '../../utils/fitSlideBox.js';
 import EditableBlock from './EditableBlock';
 import MathRenderer from './MathRenderer';
 import { useStore } from '../../store/useStore';
@@ -14,15 +15,9 @@ const MathText = ({ text }) => <span>{String(text ?? '').split('$').map((part, i
 // most) instead of being clipped, so the preview shows what the class will see.
 function FitBox({ children }) {
     const ref = useRef(null);
+    const [overflow, setOverflow] = useState(false);
     const fit = useCallback(() => {
-        const box = ref.current;
-        if (!box) return;
-        Object.assign(box.style, { transform: '', width: '100%', height: '100%', flex: '1 1 auto' });
-        let scale = 1;
-        for (let step = 0; step < 16 && box.scrollHeight > box.clientHeight + 1 && scale > 0.5; step++) {
-            scale = Math.max(0.5, scale * Math.min(0.97, Math.max(0.8, box.clientHeight / box.scrollHeight)));
-            Object.assign(box.style, { transformOrigin: '0 0', transform: `scale(${scale})`, width: `${100 / scale}%`, height: `${100 / scale}%`, flex: '0 0 auto' });
-        }
+        if (ref.current) setOverflow(!fitSlideBox(ref.current));
     }, []);
     useLayoutEffect(fit);
     useEffect(() => {
@@ -30,9 +25,14 @@ function FitBox({ children }) {
         if (!parent || typeof ResizeObserver === 'undefined') return undefined;
         const observer = new ResizeObserver(() => fit());
         observer.observe(parent);
-        return () => observer.disconnect();
+        let mounted = true;
+        document.fonts.ready.then(() => { if (mounted) fit(); });
+        return () => { mounted = false; observer.disconnect(); };
     }, [fit]);
-    return <div ref={ref} style={{ width: '100%', height: '100%', minHeight: 0, flex: '1 1 auto' }}>{children}</div>;
+    return <>
+        <div ref={ref} style={{ width: '100%', height: '100%', minHeight: 0, flex: '0 0 auto', overflowWrap: 'anywhere' }}>{children}</div>
+        {overflow && <span role="status" className="absolute bottom-0 left-0 z-30 bg-amber-100 px-2 py-0.5 text-xs text-amber-950">Slide is too long. Shorten or split the content.</span>}
+    </>;
 }
 
 // Math helpers to map PPTX inches to CSS percentages
@@ -144,8 +144,8 @@ export default function LiveSlidePreview({ theme, type = 'title', config, questi
 
         const accent = theme.cyan || theme.blueOrb || theme.black || textColor;
         return (
-            <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 0.48fr) minmax(0, 0.52fr)', gap: '2.5cqw', width: '100%', height: '100%', minHeight: 0 }}>
-                <div style={{ boxSizing: 'border-box', height: '100%', minWidth: 0, paddingRight: '1.875cqw', borderRight: `0.08cqw solid #${accent}`, color: `#${textColor}`, fontSize: theme.teaching ? '1.875cqw' : fs(10), lineHeight: 1.45, whiteSpace: 'pre-wrap' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 0.48fr) minmax(0, 0.52fr)', gap: '2.5cqw', width: '100%', minHeight: '100%' }}>
+                <div style={{ boxSizing: 'border-box', minWidth: 0, paddingRight: '1.875cqw', borderRight: `0.08cqw solid #${accent}`, color: `#${textColor}`, fontSize: theme.teaching ? '1.875cqw' : fs(10), lineHeight: 1.45, whiteSpace: 'pre-wrap' }}>
                     <EditableBlock
                         value={questionData.context}
                         renderTables

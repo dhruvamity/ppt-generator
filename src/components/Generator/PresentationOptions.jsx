@@ -7,8 +7,8 @@ const TOGGLES = [
     { key: 'revealAnswers', label: 'Reveal answers on click', hint: 'The marked option lights up green on the next click (or press A).' },
     { key: 'solutionSlides', label: 'Solution slides', hint: 'A worked-solution slide follows each question that has one.' },
     { key: 'insertBlankSlides', label: 'Blank work-space slides', hint: 'A ruled slide after every question for solving live.' },
-    { key: 'answerKeySlide', label: 'Answer key at the end', hint: 'One slide listing every answer, handy for printed handouts.' },
-    { key: 'sectionSlides', label: 'Section dividers', hint: 'A divider slide whenever the topic or section changes.' },
+    { key: 'answerKeySlide', label: 'Answer key at the end', hint: 'Lists answers on as many slides as needed.' },
+    { key: 'sectionSlides', label: 'Section dividers', hint: 'Add a divider for each section marked with a Markdown heading (##).' },
     { key: 'slideNumbers', label: 'Slide numbers', hint: 'Shows "4 / 20" in the corner while presenting.' },
 ];
 

@@ -48,8 +48,8 @@ const solutionStart = /^(?:Solution|Sol|Explanation|Working)\s*[:.\-–]\s*(.*)$
 // "(b)", "B.", "b) 105:77", "(2)" and a lone "2" name an option; anything else is a free-form answer.
 const parseAnswer = (value, options) => {
     const trimmed = value.trim();
-    const letter = trimmed.match(/^\(?([A-Fa-f])(?:\)|\.|\s|$)/);
-    if (letter) return letter[1].toLowerCase();
+    const letter = trimmed.match(/^(?:\(([A-Fa-f])\)|([A-Fa-f])[.)](?=\s|$)|([A-Fa-f])$)/);
+    if (letter && options.length) return (letter[1] || letter[2] || letter[3]).toLowerCase();
     const digit = trimmed.match(/^(?:\(([1-6])\)|([1-6])\)|([1-6])$)/);
     if (digit && options.length) {
         const number = digit[1] || digit[2] || digit[3];
@@ -62,7 +62,7 @@ export const parseLocalText = (rawText) => {
     if (!rawText?.trim()) return [];
     const questions = [];
     let current = null;
-    let category = 'Practice Question';
+    let section = '';
     let rangeContext = null;
     let singleContext = null;
     let collectingContext = null;
@@ -72,7 +72,8 @@ export const parseLocalText = (rawText) => {
         questions.push({
             badge: 'Q.' + (questions.length + 1),
             tag: current.options.length ? 'MCQ' : 'PRACTICE',
-            topic: category,
+            topic: current.section || 'Practice Question',
+            ...(current.section ? { section: current.section } : {}),
             qText: convertFractions(current.lines.join('\n').trim()),
             context: convertFractions(current.context.join('\n').trim()),
             options: current.options.map(option => ({
@@ -111,6 +112,7 @@ export const parseLocalText = (rawText) => {
             const sourceNumber = Number(question[1] || question[2] || question[3]);
             const applicableRange = rangeContext && sourceNumber >= rangeContext.start && sourceNumber <= rangeContext.end;
             current = {
+                section,
                 lines: question[4] ? [question[4]] : [],
                 context: [...(singleContext?.lines || (applicableRange ? rangeContext.lines : []))],
                 options: [],
@@ -126,7 +128,8 @@ export const parseLocalText = (rawText) => {
         // mistake numbered statements within a question for a section heading.
         if ((heading && heading[1].length <= 2) || /^\d+\.\s+(?:Worked Examples|.*Theory Questions)$/i.test(line)) {
             flush();
-            category = line.replace(/^\d+\.\s*/, '');
+            if (heading?.[1].length !== 1) section = line.replace(/^\d+\.\s*/, '');
+            else section = '';
             rangeContext = null;
             singleContext = null;
             collectingContext = null;
@@ -167,7 +170,11 @@ export const parseLocalText = (rawText) => {
 };
 
 export const serializeQuestions = (questions) => questions.map((question, index) => {
-    let text = question.context?.trim() ? 'Shared context: ' + question.context.trim() + '\n' : '';
+    const section = question.section?.trim() || '';
+    const previous = questions[index - 1]?.section?.trim() || '';
+    // An empty section after reordering needs an explicit boundary too.
+    let text = section !== previous ? '## ' + (section || 'Practice Questions') + '\n\n' : '';
+    if (question.context?.trim()) text += 'Shared context: ' + question.context.trim() + '\n';
     text += 'Q.' + (index + 1) + ': ' + (question.qText || '');
     if (question.options?.length) {
         text += '\n' + question.options.map((option, optionIndex) => '(' + String(option.label || String.fromCharCode(97 + optionIndex)).replace(/[().]/g, '') + ') ' + (option.text || '')).join('\n');

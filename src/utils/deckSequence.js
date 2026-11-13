@@ -49,16 +49,18 @@ export function sectionConfig(config, topic, part, count, first) {
     };
 }
 
+const ANSWERS_PER_PAGE = 24;
+
 export function deckSequence(config, slides) {
     const options = { ...PRESENTATION_DEFAULTS, ...config };
     const list = Array.isArray(slides) ? slides : [];
     const sequence = [{ kind: 'title' }];
     let part = 0;
     list.forEach((slide, index) => {
-        const topic = String(slide?.topic ?? '').trim();
-        if (options.sectionSlides && topic && topic !== String(list[index - 1]?.topic ?? '').trim()) {
+        const topic = String(slide?.section ?? '').trim();
+        if (options.sectionSlides && topic && topic !== String(list[index - 1]?.section ?? '').trim()) {
             let count = 1;
-            while (String(list[index + count]?.topic ?? '').trim() === topic) count++;
+            while (String(list[index + count]?.section ?? '').trim() === topic) count++;
             part++;
             sequence.push({ kind: 'section', index, config: sectionConfig(config, topic, part, count, index + 1) });
         }
@@ -67,7 +69,13 @@ export function deckSequence(config, slides) {
         if (options.solutionSlides && String(slide?.solution ?? '').trim()) sequence.push({ kind: 'solution', slide, index });
     });
     if (options.answerKeySlide && list.some(hasAnswer)) {
-        sequence.push({ kind: 'key', entries: list.map((slide, index) => ({ badge: slide?.badge || `Q.${index + 1}`, answer: answerLabel(slide) || '—' })) });
+        const entries = list.map((slide, index) => ({
+            badge: slide?.badge || `Q.${index + 1}`,
+            answer: answerLabel(slide) || '—',
+        }));
+        for (let start = 0; start < entries.length; start += ANSWERS_PER_PAGE) {
+            sequence.push({ kind: 'key', entries: entries.slice(start, start + ANSWERS_PER_PAGE) });
+        }
     }
     return sequence;
 }

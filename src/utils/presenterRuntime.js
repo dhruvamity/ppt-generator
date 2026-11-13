@@ -1,41 +1,33 @@
 // Embedded in downloaded HTML via toString(). Keep this function self-contained: no imports and
 // no references to module scope. Classroom tools: pen / highlighter ink stored per slide, laser
 // pointer, question timer, answer toggle, and auto-fit for long questions and solutions.
-export function installPresenterTools() {
+export function installPresenterTools(fitSlideBox, storageKey) {
     const deck = window.Reveal;
     const bar = document.getElementById('presenter-bar');
     const chip = document.getElementById('presenter-timer');
     if (!deck || !bar || !chip) return;
 
-    // Auto-fit: measure each slide off-screen at its real 1280 × 720 size and scale overflowing
-    // content down (never below half size) so nothing is clipped when presenting or printing.
     const fitAll = () => {
         const stage = document.createElement('div');
         stage.className = 'reveal';
         stage.style.cssText = 'position:fixed;left:-20000px;top:0;width:1280px;height:720px;visibility:hidden;pointer-events:none;';
         document.body.appendChild(stage);
-        document.querySelectorAll('.slides .slide-container').forEach(slide => {
-            const targets = slide.querySelectorAll('.q-fit');
-            if (!targets.length) return;
-            const clone = slide.cloneNode(true);
-            stage.replaceChildren(clone);
-            clone.querySelectorAll('.q-fit').forEach((box, i) => {
-                let scale = 1;
-                const apply = value => {
-                    box.style.transformOrigin = '0 0';
-                    box.style.transform = 'scale(' + value + ')';
-                    box.style.width = box.style.height = (100 / value) + '%';
-                    box.style.flex = '0 0 auto';
-                };
-                for (let step = 0; step < 16 && box.scrollHeight > box.clientHeight + 1 && scale > 0.5; step++) {
-                    scale = Math.max(0.5, scale * Math.min(0.97, Math.max(0.8, box.clientHeight / box.scrollHeight)));
-                    apply(scale);
-                }
-                if (scale < 1) targets[i].style.cssText = box.style.cssText;
+        const oversized = [];
+        try {
+            document.querySelectorAll('.slides .slide-container').forEach((slide, index) => {
+                const target = slide.querySelector('.q-fit');
+                if (!target) return;
+                const clone = slide.cloneNode(true);
+                stage.replaceChildren(clone);
+                const box = clone.querySelector('.q-fit');
+                if (!fitSlideBox(box)) oversized.push(index + 1);
+                target.style.cssText = box.style.cssText;
             });
-        });
-        stage.remove();
+        } finally {
+            stage.remove();
+        }
         deck.layout();
+        return oversized;
     };
 
     const canvas = document.createElement('canvas');
@@ -48,8 +40,19 @@ export function installPresenterTools() {
     document.body.appendChild(laser);
 
     const COLORS = ['#E11D48', '#2563EB', '#16A34A', '#111827', '#FFFFFF'];
-    const ink = new Map();
     let tool = null, colorIndex = 0, stroke = null;
+    const ink = new Map();
+    try {
+        const saved = JSON.parse(localStorage.getItem(storageKey) || '[]');
+        for (const [key, strokes] of saved) {
+            if (/^\d+\.\d+$/.test(key) && Array.isArray(strokes)) ink.set(key, strokes);
+        }
+    } catch { /* Local storage can be unavailable for offline files. */ }
+    const saveInk = () => {
+        try {
+            localStorage.setItem(storageKey, JSON.stringify([...ink]));
+        } catch { /* Keep annotations for the current session. */ }
+    };
 
     const slideKey = () => { const i = deck.getIndices(); return i.h + '.' + (i.v || 0); };
     const slideRect = () => { const slide = deck.getCurrentSlide(); return (slide?.querySelector('.slide-container') || slide)?.getBoundingClientRect(); };
@@ -70,8 +73,13 @@ export function installPresenterTools() {
         ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
         const rect = slideRect();
         if (!rect || !rect.width || deck.isOverview()) return;
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(rect.left, rect.top, rect.width, rect.height);
+        ctx.clip();
         (ink.get(slideKey()) || []).forEach(item => drawStroke(item, rect));
-        if (stroke) drawStroke(stroke, rect);
+        if (stroke?.key === slideKey()) drawStroke(stroke, rect);
+        ctx.restore();
     };
     const resize = () => {
         const ratio = window.devicePixelRatio || 1;
@@ -84,25 +92,30 @@ export function installPresenterTools() {
 
     canvas.addEventListener('pointerdown', event => {
         const rect = slideRect();
-        if (!rect || (tool !== 'pen' && tool !== 'marker')) return;
-        stroke = { tool, color: tool === 'marker' ? '#FACC15' : COLORS[colorIndex], width: tool === 'marker' ? 30 : 5, points: [point(event, rect)] };
+        if (!rect || stroke || event.button !== 0 || (tool !== 'pen' && tool !== 'marker') || deck.isOverview()) return;
+        const position = point(event, rect);
+        if (position.some(coordinate => coordinate < 0 || coordinate > 1)) return;
+        stroke = { key: slideKey(), pointerId: event.pointerId, tool, color: tool === 'marker' ? '#FACC15' : COLORS[colorIndex], width: tool === 'marker' ? 30 : 5, points: [position] };
         canvas.setPointerCapture(event.pointerId);
         redraw();
     });
     canvas.addEventListener('pointermove', event => {
-        if (!stroke) return;
-        stroke.points.push(point(event, slideRect()));
+        const rect = slideRect();
+        if (!stroke || stroke.pointerId !== event.pointerId || !rect || stroke.key !== slideKey()) return;
+        stroke.points.push(point(event, rect));
         redraw();
     });
-    const endStroke = () => {
-        if (!stroke) return;
-        const key = slideKey();
-        ink.set(key, [...(ink.get(key) || []), stroke]);
+    const endStroke = event => {
+        if (!stroke || stroke.pointerId !== event.pointerId) return;
+        const { key, tool, color, width, points } = stroke;
+        ink.set(key, [...(ink.get(key) || []), { tool, color, width, points }]);
         stroke = null;
+        saveInk();
         redraw();
     };
     canvas.addEventListener('pointerup', endStroke);
     canvas.addEventListener('pointercancel', endStroke);
+    canvas.addEventListener('lostpointercapture', endStroke);
     document.addEventListener('pointermove', event => {
         if (tool !== 'laser') return;
         laser.style.left = event.clientX + 'px';
@@ -124,8 +137,8 @@ export function installPresenterTools() {
         button('color').style.setProperty('--ink', COLORS[colorIndex]);
         if (tool !== 'pen') setTool('pen');
     };
-    const undo = () => { const key = slideKey(); ink.set(key, (ink.get(key) || []).slice(0, -1)); redraw(); };
-    const erase = () => { ink.delete(slideKey()); redraw(); };
+    const undo = () => { const key = slideKey(); ink.set(key, (ink.get(key) || []).slice(0, -1)); saveInk(); redraw(); };
+    const erase = () => { ink.delete(slideKey()); saveInk(); redraw(); };
     const toggleAnswer = () => {
         const answer = deck.getCurrentSlide()?.querySelector('.answer-opt, .answer-line');
         if (!answer) return;
@@ -175,7 +188,47 @@ export function installPresenterTools() {
         const target = event.target.closest('button');
         if (target) actions[target.dataset.tool || target.dataset.action]?.();
     });
-    chip.addEventListener('click', toggleTimer);
+    let hideToolbar;
+    const showToolbar = () => {
+        bar.classList.remove('is-idle');
+        clearTimeout(hideToolbar);
+        hideToolbar = setTimeout(() => bar.classList.add('is-idle'), 3500);
+    };
+    document.addEventListener('pointermove', showToolbar, { passive: true });
+    document.addEventListener('pointerdown', showToolbar, { passive: true });
+    bar.addEventListener('focusin', showToolbar);
+    showToolbar();
+
+    let drag = null;
+    let suppressTimerClick = false;
+    chip.addEventListener('pointerdown', event => {
+        if (event.button !== 0 || !event.isPrimary) return;
+        const rect = chip.getBoundingClientRect();
+        suppressTimerClick = false;
+        drag = { id: event.pointerId, x: event.clientX, y: event.clientY, left: rect.left, top: rect.top };
+        chip.setPointerCapture(event.pointerId);
+    });
+    const moveTimer = (left, top) => {
+        chip.style.right = 'auto';
+        chip.style.left = Math.max(0, Math.min(left, innerWidth - chip.offsetWidth)) + 'px';
+        chip.style.top = Math.max(0, Math.min(top, innerHeight - chip.offsetHeight)) + 'px';
+    };
+    chip.addEventListener('pointermove', event => {
+        if (drag?.id !== event.pointerId) return;
+        const dx = event.clientX - drag.x, dy = event.clientY - drag.y;
+        if (Math.abs(dx) + Math.abs(dy) > 5) suppressTimerClick = true;
+        if (suppressTimerClick) moveTimer(drag.left + dx, drag.top + dy);
+    });
+    const endDrag = event => { if (drag?.id === event.pointerId) drag = null; };
+    chip.addEventListener('pointerup', endDrag);
+    chip.addEventListener('pointercancel', endDrag);
+    chip.addEventListener('click', event => {
+        if (!suppressTimerClick || event.detail === 0) toggleTimer();
+        suppressTimerClick = false;
+    });
+    window.addEventListener('resize', () => {
+        if (chip.style.left && !chip.hidden) moveTimer(parseFloat(chip.style.left), parseFloat(chip.style.top));
+    });
     [[68, 'D', 'Pen: draw on the slide', 'pen'], [77, 'M', 'Highlighter', 'marker'], [88, 'X', 'Laser pointer', 'laser'], [85, 'U', 'Undo last stroke', 'undo'], [69, 'E', 'Erase ink on this slide', 'erase'], [65, 'A', 'Show / hide the answer', 'answer'], [84, 'T', 'Start / pause the timer', 'timer']]
         .forEach(([keyCode, key, description, action]) => deck.addKeyBinding({ keyCode, key, description }, actions[action]));
 
@@ -185,5 +238,23 @@ export function installPresenterTools() {
     deck.on('overviewshown', redraw);
     deck.on('overviewhidden', redraw);
     window.addEventListener('resize', resize);
-    Promise.resolve(window.slidesReady).then(() => document.fonts.ready).then(() => { fitAll(); resize(); onSlide(); });
+    const pdfButton = document.getElementById('pdf-btn');
+    pdfButton.disabled = true;
+    window.slidesReady = Promise.resolve(window.slidesReady)
+        .then(async () => {
+            await Promise.allSettled([...document.fonts]
+                .filter(font => font.family.replace(/['"]/g, '').startsWith('KaTeX'))
+                .map(font => font.load()));
+            await document.fonts.ready;
+            const oversized = fitAll();
+            const warning = document.getElementById('slide-overflow-warning');
+            warning.textContent = oversized.length
+                ? 'Slides ' + oversized.join(', ') + ' exceed the available space. Shorten or split their content before exporting to PDF.'
+                : '';
+            warning.hidden = !oversized.length;
+            warning.dataset.ready = 'true';
+            pdfButton.disabled = Boolean(oversized.length);
+            resize();
+            onSlide();
+        });
 }

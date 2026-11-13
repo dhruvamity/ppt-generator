@@ -84,29 +84,35 @@ export const useStore = create(
             setIsParsing: (parsing) => set({ isParsing: parsing }),
 
             generateFromAI: async (token) => {
-                const { rawText } = get();
+                const { rawText, isParsing } = get();
+                if (isParsing) return;
                 set({ isParsing: true });
                 try {
                     const data = await generateSlideData(rawText, token);
+                    if (get().rawText !== rawText) {
+                        set({ isParsing: false });
+                        return;
+                    }
                     const sourceQuestions = parseLocalText(rawText);
                     if (!Array.isArray(data) || data.length === 0) {
                         throw new Error('Formatting returned no questions. Please retry.');
                     }
-                    if (sourceQuestions.length > data.length) {
+                    if (sourceQuestions.length && sourceQuestions.length !== data.length) {
                         throw new Error(`Formatting returned ${data.length} of ${sourceQuestions.length} detected questions. Please retry; your original text is preserved.`);
                     }
                     
                     const sameCount = sourceQuestions.length === data.length;
+                    const explicitAnswer = /^\s*(?:Correct\s+)?(?:Answer|Ans)\s*(?:key)?\s*[:.\-–]/im.test(rawText);
+                    const explicitSolution = /^\s*(?:Solution|Sol|Explanation|Working)\s*[:.\-–]/im.test(rawText);
                     const indexedData = data.map((slide, i) => ({
-                        ...slide,
+                        ...(sameCount ? sourceQuestions[i] : slide),
                         // Explicit shared ranges are authoritative. Preserve all
                         // table values even if the AI compresses the passage.
-                        context: sameCount && sourceQuestions[i].context
-                            ? sourceQuestions[i].context
-                            : (slide.context || ''),
+                        context: sameCount ? sourceQuestions[i].context : slide.context || '',
                         // Answers and solutions written by the teacher win over the model's copy.
-                        answer: (sameCount && sourceQuestions[i].answer) || slide.answer || '',
-                        solution: (sameCount && sourceQuestions[i].solution) || slide.solution || '',
+                        answer: sameCount ? sourceQuestions[i].answer || '' : explicitAnswer ? slide.answer || '' : '',
+                        solution: sameCount ? sourceQuestions[i].solution || '' : explicitSolution ? slide.solution || '' : '',
+                        section: sameCount ? sourceQuestions[i].section : undefined,
                         badge: `Q.${i + 1}`
                     }));
                     
@@ -202,7 +208,7 @@ export const useStore = create(
                 savedThemes: [...state.savedThemes, theme] 
             })),
 
-            folders: ['Biology 101', 'SAT Math Prep', 'World History'],
+            folders: ['Maths Practice', 'CAT Quant', 'Aptitude Drills'],
             addFolder: (folderName) => set((state) => ({
                 folders: [...state.folders, folderName]
             })),

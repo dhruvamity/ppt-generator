@@ -68,3 +68,26 @@ test('exports reveal answers on click, add solution and key slides, and keep pre
     assert.doesNotMatch(quiet, /answer-opt"|answer-line"|data-timer=/);
     assert.match(quiet, /slideNumber: false/);
 });
+
+test('section headings survive editing and inferred topics cannot create dividers', () => {
+    const questions = parseLocalText(SOURCE);
+    const restored = parseLocalText(serializeQuestions(questions));
+    assert.deepEqual(restored.map(q => q.section), ['Number System', 'Number System', 'Arithmetic', 'Arithmetic']);
+    const withTopics = restored.map((q, index) => ({ ...q, topic: 'Generated topic ' + index }));
+    assert.equal(deckSequence({ sectionSlides: true }, withTopics).filter(entry => entry.kind === 'section').length, 2);
+    assert.equal(deckSequence({ sectionSlides: true }, [{ topic: 'Generated topic' }]).length, 2);
+});
+
+test('long answer keys are paginated in order and retain unanswered questions', () => {
+    const questions = Array.from({ length: 49 }, (_, index) => ({ badge: `Q.${index + 1}`, answer: index === 1 ? '' : String(index) }));
+    const pages = deckSequence({ answerKeySlide: true }, questions).filter(entry => entry.kind === 'key');
+    assert.deepEqual(pages.map(page => page.entries.length), [24, 24, 1]);
+    assert.equal(pages[0].entries[1].answer, '—');
+    assert.equal(pages[1].entries[0].badge, 'Q.25');
+    assert.equal(pages[2].entries[0].badge, 'Q.49');
+});
+
+test('a free-text answer beginning with an article is preserved', () => {
+    const [question] = parseLocalText('Q.1: Describe the shape.\nAnswer: A right triangle');
+    assert.equal(question.answer, 'A right triangle');
+});

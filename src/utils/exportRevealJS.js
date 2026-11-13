@@ -3,6 +3,7 @@ import { signatureSlide } from './signatureDesigns.js';
 import { watermarkStyle } from './watermark.js';
 import { installSlidePdfExport } from './slidePdfRuntime.js';
 import { installPresenterTools } from './presenterRuntime.js';
+import { fitSlideBox } from './fitSlideBox.js';
 import { deckSequence, slideData, answerIndex, answerLabel, PRESENTATION_DEFAULTS } from './deckSequence.js';
 import katex from 'katex';
 
@@ -151,7 +152,7 @@ export const buildRevealHtml = (config, activeSlides, theme, layoutId = 'modern-
 
     const renderQuestionContent = (slide, color, textColor = theme.textWhite, bold = false) => {
         // Long questions, passages and solutions scale down at present time instead of being clipped.
-        const fit = html => `<div class="q-fit" style="width: 100%; height: 100%; min-height: 0; flex: 1 1 auto;">${html}</div>`;
+        const fit = html => `<div class="q-fit" style="width: 100%; height: 100%; min-height: 0; flex: 0 0 auto; overflow-wrap: anywhere;">${html}</div>`;
         if (slide.kind === 'solution') return fit(renderSolution(slide, color, textColor));
         if (slide.kind === 'key') return fit(renderAnswerKey(slide.entries || [], color, textColor));
         const answerIdx = answerIndex(slide);
@@ -165,8 +166,8 @@ export const buildRevealHtml = (config, activeSlides, theme, layoutId = 'modern-
         if (!context) return fit(question);
 
         return fit(`
-            <div style="display: grid; grid-template-columns: ${theme.teaching ? 'minmax(0, 0.48fr) minmax(0, 0.52fr)' : 'minmax(0, 1fr) minmax(0, 1fr)'}; width: 100%; height: 100%; gap: 32px; min-height: 0; align-items: flex-start;">
-                <div style="min-width: 0; height: 100%; box-sizing: border-box; padding-right: ${theme.teaching ? '24px' : '28px'}; border-right: 1px solid #${theme.cyan || theme.pinkOrb || theme.black}; color: #${textColor}; font-size: ${theme.teaching ? '24px' : fs(10)}; line-height: 1.45; overflow: hidden;">${renderContext(context)}</div>
+            <div style="display: grid; grid-template-columns: ${theme.teaching ? 'minmax(0, 0.48fr) minmax(0, 0.52fr)' : 'minmax(0, 1fr) minmax(0, 1fr)'}; width: 100%; min-height: 100%; gap: 32px; align-items: stretch;">
+                <div style="min-width: 0; box-sizing: border-box; padding-right: ${theme.teaching ? '24px' : '28px'}; border-right: 1px solid #${theme.cyan || theme.pinkOrb || theme.black}; color: #${textColor}; font-size: ${theme.teaching ? '24px' : fs(10)}; line-height: 1.45;">${renderContext(context)}</div>
                 <div style="min-width: 0;">
                     ${question}
                 </div>
@@ -552,6 +553,11 @@ export const buildRevealHtml = (config, activeSlides, theme, layoutId = 'modern-
         htmlContent += withWatermark(tagSlide(slideHtml, entry.kind));
     }
 
+    // Keep ink attached to this particular deck, even when two decks have the same title.
+    let deckHash = 2166136261;
+    for (const char of htmlContent) deckHash = Math.imul(deckHash ^ char.codePointAt(0), 16777619);
+    const inkStorageKey = 'deckful.ink.' + (deckHash >>> 0).toString(36) + '.' + htmlContent.length;
+
     // Close the vertical stack
     htmlContent += `</section>\n`;
 
@@ -564,9 +570,12 @@ export const buildRevealHtml = (config, activeSlides, theme, layoutId = 'modern-
         Save as PDF
     </button>
 
+    <p id="slide-overflow-warning" role="alert" hidden style="position:fixed;top:0;left:0;right:0;z-index:10000;background:#fff5d6;color:#352500;padding:12px;text-align:center"></p>
+
     <!-- Presenter tools: never part of a slide, so print and PDF output stay clean -->
     <style>
         #presenter-bar { position: fixed; left: 16px; bottom: 16px; z-index: 9999; display: flex; gap: 2px; padding: 5px; border-radius: 12px; background: rgba(15, 23, 42, 0.82); box-shadow: 0 6px 18px rgba(0,0,0,0.35); opacity: 0.35; transition: opacity .2s; font-family: 'Segoe UI', Arial, sans-serif; }
+        #presenter-bar.is-idle:not(:focus-within):not(:hover) { opacity: 0; pointer-events: none; }
         #presenter-bar:hover, #presenter-bar:focus-within, #presenter-bar:has([data-tool][aria-pressed="true"]) { opacity: 1; }
         #presenter-bar button { width: 34px; height: 34px; display: grid; place-items: center; border: 0; border-radius: 8px; background: transparent; color: #E2E8F0; cursor: pointer; padding: 0; }
         #presenter-bar button:hover { background: rgba(255,255,255,0.12); }
@@ -574,7 +583,7 @@ export const buildRevealHtml = (config, activeSlides, theme, layoutId = 'modern-
         #presenter-bar svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
         #presenter-bar [data-action="color"] span { width: 14px; height: 14px; border-radius: 50%; background: var(--ink, #E11D48); box-shadow: 0 0 0 2px #E2E8F0; }
         #presenter-bar .sep { width: 1px; margin: 6px 3px; background: rgba(255,255,255,0.18); }
-        #presenter-timer { position: fixed; top: 14px; right: 14px; z-index: 9999; padding: 6px 16px; border-radius: 999px; background: rgba(15, 23, 42, 0.78); color: #F8FAFC; font: 800 26px/1.2 'Segoe UI', Arial, sans-serif; letter-spacing: 1px; font-variant-numeric: tabular-nums; cursor: pointer; }
+        #presenter-timer { position: fixed; top: 14px; right: 14px; z-index: 9999; padding: 6px 16px; border-radius: 999px; background: rgba(15, 23, 42, 0.78); color: #F8FAFC; font: 800 26px/1.2 'Segoe UI', Arial, sans-serif; letter-spacing: 1px; font-variant-numeric: tabular-nums; cursor: grab; border: 0; touch-action: none; }
         #presenter-timer[hidden] { display: none; }
         #presenter-timer[data-state="low"] { background: #B45309; }
         #presenter-timer[data-state="done"] { background: #DC2626; animation: presenter-pulse 0.9s ease-in-out infinite; }
@@ -593,7 +602,7 @@ export const buildRevealHtml = (config, activeSlides, theme, layoutId = 'modern-
         <button type="button" data-action="answer" title="Show / hide answer (A)"><svg viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg></button>
         <button type="button" data-action="timer" aria-pressed="false" title="Timer (T)"><svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2M9 2h6"/></svg></button>
     </div>
-    <div id="presenter-timer" role="timer" aria-live="off" title="Click or press T to pause" hidden>00:00</div>
+    <button type="button" id="presenter-timer" title="Click to pause or drag to move" hidden>00:00</button>
 
     ${assets.revealJs ? `<script>${assets.revealJs}</script>` : CDN.revealJs}
     <script>
@@ -620,10 +629,13 @@ export const buildRevealHtml = (config, activeSlides, theme, layoutId = 'modern-
             });
             // Handouts never give answers away; the optional answer key slide is the place for them.
             pages.querySelectorAll('.answer-opt, .answer-line').forEach(item => item.classList.remove('visible'));
+            const warning = document.getElementById('slide-overflow-warning');
+            if (!warning.hidden) pages.textContent = warning.textContent;
+            else if (warning.dataset.ready !== 'true') pages.textContent = 'Slides are still loading. Try printing again in a moment.';
             document.body.appendChild(pages);
         });
         (${installSlidePdfExport.toString()})();
-        (${installPresenterTools.toString()})();
+        (${installPresenterTools.toString()})(${fitSlideBox.toString()}, ${JSON.stringify(inkStorageKey)});
     </script>
 </body>
 </html>`;

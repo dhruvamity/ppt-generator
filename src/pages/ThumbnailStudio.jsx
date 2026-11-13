@@ -3,12 +3,27 @@ import { Download, ImagePlus, RotateCcw, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useStore } from '../store/useStore';
 import { THUMBNAIL_TEMPLATES, THUMBNAIL_FIELDS, DEFAULT_THUMBNAIL } from '../utils/thumbnailDesign.js';
-import { renderThumbnailPng } from '../utils/thumbnailExport.js';
+import { renderThumbnailJpg, renderThumbnailPng } from '../utils/thumbnailExport.js';
 import ThumbnailSvg from '../components/Thumbnail/ThumbnailSvg';
 
 const inputClass = 'w-full bg-surface-container-low border border-outline-variant rounded-lg p-2 text-sm text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all';
 const labelClass = 'font-label-sm text-xs font-semibold text-on-surface-variant block mb-1';
 const SUBJECT_FILTERS = [['any', 'All'], ['maths', 'Maths'], ['cat', 'CAT'], ['aptitude', 'Aptitude']];
+
+function ThumbnailPlacementPreview({ template, data, showSafeZone }) {
+    return <div className="flex flex-wrap items-start gap-4">
+        {[{ label: 'Home feed', width: 320 }, { label: 'Sidebar', width: 168 }].map(({ label, width }) => (
+            <figure key={label} className="max-w-full" style={{ width }}>
+                <div className="relative overflow-hidden rounded-lg border border-outline-variant">
+                    <ThumbnailSvg template={template} data={data} />
+                    {showSafeZone && <div aria-hidden="true" className="absolute bottom-0 right-0 border-l border-t border-dashed border-white bg-black/25" style={{ width: '11.72%', height: '11.11%' }} />}
+                    <span aria-hidden="true" className="absolute bottom-[4%] right-[3%] rounded bg-black/90 px-[2%] py-[1%] text-[10px] font-semibold leading-none text-white">12:34</span>
+                </div>
+                <figcaption className="mt-1 text-xs text-on-surface-variant">{label} · {width} px</figcaption>
+            </figure>
+        ))}
+    </div>;
+}
 
 export default function ThumbnailStudio() {
     const thumbnail = useStore(state => state.thumbnail) || DEFAULT_THUMBNAIL;
@@ -18,6 +33,7 @@ export default function ThumbnailStudio() {
     const setThumbnailPhoto = useStore(state => state.setThumbnailPhoto);
     const [filter, setFilter] = useState('any');
     const [busy, setBusy] = useState(false);
+    const [showSafeZone, setShowSafeZone] = useState(true);
     const svgRef = useRef(null);
     const template = THUMBNAIL_TEMPLATES.find(item => item.id === thumbnail.templateId) || THUMBNAIL_TEMPLATES[0];
     const data = { ...thumbnail, photoHref };
@@ -36,19 +52,20 @@ export default function ThumbnailStudio() {
         reader.readAsDataURL(file);
     };
 
-    const onDownload = async () => {
+    const onDownload = async (format) => {
         if (!svgRef.current) return;
         setBusy(true);
         try {
-            const blob = await renderThumbnailPng(svgRef.current, 1);
+            const blob = await (format === 'jpg' ? renderThumbnailJpg : renderThumbnailPng)(svgRef.current);
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
-            link.download = `${thumbnail.chapter || 'thumbnail'}-lecture-${thumbnail.lecture || '0'}.png`.replace(/[^\w.-]+/g, '-');
+            link.download = `${thumbnail.chapter || 'thumbnail'}-lecture-${thumbnail.lecture || '0'}.${format}`.replace(/[^\w.-]+/g, '-');
             document.body.appendChild(link);
             link.click();
             link.remove();
-            URL.revokeObjectURL(link.href);
-            toast.success('Thumbnail downloaded (1280 × 720 PNG).');
+            const url = link.href;
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+            toast.success(`Thumbnail downloaded (1280 × 720 ${format.toUpperCase()}).`);
         } catch (error) {
             toast.error(error.message);
         } finally {
@@ -80,7 +97,8 @@ export default function ThumbnailStudio() {
                         {field.suggestions && <datalist id={`thumb-${field.key}-options`}>{field.suggestions.map(option => <option key={option} value={option} />)}</datalist>}
                     </div>)}
                 </div>
-                <button type="button" onClick={onDownload} disabled={busy} className="w-full flex items-center justify-center gap-2 bg-primary text-on-primary hover:bg-primary/90 disabled:opacity-60 px-4 py-3 rounded-xl font-label-md text-sm transition-all shadow-md shadow-primary/20"><Download size={18} />{busy ? 'Rendering…' : 'Download PNG · 1280 × 720'}</button>
+                <button type="button" onClick={() => onDownload('png')} disabled={busy} className="w-full flex items-center justify-center gap-2 bg-primary text-on-primary hover:bg-primary/90 disabled:opacity-60 px-4 py-3 rounded-xl font-label-md text-sm transition-all shadow-md shadow-primary/20"><Download size={18} />{busy ? 'Rendering…' : 'Download PNG · 1280 × 720'}</button>
+                <button type="button" onClick={() => onDownload('jpg')} disabled={busy} className="w-full flex items-center justify-center gap-2 rounded-xl border border-outline-variant px-4 py-3 text-sm text-on-surface hover:border-primary disabled:opacity-60"><Download size={18} />Download JPG · under 2 MB</button>
             </div>
         </aside>
         <div className="flex-1 flex flex-col gap-8 min-w-0">
@@ -89,6 +107,16 @@ export default function ThumbnailStudio() {
                     <div><p className="text-xs uppercase tracking-[0.2em] text-primary font-semibold mb-1">Thumbnail studio</p><h1 className="text-2xl md:text-3xl font-semibold tracking-tight">{template.name}</h1><p className="text-sm text-on-surface-variant mt-1">{template.description}</p></div>
                 </div>
                 <div className="rounded-xl overflow-hidden border border-outline-variant shadow-md bg-surface-container-low"><ThumbnailSvg template={template} data={data} svgRef={svgRef} /></div>
+            </section>
+            <section>
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                    <h2 className="text-lg font-semibold">YouTube preview</h2>
+                    <label className="flex items-center gap-2 text-xs text-on-surface-variant">
+                        <input type="checkbox" checked={showSafeZone} onChange={event => setShowSafeZone(event.target.checked)} />
+                        Show duration safe zone
+                    </label>
+                </div>
+                <ThumbnailPlacementPreview template={template} data={data} showSafeZone={showSafeZone} />
             </section>
             <section>
                 <div className="flex flex-wrap items-center justify-between gap-3 mb-4">

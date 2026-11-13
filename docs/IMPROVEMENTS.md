@@ -2,6 +2,21 @@
 
 This pass is for maths, CAT and aptitude teachers. Most of the new slide designs stay out of the way of the question; a few bold ones are labelled as bold so teachers can save them for intros and speed rounds.
 
+## Follow-up in progress
+
+| Checklist item | Status |
+| --- | --- |
+| 1. Editor controls | At a 390 px browser viewport with a simulated Clerk session, answer chips, inline solution editing, presentation toggles, timer selection and theme search worked. Production sign-in remains a separate check. |
+| 2, 4, 8. Presenter controls and ink | Toolbar hides after inactivity, the timer can be dragged, and ink is restored per exported deck when browser storage is available. The CAT Mock design displays the real presenter timer when enabled. Browser checks covered keyboard controls, mouse drawing, undo, erase, resize and reload. Physical pen and smartboard checks remain. |
+| 3. AI answer and solution handling | The configured Gemini API returned an empty answer and solution for an unanswered sample and kept the explicitly supplied answer and solution for another. Structured pastes keep their own wording, options, tables and answers. |
+| 5. Dense content and answer keys | Preview and export use the same fit check. Answer keys split every 24 entries. Content that still does not fit is scrollable in HTML and identified before PDF export. Automatic passage pagination remains open. |
+| 6. Section dividers | Dividers now use explicit source headings. Editing and serialization preserve them. |
+| 7. Classic layouts | Browser checks covered solution and key rendering across the ten original themes and all three layout selections. |
+| 9–10. Thumbnail previews and JPG export | The studio shows home-feed and sidebar mockups with a duration badge and optional safe-zone overlay. JPG export targets under 2 MB for mobile uploads. |
+| 20–21. Bundle and dashboard | The signed-in routes already load on demand. The generator chunk still exceeds 500 kB. New dashboards start with maths, CAT and aptitude folders. |
+
+The earlier sections below describe PR #14 as it shipped. Series export, brand controls, PowerPoint export, question figures, concept slides, speaker notes, handouts, polling and layout consolidation remain open.
+
 ## 1. What the repo scan found
 
 | Area | Finding | Status |
